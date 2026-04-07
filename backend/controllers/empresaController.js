@@ -27,7 +27,6 @@ export const registrarEmpresa = async (req, res) => {
 
     await client.query("BEGIN");
 
-    // 🔹 Crear empresa
     const empresaResult = await client.query(
       `INSERT INTO empresas (nombre, nit, email, telefono)
        VALUES ($1,$2,$3,$4)
@@ -37,7 +36,6 @@ export const registrarEmpresa = async (req, res) => {
 
     const empresa = empresaResult.rows[0];
 
-    // 🔹 Crear usuario admin
     const hashedPassword = await bcrypt.hash(contrasena_admin, 10);
 
     const usuarioResult = await client.query(
@@ -61,7 +59,6 @@ export const registrarEmpresa = async (req, res) => {
 
     await client.query("COMMIT");
 
-    // 🔹 Generar token JWT
     const token = generarToken(admin);
 
     res.json({

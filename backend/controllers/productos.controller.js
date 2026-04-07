@@ -16,7 +16,6 @@ export const getProductos = async (req, res) => {
   }
 };
 
-// 🔹 Crear producto
 export const crearProducto = async (req, res) => {
   try {
     const { nombre, precio, stock, categoria_id } = req.body;
@@ -35,7 +34,6 @@ export const crearProducto = async (req, res) => {
   }
 };
 
-// 🔹 Actualizar producto (solo de mi empresa)
 export const actualizarProducto = async (req, res) => {
   try {
     const { id } = req.params;
@@ -56,7 +54,6 @@ export const actualizarProducto = async (req, res) => {
   }
 };
 
-// 🔹 Eliminar producto (solo de mi empresa)
 export const eliminarProducto = async (req, res) => {
   try {
     const { id } = req.params;

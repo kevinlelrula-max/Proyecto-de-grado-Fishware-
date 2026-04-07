@@ -10,7 +10,6 @@ import { verificarToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// 🔐 Todas protegidas
 router.get("/", verificarToken, getProductos);
 router.post("/", verificarToken, crearProducto);
 router.put("/:id", verificarToken, actualizarProducto);

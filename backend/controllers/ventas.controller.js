@@ -1,6 +1,5 @@
 import pool from "../config/db.js";
 
-// 🔹 Crear venta
 export const crearVenta = async (req, res) => {
   const client = await pool.connect();
 
@@ -12,7 +11,6 @@ export const crearVenta = async (req, res) => {
 
     await client.query("BEGIN");
 
-    // 🔹 Crear venta
     const ventaResult = await client.query(
       `INSERT INTO ventas (empresa_id, administrador_id, cliente_id, metodo_pago_id, total)
        VALUES ($1, $2, $3, $4, 0)
@@ -24,7 +22,6 @@ export const crearVenta = async (req, res) => {
 
     let total = 0;
 
-    // 🔹 Procesar productos
     for (const item of productos) {
       const { producto_id, cantidad } = item;
 
@@ -46,21 +43,18 @@ export const crearVenta = async (req, res) => {
       const subtotal = producto.precio * cantidad;
       total += subtotal;
 
-      // 🔹 Insertar detalle
       await client.query(
         `INSERT INTO detalle_venta (venta_id, producto_id, kilos, precio_unitario)
          VALUES ($1, $2, $3, $4)`,
         [venta.id, producto_id, cantidad, producto.precio]
       );
 
-      // 🔹 Descontar stock
       await client.query(
         `UPDATE productos SET stock = stock - $1 WHERE id = $2`,
         [cantidad, producto_id]
       );
     }
 
-    // 🔹 Actualizar total
     await client.query(
       "UPDATE ventas SET total = $1 WHERE id = $2",
       [total, venta.id]
@@ -79,7 +73,6 @@ export const crearVenta = async (req, res) => {
   }
 };
 
-// 🔹 Listar todas las ventas con detalle de productos
 export const listarVentas = async (req, res) => {
   try {
     const empresa_id = req.user.empresa_id;
@@ -104,7 +97,6 @@ export const listarVentas = async (req, res) => {
 
     const ventas = ventasResult.rows;
 
-    // 🔹 Para cada venta, traemos los productos
     for (let venta of ventas) {
       const detallesResult = await pool.query(
         `SELECT 

@@ -1,7 +1,6 @@
 import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 
-// 🔹 Obtener usuarios de la empresa
 export const getUsuarios = async (req, res) => {
   try {
     const empresa_id = req.user.empresa_id;
@@ -20,12 +19,10 @@ export const getUsuarios = async (req, res) => {
   }
 };
 
-// 🔹 Crear usuario (SOLO ADMIN)
 export const crearUsuario = async (req, res) => {
   try {
     const empresa_id = req.user.empresa_id;
 
-    // 🔐 Validar rol (solo admin puede crear)
     if (req.user.rol_id !== 1) {
       return res.status(403).json({ error: "Solo el administrador puede crear usuarios" });
     }
@@ -42,7 +39,6 @@ export const crearUsuario = async (req, res) => {
       id_municipio
     } = req.body;
 
-    // 🔐 Encriptar contraseña
     const hashedPassword = await bcrypt.hash(contrasena, 10);
 
     const result = await pool.query(
@@ -55,7 +51,7 @@ export const crearUsuario = async (req, res) => {
         nombre,
         apellido,
         usuario,
-        hashedPassword, // 🔥 contraseña encriptada
+        hashedPassword, 
         telefono,
         direccion,
         numero_documento,
@@ -68,7 +64,6 @@ export const crearUsuario = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    // 🔥 Manejo de usuario duplicado
     if (error.code === "23505") {
       return res.status(400).json({ error: "El usuario ya existe" });
     }
