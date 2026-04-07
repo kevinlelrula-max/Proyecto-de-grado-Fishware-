@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn {
+  @apply text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition;
+}
+
+.card {
+  @apply bg-white p-5 rounded-xl shadow hover:shadow-lg transition cursor-pointer;
+}
