@@ -18,6 +18,7 @@ export default function Sidebar({ setSeccion }) {
       <button onClick={() => setSeccion("reportes")} style={styles.item}>
         📊 Reportes
       </button>
+      
     </div>
   );
 }

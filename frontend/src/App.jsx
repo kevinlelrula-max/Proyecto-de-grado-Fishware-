@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import RegistroEmpresa from "./components/RegistroEmpresa";
 import LoginEmpresa from "./components/LoginEmpresa";
 import DashboardEmpresa from "./components/DashboardEmpresa"; // ✅ Importa el dashboard
+import Perfil from "./modules/perfil/Perfil";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<DashboardEmpresa />} /> {/* ✅ Ruta del dashboard */}
+        <Route path="/perfil" element={<Perfil />} />
 
         
       </Routes>

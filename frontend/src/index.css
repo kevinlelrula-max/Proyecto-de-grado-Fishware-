@@ -9,3 +9,16 @@
 .card {
   @apply bg-white p-5 rounded-xl shadow hover:shadow-lg transition cursor-pointer;
 }
+
+.input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  transition: 0.2s;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
