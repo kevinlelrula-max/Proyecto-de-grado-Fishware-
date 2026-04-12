@@ -24,5 +24,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/ventas", ventasRoutes);
 app.use("/api/clientes", clientesRoutes);
+app.use("/api/empresa", authRoutes);
 
 export default app;
