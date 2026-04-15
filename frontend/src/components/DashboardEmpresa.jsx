@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import Productos from "../modules/productos/Productos";
 import Clientes from "../modules/clientes/Clientes";
 import Usuarios from "../modules/usuarios/Usuarios";
+import Ventas from "../pages/VentasEmpresa";
+import Reportes from "../pages/Reportes"; // 🔥 IMPORTANTE
 
 export default function DashboardEmpresa() {
   const [seccion, setSeccion] = useState("productos");
   const [open, setOpen] = useState(false);
 
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -34,9 +36,10 @@ export default function DashboardEmpresa() {
           <button onClick={() => setSeccion("reportes")} className="btn">
             📊 Reportes
           </button>
+
           <button onClick={() => setSeccion("usuarios")} className="btn">
-  👥 Usuarios
-</button>
+            👥 Usuarios
+          </button>
         </nav>
       </aside>
 
@@ -49,7 +52,6 @@ export default function DashboardEmpresa() {
             Dashboard
           </h1>
 
-          {/* 👤 PERFIL */}
           <div className="relative">
             <div
               onClick={() => setOpen(!open)}
@@ -85,8 +87,6 @@ export default function DashboardEmpresa() {
                   🚪 Cerrar sesión
                 </button>
 
-                
-
               </div>
             )}
           </div>
@@ -95,11 +95,13 @@ export default function DashboardEmpresa() {
         {/* 📦 CONTENIDO */}
         <div className="p-8">
           <div className="bg-white p-6 rounded-xl shadow">
+
             {seccion === "productos" && <Productos />}
             {seccion === "clientes" && <Clientes />}
-            {seccion === "ventas" && <h2>Ventas</h2>}
-            {seccion === "reportes" && <h2>Reportes</h2>}
+            {seccion === "ventas" && <Ventas />}
+            {seccion === "reportes" && <Reportes />} {/* 🔥 FIX */}
             {seccion === "usuarios" && <Usuarios />}
+
           </div>
         </div>
 

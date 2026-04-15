@@ -1,5 +1,8 @@
 import pool from "../config/db.js";
 
+// =========================
+// 🔹 CREAR VENTA
+// =========================
 export const crearVenta = async (req, res) => {
   const client = await pool.connect();
 
@@ -73,21 +76,21 @@ export const crearVenta = async (req, res) => {
   }
 };
 
-export const listarVentas = async (req, res) => {
+// =========================
+// 🔹 LISTAR VENTAS EMPRESA
+// =========================
+export const listarVentasEmpresa = async (req, res) => {
   try {
     const empresa_id = req.user.empresa_id;
 
-    // 🔹 Primero traemos las ventas principales
-    const ventasResult = await pool.query(
+    const result = await pool.query(
       `SELECT 
          v.id AS venta_id,
          v.fecha,
          v.total,
-         p_admin.nombre || ' ' || p_admin.apellido AS administrador,
          p_cliente.nombre || ' ' || p_cliente.apellido AS cliente,
          mp.metodo AS metodo_pago
        FROM ventas v
-       JOIN persona p_admin ON v.administrador_id = p_admin.id
        JOIN persona p_cliente ON v.cliente_id = p_cliente.id
        JOIN metodo_pago mp ON v.metodo_pago_id = mp.id
        WHERE v.empresa_id = $1
@@ -95,26 +98,36 @@ export const listarVentas = async (req, res) => {
       [empresa_id]
     );
 
-    const ventas = ventasResult.rows;
+    res.json(result.rows);
 
-    for (let venta of ventas) {
-      const detallesResult = await pool.query(
-        `SELECT 
-           dv.producto_id,
-           pr.nombre AS producto,
-           dv.kilos AS cantidad,
-           dv.precio_unitario,
-           dv.subtotal
-         FROM detalle_venta dv
-         JOIN productos pr ON dv.producto_id = pr.id
-         WHERE dv.venta_id = $1`,
-        [venta.venta_id]
-      );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
-      venta.productos = detallesResult.rows;
-    }
+// =========================
+// 🔹 REPORTE PRODUCTOS MÁS VENDIDOS
+// =========================
+export const reporteProductos = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
 
-    res.json(ventas);
+    const result = await pool.query(
+      `SELECT 
+        p.nombre,
+        SUM(dv.kilos) AS total_vendido,
+        SUM(dv.kilos * dv.precio_unitario) AS total_ingresos
+      FROM detalle_venta dv
+      JOIN productos p ON dv.producto_id = p.id
+      JOIN ventas v ON dv.venta_id = v.id
+      WHERE v.empresa_id = $1
+      GROUP BY p.nombre
+      ORDER BY total_vendido DESC`,
+      [empresa_id]
+    );
+
+    res.json(result.rows);
 
   } catch (error) {
     console.error(error);
