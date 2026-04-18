@@ -20,7 +20,7 @@ export default function useProductos() {
     cargarProductos();
   };
 
-  const editar = async (id, data) => {
+  const actualizar  = async (id, data) => {
     await actualizarProducto(id, data, token);
     cargarProductos();
   };
@@ -37,7 +37,7 @@ export default function useProductos() {
   return {
     productos,
     agregar,
-    editar,
+    actualizar ,
     eliminar
   };
 }
