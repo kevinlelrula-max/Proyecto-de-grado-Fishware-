@@ -8,145 +8,150 @@ export default function Productos() {
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [productoEditar, setProductoEditar] = useState(null);
-
-  // 🔍 BUSCADOR
   const [busqueda, setBusqueda] = useState("");
-
-  // 📄 PAGINACIÓN
   const [paginaActual, setPaginaActual] = useState(1);
-  const [productosPorPagina, setProductosPorPagina] = useState(5);
+  const [productosPorPagina, setProductosPorPagina] = useState(12);
+  const [vista, setVista] = useState("grid"); // "grid" | "lista"
 
-  // 🔎 FILTRO
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  // 📄 LÓGICA PAGINACIÓN
   const indexUltimo = paginaActual * productosPorPagina;
   const indexPrimero = indexUltimo - productosPorPagina;
+  const productosPaginados = productosFiltrados.slice(indexPrimero, indexUltimo);
+  const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
 
-  const productosPaginados = productosFiltrados.slice(
-    indexPrimero,
-    indexUltimo
-  );
+  const stockBajo = productos.filter((p) => p.stock < 10).length;
 
-  const totalPaginas = Math.ceil(
-    productosFiltrados.length / productosPorPagina
-  );
-
-  // 🔁 RESET PAGINA
   useEffect(() => {
     setPaginaActual(1);
   }, [busqueda, productosPorPagina]);
 
-  const handleNuevo = () => {
-    setProductoEditar(null);
-    setMostrarForm(true);
-  };
+  const handleNuevo = () => { setProductoEditar(null); setMostrarForm(true); };
+  const handleEditar = (p) => { setProductoEditar(p); setMostrarForm(true); };
 
-  const handleEditar = (producto) => {
-    setProductoEditar(producto);
-    setMostrarForm(true);
-  };
-
-  const handleGuardar = async (data) => {
+  const handleGuardar = async (formData) => {
     if (productoEditar) {
-      await actualizar(productoEditar.id, data);
+      await actualizar(productoEditar.id, formData);
     } else {
-      await agregar(data);
+      await agregar(formData);
     }
-
     setMostrarForm(false);
     setProductoEditar(null);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      
-      {/* 🔥 HEADER */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "15px"
-      }}>
-        <h2>📦 Gestión de Productos</h2>
+    <div style={s.page}>
 
-        <button onClick={handleNuevo}>
-          ➕ Nuevo Producto
+      {/* HEADER */}
+      <div style={s.header}>
+        <div style={s.headerLeft}>
+          <span style={s.headerIcon}></span>
+          <h2 style={s.headerTitle}>Gestión de Productos</h2>
+        </div>
+        <button style={s.btnNew} onClick={handleNuevo}>
+          Nuevo Producto
         </button>
       </div>
 
-      {/* 🔍 BUSCADOR + 📊 SELECTOR */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: "15px",
-        gap: "10px"
-      }}>
-        <input
-          placeholder="🔍 Buscar producto..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          style={{
-            padding: "8px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-            width: "70%"
-          }}
-        />
-
-        <div>
-          <label>Mostrar: </label>
-          <select
-            value={productosPorPagina}
-            onChange={(e) =>
-              setProductosPorPagina(Number(e.target.value))
-            }
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+      {/* STAT CARDS */}
+      <div style={s.statsRow}>
+        <div style={s.statCard}>
+          <span style={s.statLabel}>Total productos</span>
+          <span style={{ ...s.statValue, color: "#0F6E56" }}>{productos.length}</span>
+        </div>
+        <div style={s.statCard}>
+          <span style={s.statLabel}>Mostrando</span>
+          <span style={s.statValue}>{productosFiltrados.length}</span>
+        </div>
+        <div style={s.statCard}>
+          <span style={s.statLabel}>Stock bajo</span>
+          <span style={{ ...s.statValue, color: stockBajo > 0 ? "#dc2626" : "#166534" }}>
+            {stockBajo}
+          </span>
         </div>
       </div>
 
-      {/* 📊 INFO */}
-      <p style={{ marginBottom: "10px" }}>
-        Mostrando {productosPaginados.length} de{" "}
-        {productosFiltrados.length} productos
-      </p>
+      {/* CONTROLES */}
+      <div style={s.controls}>
+        {/* Buscador */}
+        <div style={s.searchWrap}>
+          <span style={s.searchIcon}></span>
+          <input
+            style={s.searchInput}
+            placeholder="Buscar producto..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
 
-      {/* 📋 TABLA */}
+        <div style={s.controlsRight}>
+          {/* Selector cantidad */}
+          <div style={s.selectWrap}>
+            <label style={s.selectLabel}>Mostrar:</label>
+            <select
+              style={s.select}
+              value={productosPorPagina}
+              onChange={(e) => setProductosPorPagina(Number(e.target.value))}
+            >
+              <option value={6}>6</option>
+              <option value={12}>12</option>
+              <option value={24}>24</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+
+          {/* Toggle vista */}
+          <div style={s.viewToggle}>
+            <button
+              style={{ ...s.viewBtn, ...(vista === "grid" ? s.viewBtnActive : {}) }}
+              onClick={() => setVista("grid")}
+              title="Vista cuadrícula"
+            >
+              ⊞
+            </button>
+            <button
+              style={{ ...s.viewBtn, ...(vista === "lista" ? s.viewBtnActive : {}) }}
+              onClick={() => setVista("lista")}
+              title="Vista lista"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLA / GRID */}
       <TablaProductos
         productos={productosPaginados}
         onEliminar={eliminar}
         onEditar={handleEditar}
+        vista={vista}
       />
 
-      {/* 📄 PAGINACIÓN */}
-      <div style={{ marginTop: "15px", textAlign: "center" }}>
+      {/* PAGINACIÓN */}
+      <div style={s.pagination}>
         <button
+          style={{ ...s.pageBtn, opacity: paginaActual === 1 ? 0.4 : 1 }}
           onClick={() => setPaginaActual(paginaActual - 1)}
           disabled={paginaActual === 1}
         >
-          ⬅️ Anterior
+          ← Anterior
         </button>
-
-        <span style={{ margin: "0 10px" }}>
+        <span style={s.pageInfo}>
           Página {paginaActual} de {totalPaginas || 1}
         </span>
-
         <button
+          style={{ ...s.pageBtn, opacity: (paginaActual === totalPaginas || totalPaginas === 0) ? 0.4 : 1 }}
           onClick={() => setPaginaActual(paginaActual + 1)}
           disabled={paginaActual === totalPaginas || totalPaginas === 0}
         >
-          Siguiente ➡️
+          Siguiente →
         </button>
       </div>
 
-      {/* 🧾 MODAL */}
+      {/* MODAL */}
       {mostrarForm && (
         <FormProducto
           producto={productoEditar}
@@ -157,3 +162,64 @@ export default function Productos() {
     </div>
   );
 }
+
+const s = {
+  page: { padding: "24px" },
+
+  // Header
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
+  headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
+  headerIcon: { fontSize: "22px" },
+  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  btnNew: {
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "9px 20px", backgroundColor: "#0F6E56",
+    color: "#E1F5EE", border: "none", borderRadius: "10px",
+    cursor: "pointer", fontSize: "14px", fontWeight: "600",
+  },
+
+  // Stats
+  statsRow: { display: "flex", gap: "12px", marginBottom: "20px" },
+  statCard: {
+    flex: 1, backgroundColor: "#f8fafc", borderRadius: "12px",
+    padding: "12px 16px", display: "flex", flexDirection: "column", gap: "4px",
+    border: "1px solid #e2e8f0",
+  },
+  statLabel: { fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" },
+  statValue: { fontSize: "22px", fontWeight: "700", color: "#0f172a" },
+
+  // Controls
+  controls: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", marginBottom: "18px" },
+  searchWrap: { flex: 1, position: "relative", display: "flex", alignItems: "center" },
+  searchIcon: { position: "absolute", left: "12px", fontSize: "14px" },
+  searchInput: {
+    width: "100%", padding: "9px 12px 9px 34px",
+    borderRadius: "10px", border: "1px solid #e2e8f0",
+    fontSize: "14px", color: "#0f172a", outline: "none",
+    backgroundColor: "#fff",
+  },
+  controlsRight: { display: "flex", alignItems: "center", gap: "10px" },
+  selectWrap: { display: "flex", alignItems: "center", gap: "6px" },
+  selectLabel: { fontSize: "13px", color: "#64748b" },
+  select: {
+    padding: "8px 10px", borderRadius: "8px", border: "1px solid #e2e8f0",
+    fontSize: "13px", color: "#0f172a", backgroundColor: "#fff", cursor: "pointer",
+  },
+
+  // Toggle vista
+  viewToggle: { display: "flex", border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" },
+  viewBtn: {
+    padding: "7px 12px", background: "transparent", border: "none",
+    cursor: "pointer", fontSize: "16px", color: "#94a3b8", lineHeight: 1,
+  },
+  viewBtnActive: { backgroundColor: "#E1F5EE", color: "#0F6E56" },
+
+  // Paginación
+  pagination: { display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginTop: "20px" },
+  pageBtn: {
+    padding: "7px 18px", borderRadius: "8px",
+    border: "1px solid #e2e8f0", backgroundColor: "#fff",
+    cursor: "pointer", fontSize: "13px", fontWeight: "500", color: "#0f172a",
+  },
+  pageInfo: { fontSize: "13px", color: "#64748b", minWidth: "110px", textAlign: "center" },
+};

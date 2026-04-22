@@ -29,3 +29,10 @@ export const eliminarCliente = async (id, token) => {
   });
   return res.data;
 };
+
+export const buscarClientes = async (query, token) => {
+  const res = await axios.get(`${API}/buscar?q=${query}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+};

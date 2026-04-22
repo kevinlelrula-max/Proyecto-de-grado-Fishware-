@@ -10,6 +10,7 @@ import clientesRoutes from "./routes/clientes.routes.js";
 import reportesRoutes from "./routes/reporteEmpresa.routes.js";
 import metodoPagoRoutes from "./routes/metodoPago.routes.js";
 
+import ubicacionRoutes from "./routes/ubicacion.routes.js";
 
 const app = express();
 
@@ -40,6 +41,8 @@ app.use("/api/empresa", authRoutes);
 app.use("/api/reportesEmpresa", reportesRoutes);
 
 app.use("/api/metodo_pago", metodoPagoRoutes);
+app.use("/uploads", express.static("uploads"));
+app.use("/api/ubicacion", ubicacionRoutes);
 
 // =========================
 // 🔹 404 HANDLER (MUY IMPORTANTE)

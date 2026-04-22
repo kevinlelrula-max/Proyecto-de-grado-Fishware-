@@ -1,18 +1,20 @@
-import express from "express";
+import { Router } from "express";
 import {
   getProductos,
   crearProducto,
   actualizarProducto,
-  eliminarProducto
+  eliminarProducto,
+  upload
 } from "../controllers/productos.controller.js";
-
 import { verificarToken } from "../middlewares/auth.middleware.js";
-
-const router = express.Router();
-
-router.get("/", verificarToken, getProductos);
-router.post("/", verificarToken, crearProducto);
-router.put("/:id", verificarToken, actualizarProducto);
-router.delete("/:id", verificarToken, eliminarProducto);
-
+ 
+const router = Router();
+ 
+router.get("/",      verificarToken, getProductos);
+// ✅ upload.single("imagen") procesa el archivo antes del controlador
+router.post("/",     verificarToken, upload.single("imagen"), crearProducto);
+router.put("/:id",   verificarToken, upload.single("imagen"), actualizarProducto);
+router.delete("/:id",verificarToken, eliminarProducto);
+ 
 export default router;
+ 
