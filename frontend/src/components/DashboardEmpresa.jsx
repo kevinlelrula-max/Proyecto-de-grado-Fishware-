@@ -6,6 +6,7 @@ import Clientes from "../modules/clientes/Clientes";
 import Usuarios from "../modules/usuarios/Usuarios";
 import Ventas from "../pages/VentasEmpresa";
 import Reportes from "../pages/Reportes";
+import PuntoDeVenta from "../modules/pos/PuntoDeVenta";
 
 export default function DashboardEmpresa() {
   const [seccion, setSeccion] = useState("productos");
@@ -19,6 +20,8 @@ export default function DashboardEmpresa() {
     { key: "ventas", label: "Ventas", icon: "💰" },
     { key: "reportes", label: "Reportes", icon: "📊" },
     { key: "usuarios", label: "Usuarios", icon: "🧑‍💼" },
+    { key: "pos", label: "Punto de venta", icon: "🛒" },
+
   ];
 
   return (
@@ -65,7 +68,7 @@ export default function DashboardEmpresa() {
               onClick={() => setOpen(!open)}
               className="flex items-center gap-2 cursor-pointer bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition"
             >
-              👤 <span className="font-medium">Admin</span> ⬇
+                 <span className="font-medium">Admin</span> 
             </div>
 
             {open && (
@@ -109,7 +112,7 @@ export default function DashboardEmpresa() {
             {seccion === "ventas" && <Ventas />}
             {seccion === "reportes" && <Reportes />}
             {seccion === "usuarios" && <Usuarios />}
-
+            {seccion === "pos" && <PuntoDeVenta />}
           </div>
         </div>
 

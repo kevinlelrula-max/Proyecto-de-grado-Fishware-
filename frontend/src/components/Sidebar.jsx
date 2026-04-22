@@ -18,7 +18,9 @@ export default function Sidebar({ setSeccion }) {
       <button onClick={() => setSeccion("reportes")} style={styles.item}>
         📊 Reportes
       </button>
-      
+      <button onClick={() => setSeccion("pos")}>
+       🛒 Punto de Venta
+      </button>
     </div>
   );
 }
