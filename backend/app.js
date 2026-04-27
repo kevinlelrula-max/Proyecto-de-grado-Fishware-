@@ -9,9 +9,9 @@ import ventasRoutes from "./routes/ventas.routes.js";
 import clientesRoutes from "./routes/clientes.routes.js";
 import reportesRoutes from "./routes/reporteEmpresa.routes.js";
 import metodoPagoRoutes from "./routes/metodoPago.routes.js";
-
+import configuracionRoutes from "./routes/configuracion.routes.js";
 import ubicacionRoutes from "./routes/ubicacion.routes.js";
-
+import categoriasRoutes from "./routes/categorias.routes.js";
 const app = express();
 
 // =========================
@@ -43,7 +43,8 @@ app.use("/api/reportesEmpresa", reportesRoutes);
 app.use("/api/metodo_pago", metodoPagoRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/ubicacion", ubicacionRoutes);
-
+app.use("/api/configuracion", configuracionRoutes);
+app.use("/api/categorias", categoriasRoutes);
 // =========================
 // 🔹 404 HANDLER (MUY IMPORTANTE)
 // =========================
