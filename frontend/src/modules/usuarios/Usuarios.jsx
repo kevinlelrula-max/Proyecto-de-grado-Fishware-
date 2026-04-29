@@ -2,7 +2,7 @@ import { useState } from "react";
 import useUsuarios from "./hooks/useUsuarios";
 import TablaUsuarios from "./components/TablaUsuarios";
 import FormUsuario from "./components/FormUsuario";
-import GestionRoles from "./components/GestionRoles";
+import GestionRoles from "./components/Gestionroles";
 
 export default function Usuarios() {
   const { usuarios, agregarUsuario, actualizarUsuario, toggleUsuario, eliminarUsuario } = useUsuarios();
