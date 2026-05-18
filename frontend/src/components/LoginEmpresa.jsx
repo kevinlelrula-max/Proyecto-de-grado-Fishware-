@@ -26,6 +26,7 @@ export default function LoginEmpresa() {
         localStorage.setItem("token", res.token);
         localStorage.setItem("empresa_id", res.empresa_id);
         localStorage.setItem("rol_id", res.rol_id);
+        localStorage.setItem("codigo_referido", res.codigo_referido || "");
         navigate("/dashboard");
       } else {
         setError(res.error || "Credenciales incorrectas.");

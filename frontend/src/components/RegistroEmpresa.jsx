@@ -1,39 +1,39 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { registroEmpresa } from "../services/api";
 import { getDepartamentos, getMunicipios } from "../modules/ubicacion/services/ubicacion.api";
 
-// ─── Componente principal ────────────────────────────────────────────────────
 export default function RegistroEmpresa() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const navigate  = useNavigate();
+  const location  = useLocation();
 
-  // Estados — ubicación desde backend
+  // ✅ Si viene con ?ref=ABC123 en la URL, prellenar el código
+  const refFromUrl = new URLSearchParams(location.search).get("ref") || "";
+
+  const [step, setStep]       = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+
   const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
+  const [municipios, setMunicipios]       = useState([]);
 
   const [form, setForm] = useState({
     nombre: "", nit: "", email: "", telefono: "",
+    codigo_referido_usado: refFromUrl,          // ✅ prellenado si viene por URL
     admin_nombre: "", admin_apellido: "", admin_usuario: "",
     admin_contrasena: "", admin_telefono: "", admin_direccion: "",
     admin_tipo_documento: "Cédula de ciudadanía",
     admin_numero_documento: "", admin_rol_id: 1, admin_id_municipio: "",
-    _departamento: "",   // solo para la UI, no se envía al backend
+    _departamento: "",
   });
 
-  // Cargar departamentos al montar (sin token, es registro público)
   useEffect(() => {
     getDepartamentos(null).then(setDepartamentos).catch(console.error);
   }, []);
 
-  // Cargar municipios cuando cambia el departamento
   useEffect(() => {
     if (!form._departamento) { setMunicipios([]); return; }
-    getMunicipios(form._departamento, null)
-      .then(setMunicipios)
-      .catch(console.error);
+    getMunicipios(form._departamento, null).then(setMunicipios).catch(console.error);
   }, [form._departamento]);
 
   const handleChange = (e) => {
@@ -50,14 +50,17 @@ export default function RegistroEmpresa() {
     setLoading(true);
     try {
       const { _departamento, ...payload } = form;
-      // Asegurar que id_municipio sea número o null
       payload.admin_id_municipio = payload.admin_id_municipio
         ? Number(payload.admin_id_municipio)
         : null;
+
       const res = await registroEmpresa(payload);
+
       if (res.token) {
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("empresa_id", res.empresa_id);
+        localStorage.setItem("token",           res.token);
+        localStorage.setItem("empresa_id",      res.empresa_id);
+        localStorage.setItem("rol_id",          res.rol_id);
+        localStorage.setItem("codigo_referido", res.codigo_referido || ""); // ✅ guardar código propio
         navigate("/dashboard");
       } else {
         setError(res.error || "Error al registrar. Verifica los datos.");
@@ -159,6 +162,29 @@ export default function RegistroEmpresa() {
               <Field label="Teléfono" icon="📞">
                 <input style={s.input} name="telefono" placeholder="+57 300 000 0000" value={form.telefono} onChange={handleChange}/>
               </Field>
+
+              {/* ✅ Campo de código de referido — opcional */}
+              <Field label="Código de referido (opcional)" icon="🔗" full>
+                <div style={s.refWrap}>
+                  <input
+                    style={{
+                      ...s.input,
+                      borderColor: form.codigo_referido_usado ? "#0F6E56" : "#e2e8f0",
+                      backgroundColor: form.codigo_referido_usado ? "#f0fdf4" : "white",
+                    }}
+                    name="codigo_referido_usado"
+                    placeholder="Ej: REF-ABC123"
+                    value={form.codigo_referido_usado}
+                    onChange={handleChange}
+                  />
+                  {form.codigo_referido_usado && (
+                    <span style={s.refCheck}>✓ Código aplicado</span>
+                  )}
+                </div>
+                <p style={s.refHint}>
+                  Si otra empresa te invitó, ingresa su código para vincularte.
+                </p>
+              </Field>
             </div>
           )}
 
@@ -195,14 +221,8 @@ export default function RegistroEmpresa() {
                 <input style={s.input} name="admin_numero_documento" placeholder="1234567890" value={form.admin_numero_documento} onChange={handleChange}/>
               </Field>
 
-              {/* ── Departamento (desde backend) ── */}
               <Field label="Departamento" icon="🗺️">
-                <select
-                  style={s.input}
-                  name="_departamento"
-                  value={form._departamento}
-                  onChange={handleChange}
-                >
+                <select style={s.input} name="_departamento" value={form._departamento} onChange={handleChange}>
                   <option value="">-- Selecciona --</option>
                   {departamentos.map((d) => (
                     <option key={d.id} value={d.id}>{d.nombre}</option>
@@ -210,13 +230,9 @@ export default function RegistroEmpresa() {
                 </select>
               </Field>
 
-              {/* ── Municipio (desde backend, depende del departamento) ── */}
               <Field label="Municipio" icon="🏙️">
                 <select
-                  style={{
-                    ...s.input,
-                    color: form._departamento ? "#0f172a" : "#94a3b8",
-                  }}
+                  style={{ ...s.input, color: form._departamento ? "#0f172a" : "#94a3b8" }}
                   name="admin_id_municipio"
                   value={form.admin_id_municipio}
                   onChange={handleChange}
@@ -236,9 +252,7 @@ export default function RegistroEmpresa() {
           {/* Botones */}
           <div style={s.btnRow}>
             {step === 2 && (
-              <button style={s.btnBack} onClick={() => setStep(1)}>
-                ← Atrás
-              </button>
+              <button style={s.btnBack} onClick={() => setStep(1)}>← Atrás</button>
             )}
             {step === 1 ? (
               <button
@@ -265,13 +279,10 @@ export default function RegistroEmpresa() {
   );
 }
 
-// Componente auxiliar
 function Field({ label, icon, children, full }) {
   return (
     <div style={{ gridColumn: full ? "1 / -1" : "span 1" }}>
-      <label style={s.label}>
-        <span>{icon}</span> {label}
-      </label>
+      <label style={s.label}><span>{icon}</span> {label}</label>
       {children}
     </div>
   );
@@ -310,4 +321,8 @@ const s = {
   btnRow: { display: "flex", gap: "10px" },
   btnBack: { padding: "12px 20px", background: "transparent", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "14px", color: "#64748b", cursor: "pointer", fontWeight: "500" },
   btnNext: { flex: 1, padding: "13px", backgroundColor: "#2563eb", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "opacity 0.2s" },
+  // ✅ Estilos nuevos para el campo de referido
+  refWrap: { position: "relative" },
+  refCheck: { position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", fontWeight: "600", color: "#0F6E56" },
+  refHint: { fontSize: "11px", color: "#94a3b8", marginTop: "4px" },
 };

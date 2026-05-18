@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import BtnSoporte from "../components/BtnSoporte";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 32 },
@@ -32,48 +33,12 @@ export default function Home() {
   const navigate = useNavigate();
 
   const features = [
-    {
-      icon: "📦",
-      title: "Inventario",
-      desc: "Control de productos y stock en tiempo real con alertas automáticas.",
-      color: "#0F6E56",
-      bg: "#E1F5EE",
-    },
-    {
-      icon: "💰",
-      title: "Ventas",
-      desc: "Punto de venta, historial de transacciones y control de ingresos.",
-      color: "#1e40af",
-      bg: "#eff6ff",
-    },
-    {
-      icon: "👥",
-      title: "Usuarios",
-      desc: "Roles, permisos y accesos diferenciados por empresa.",
-      color: "#7c3aed",
-      bg: "#f5f3ff",
-    },
-    {
-      icon: "🏢",
-      title: "Multiempresa",
-      desc: "Cada empresa tiene su propio espacio aislado y seguro.",
-      color: "#b45309",
-      bg: "#fffbeb",
-    },
-    {
-      icon: "📊",
-      title: "Reportes",
-      desc: "Análisis de ventas, tendencias y métricas clave del negocio.",
-      color: "#0e7490",
-      bg: "#ecfeff",
-    },
-    {
-      icon: "🔒",
-      title: "Seguridad",
-      desc: "Autenticación por empresa con tokens seguros y sesiones controladas.",
-      color: "#be185d",
-      bg: "#fdf2f8",
-    },
+    { icon: "📦", title: "Inventario", desc: "Control de productos y stock en tiempo real con alertas automáticas.", color: "#0F6E56", bg: "#E1F5EE" },
+    { icon: "💰", title: "Ventas", desc: "Punto de venta, historial de transacciones y control de ingresos.", color: "#1e40af", bg: "#eff6ff" },
+    { icon: "👥", title: "Usuarios", desc: "Roles, permisos y accesos diferenciados por empresa.", color: "#7c3aed", bg: "#f5f3ff" },
+    { icon: "🏢", title: "Multiempresa", desc: "Cada empresa tiene su propio espacio aislado y seguro.", color: "#b45309", bg: "#fffbeb" },
+    { icon: "📊", title: "Reportes", desc: "Análisis de ventas, tendencias y métricas clave del negocio.", color: "#0e7490", bg: "#ecfeff" },
+    { icon: "🔒", title: "Seguridad", desc: "Autenticación por empresa con tokens seguros y sesiones controladas.", color: "#be185d", bg: "#fdf2f8" },
   ];
 
   const stats = [
@@ -104,9 +69,15 @@ export default function Home() {
             </svg>
             <span style={n.brandName}>WareFish</span>
           </div>
+
           <div style={n.navLinks}>
             <a href="#features" style={n.navLink}>Características</a>
             <a href="#how" style={n.navLink}>Cómo funciona</a>
+
+            {/* ── SEPARADOR ── */}
+            <div style={n.divider} />
+
+            {/* ── EMPRESA ── */}
             <button onClick={() => navigate("/empresa/login")} style={n.btnOutline}>
               Iniciar sesión
             </button>
@@ -117,14 +88,12 @@ export default function Home() {
         </div>
       </nav>
 
-      { /* ── HERO ── */}
+      {/* ── HERO ── */}
       <section style={h.section}>
-        {/* fondo decorativo */}
         <div style={h.glow1} />
         <div style={h.glow2} />
 
         <div style={h.inner}>
-          {/* texto */}
           <motion.div style={h.textCol} {...fadeUp(0)}>
             <div style={h.badge}>🚀 Plataforma SaaS multi-empresa</div>
             <h1 style={h.title}>
@@ -149,7 +118,6 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* imagen */}
           <motion.div style={h.imgCol} {...fadeUp(0.2)}>
             <div style={h.imgFrame}>
               <img
@@ -157,7 +125,6 @@ export default function Home() {
                 alt="Dashboard FishWare"
                 style={h.img}
               />
-              {/* badge flotante */}
               <div style={h.floatBadge}>
                 <span style={{ fontSize: "18px" }}>📈</span>
                 <div>
@@ -310,6 +277,8 @@ export default function Home() {
           <span style={fo.copy}>© 2026 FishWare · Plataforma empresarial</span>
         </div>
       </footer>
+              <BtnSoporte />
+      
 
     </div>
   );
@@ -337,6 +306,25 @@ const n = {
     textDecoration: "none", padding: "6px 14px",
     borderRadius: "8px", transition: "color 0.2s",
   },
+  // Separador visual entre sección empresa y tienda
+  divider: {
+    width: "1px",
+    height: "20px",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    margin: "0 4px",
+  },
+  // Botón tienda — verde para diferenciarlo de los botones de empresa
+  btnTienda: {
+    padding: "8px 16px",
+    backgroundColor: "rgba(15,110,86,0.15)",
+    border: "1px solid rgba(15,110,86,0.4)",
+    borderRadius: "8px",
+    color: "#34d399",
+    fontSize: "14px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.2s",
+  },
   btnOutline: {
     padding: "8px 18px", background: "transparent",
     border: "1px solid rgba(255,255,255,0.3)", borderRadius: "8px",
@@ -359,15 +347,13 @@ const h = {
   },
   glow1: {
     position: "absolute", top: "-200px", left: "-200px",
-    width: "600px", height: "600px",
-    borderRadius: "50%",
+    width: "600px", height: "600px", borderRadius: "50%",
     background: "radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)",
     pointerEvents: "none",
   },
   glow2: {
     position: "absolute", bottom: "-200px", right: "-100px",
-    width: "500px", height: "500px",
-    borderRadius: "50%",
+    width: "500px", height: "500px", borderRadius: "50%",
     background: "radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)",
     pointerEvents: "none",
   },
@@ -383,8 +369,7 @@ const h = {
     padding: "5px 14px", borderRadius: "999px",
     border: "1px solid rgba(37,99,235,0.4)",
     color: "#93c5fd", fontSize: "13px", fontWeight: "500",
-    marginBottom: "20px",
-    backgroundColor: "rgba(37,99,235,0.08)",
+    marginBottom: "20px", backgroundColor: "rgba(37,99,235,0.08)",
   },
   title: {
     fontSize: "52px", fontWeight: "800", color: "white",
@@ -413,14 +398,10 @@ const h = {
   },
   trustText: { fontSize: "13px", color: "rgba(255,255,255,0.45)" },
   imgCol: { position: "relative" },
-  imgFrame: {
-    borderRadius: "16px", overflow: "visible",
-    position: "relative",
-  },
+  imgFrame: { borderRadius: "16px", overflow: "visible", position: "relative" },
   img: {
     width: "100%", borderRadius: "16px",
-    boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
-    display: "block",
+    boxShadow: "0 40px 80px rgba(0,0,0,0.4)", display: "block",
   },
   floatBadge: {
     position: "absolute", bottom: "-18px", left: "-18px",
@@ -441,8 +422,7 @@ const st = {
   },
   inner: {
     maxWidth: "900px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "0",
+    display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0",
   },
   item: {
     display: "flex", flexDirection: "column", alignItems: "center",
@@ -454,12 +434,8 @@ const st = {
 };
 
 const f = {
-  section: {
-    padding: "96px 32px", backgroundColor: "#f8fafc",
-  },
-  header: {
-    textAlign: "center", marginBottom: "56px",
-  },
+  section: { padding: "96px 32px", backgroundColor: "#f8fafc" },
+  header: { textAlign: "center", marginBottom: "56px" },
   badge: {
     display: "inline-block", padding: "4px 14px",
     borderRadius: "999px", border: "1px solid #e2e8f0",
@@ -474,8 +450,7 @@ const f = {
   subtitle: { fontSize: "16px", color: "#64748b", maxWidth: "480px", margin: "0 auto" },
   grid: {
     maxWidth: "1100px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "20px",
+    display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px",
   },
   card: {
     backgroundColor: "white", borderRadius: "16px",
@@ -519,18 +494,14 @@ const sy = {
     fontSize: "15px", fontWeight: "700", cursor: "pointer",
   },
   imgWrap: {},
-  img: {
-    width: "100%", borderRadius: "16px",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
-  },
+  img: { width: "100%", borderRadius: "16px", boxShadow: "0 20px 60px rgba(0,0,0,0.1)" },
 };
 
 const hw = {
   section: { padding: "96px 32px", backgroundColor: "#f8fafc" },
   steps: {
     maxWidth: "900px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "32px",
+    display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "32px",
   },
   step: {
     backgroundColor: "white", borderRadius: "16px",
@@ -538,8 +509,7 @@ const hw = {
   },
   stepNum: {
     fontSize: "36px", fontWeight: "900", color: "#eff6ff",
-    WebkitTextStroke: "2px #2563eb",
-    marginBottom: "16px", lineHeight: 1,
+    WebkitTextStroke: "2px #2563eb", marginBottom: "16px", lineHeight: 1,
   },
   stepTitle: { fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" },
   stepDesc: { fontSize: "14px", color: "#64748b", lineHeight: "1.6" },

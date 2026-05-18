@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { crearNotificacion } from "../utils/notificaciones.js";
 
 // =========================
 // CREAR VENTA
@@ -62,10 +63,22 @@ export const crearVenta = async (req, res) => {
         [venta.id, producto_id, cantidad, producto.precio]
       );
 
-      await client.query(
-        `UPDATE productos SET stock = stock - $1 WHERE id = $2`,
+      const stockResult = await client.query(
+        `UPDATE productos SET stock = stock - $1 WHERE id = $2 RETURNING stock, stock_minimo, nombre`,
         [cantidad, producto_id]
       );
+      const { stock: stockNuevo, stock_minimo, nombre: nombreProducto } = stockResult.rows[0];
+      if (stockNuevo <= stock_minimo) {
+        // Fire-and-forget: no bloquea la transacción
+        crearNotificacion({
+          empresa_id,
+          tipo: "stock_bajo",
+          titulo: `Stock bajo: ${nombreProducto}`,
+          mensaje: `Quedan ${stockNuevo} unidades (mínimo: ${stock_minimo})`,
+          seccion: "productos",
+          referencia_id: producto_id,
+        });
+      }
     }
 
     await client.query(
@@ -104,21 +117,47 @@ export const listarVentasEmpresa = async (req, res) => {
       ? "AND DATE(v.fecha) = CURRENT_DATE"
       : "";
  
+    const filtroFechaOnline = hoy === "true"
+      ? "AND DATE(p.fecha_pedido) = CURRENT_DATE"
+      : "";
+
     const result = await pool.query(
-      `SELECT 
-         v.id AS venta_id,
+      `-- POS
+       SELECT
+         v.id        AS venta_id,
          v.fecha,
          v.total,
          p_cliente.nombre || ' ' || p_cliente.apellido AS cliente,
-         mp.metodo AS metodo_pago
+         mp.metodo   AS metodo_pago,
+         'completada' AS estado,
+         'pos'        AS tipo
        FROM ventas v
        JOIN persona p_cliente ON v.cliente_id = p_cliente.id
-       JOIN metodo_pago mp ON v.metodo_pago_id = mp.id
+       JOIN metodo_pago mp    ON v.metodo_pago_id = mp.id
        WHERE v.empresa_id = $1 ${filtroFecha}
-       ORDER BY v.fecha DESC`,
+
+       UNION ALL
+
+       -- Pedidos online (excluye cancelados)
+       SELECT
+         p.id                    AS venta_id,
+         p.fecha_pedido          AS fecha,
+         p.total,
+         per.nombre || ' ' || per.apellido AS cliente,
+         mp.metodo               AS metodo_pago,
+         p.estado,
+         'online'                AS tipo
+       FROM pedidos_online p
+       JOIN persona per       ON per.id = p.cliente_id
+       JOIN metodo_pago mp    ON mp.id  = p.metodo_pago_id
+       WHERE p.empresa_id = $1
+         AND p.estado != 'cancelado'
+         ${filtroFechaOnline}
+
+       ORDER BY fecha DESC`,
       [empresa_id]
     );
- 
+
     res.json(result.rows);
   } catch (error) {
     console.error(error);

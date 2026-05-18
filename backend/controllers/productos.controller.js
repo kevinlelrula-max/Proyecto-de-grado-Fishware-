@@ -9,44 +9,43 @@ import fs from "fs";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "uploads/productos";
-    // Crear carpeta si no existe
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
-    const nombre = `producto_${Date.now()}${ext}`;
-    cb(null, nombre);
+    cb(null, `producto_${Date.now()}${ext}`);
   }
 });
 
 const fileFilter = (req, file, cb) => {
   const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
-  if (tiposPermitidos.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Solo se permiten imágenes JPG, PNG o WEBP"), false);
-  }
+  tiposPermitidos.includes(file.mimetype) ? cb(null, true) : cb(new Error("Solo JPG, PNG o WEBP"), false);
 };
 
-export const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 3 * 1024 * 1024 } // 3MB máximo
-});
+export const upload = multer({ storage, fileFilter, limits: { fileSize: 3 * 1024 * 1024 } });
 
 // =========================
-// GET PRODUCTOS
+// GET PRODUCTOS (dashboard)
 // =========================
 export const getProductos = async (req, res) => {
   try {
     const empresa_id = req.user.empresa_id;
-
     const result = await pool.query(
-      "SELECT * FROM productos WHERE empresa_id = $1",
+      `SELECT p.id, p.empresa_id, p.nombre, p.descripcion, p.precio, p.precio_costo,
+              p.ganancia_porcentaje, p.precio_mayoreo, p.stock, p.stock_minimo,
+              p.stock_maximo, p.unidad, p.codigo_barras, p.categoria_id, p.imagen_url,
+              COALESCE(
+                json_agg(json_build_object('id', pi.id, 'url', pi.url) ORDER BY pi.orden)
+                FILTER (WHERE pi.id IS NOT NULL), '[]'
+              ) AS imagenes
+       FROM productos p
+       LEFT JOIN producto_imagenes pi ON pi.producto_id = p.id
+       WHERE p.empresa_id = $1
+       GROUP BY p.id
+       ORDER BY p.nombre ASC`,
       [empresa_id]
     );
-
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Error al obtener productos" });
@@ -58,23 +57,54 @@ export const getProductos = async (req, res) => {
 // =========================
 export const crearProducto = async (req, res) => {
   try {
-    const { nombre, precio, stock, categoria_id } = req.body;
-    const empresa_id = req.user.empresa_id;
+    const {
+      nombre, descripcion, precio, precio_costo,
+      ganancia_porcentaje, precio_mayoreo,
+      stock, stock_minimo, stock_maximo,
+      unidad, codigo_barras, categoria_id
+    } = req.body;
 
-    // Si viene una imagen subida, guardar la ruta
-    const imagen_url = req.file
-      ? `/uploads/productos/${req.file.filename}`
-      : null;
+    const empresa_id = req.user.empresa_id;
+    const files      = req.files || [];
+    const imagen_url = files.length > 0 ? `/uploads/productos/${files[0].filename}` : null;
 
     const result = await pool.query(
-      `INSERT INTO productos (nombre, precio, stock, categoria_id, empresa_id, imagen_url)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [nombre, precio, stock, categoria_id, empresa_id, imagen_url]
+      `INSERT INTO productos (
+        empresa_id, nombre, descripcion, precio, precio_costo,
+        ganancia_porcentaje, precio_mayoreo, stock, stock_minimo,
+        stock_maximo, unidad, codigo_barras, categoria_id, imagen_url
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      RETURNING *`,
+      [
+        empresa_id,
+        nombre,
+        descripcion         || null,
+        precio,
+        precio_costo        || null,
+        ganancia_porcentaje || null,
+        precio_mayoreo      || null,
+        stock               || 0,
+        stock_minimo        || 0,
+        stock_maximo        || null,
+        unidad              || "unidad",
+        codigo_barras       || null,
+        categoria_id        || null,
+        imagen_url,
+      ]
     );
+
+    const productoId = result.rows[0].id;
+    for (let i = 0; i < files.length; i++) {
+      await pool.query(
+        "INSERT INTO producto_imagenes (producto_id, url, orden) VALUES ($1, $2, $3)",
+        [productoId, `/uploads/productos/${files[i].filename}`, i]
+      );
+    }
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("Error crearProducto:", error);
     res.status(500).json({ error: "Error al crear producto" });
   }
 };
@@ -85,31 +115,62 @@ export const crearProducto = async (req, res) => {
 export const actualizarProducto = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, precio, stock, categoria_id } = req.body;
     const empresa_id = req.user.empresa_id;
+    const {
+      nombre, descripcion, precio, precio_costo,
+      ganancia_porcentaje, precio_mayoreo,
+      stock, stock_minimo, stock_maximo,
+      unidad, codigo_barras, categoria_id
+    } = req.body;
 
-    // Si viene imagen nueva, usarla; si no, conservar la que ya tiene
-    let imagen_url_query;
-    let params;
+    const files      = req.files || [];
+    const imagen_url = files.length > 0 ? `/uploads/productos/${files[0].filename}` : null;
 
-    if (req.file) {
-      imagen_url_query = ", imagen_url = $5";
-      params = [nombre, precio, stock, categoria_id, `/uploads/productos/${req.file.filename}`, id, empresa_id];
-    } else {
-      imagen_url_query = "";
-      params = [nombre, precio, stock, categoria_id, id, empresa_id];
+    const query = imagen_url
+      ? `UPDATE productos
+         SET nombre=$1, descripcion=$2, precio=$3, precio_costo=$4,
+             ganancia_porcentaje=$5, precio_mayoreo=$6, stock=$7,
+             stock_minimo=$8, stock_maximo=$9, unidad=$10,
+             codigo_barras=$11, categoria_id=$12, imagen_url=$13
+         WHERE id=$14 AND empresa_id=$15 RETURNING *`
+      : `UPDATE productos
+         SET nombre=$1, descripcion=$2, precio=$3, precio_costo=$4,
+             ganancia_porcentaje=$5, precio_mayoreo=$6, stock=$7,
+             stock_minimo=$8, stock_maximo=$9, unidad=$10,
+             codigo_barras=$11, categoria_id=$12
+         WHERE id=$13 AND empresa_id=$14 RETURNING *`;
+
+    const params = imagen_url
+      ? [nombre, descripcion || null, precio, precio_costo || null,
+         ganancia_porcentaje || null, precio_mayoreo || null,
+         stock || 0, stock_minimo || 0, stock_maximo || null,
+         unidad || "unidad", codigo_barras || null, categoria_id || null,
+         imagen_url, id, empresa_id]
+      : [nombre, descripcion || null, precio, precio_costo || null,
+         ganancia_porcentaje || null, precio_mayoreo || null,
+         stock || 0, stock_minimo || 0, stock_maximo || null,
+         unidad || "unidad", codigo_barras || null, categoria_id || null,
+         id, empresa_id];
+
+    const result = await pool.query(query, params);
+
+    // Insertar nuevas imágenes al final del orden existente
+    if (files.length > 0) {
+      const { rows: existing } = await pool.query(
+        "SELECT COUNT(*) AS c FROM producto_imagenes WHERE producto_id = $1", [id]
+      );
+      const offset = parseInt(existing[0].c);
+      for (let i = 0; i < files.length; i++) {
+        await pool.query(
+          "INSERT INTO producto_imagenes (producto_id, url, orden) VALUES ($1, $2, $3)",
+          [id, `/uploads/productos/${files[i].filename}`, offset + i]
+        );
+      }
     }
-
-    const result = await pool.query(
-      `UPDATE productos
-       SET nombre = $1, precio = $2, stock = $3, categoria_id = $4${imagen_url_query}
-       WHERE id = ${req.file ? "$6" : "$5"} AND empresa_id = ${req.file ? "$7" : "$6"}
-       RETURNING *`,
-      params
-    );
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("Error actualizarProducto:", error);
     res.status(500).json({ error: "Error al actualizar producto" });
   }
 };
@@ -122,24 +183,219 @@ export const eliminarProducto = async (req, res) => {
     const { id } = req.params;
     const empresa_id = req.user.empresa_id;
 
-    // Obtener imagen antes de eliminar para borrar el archivo
     const prod = await pool.query(
       "SELECT imagen_url FROM productos WHERE id = $1 AND empresa_id = $2",
       [id, empresa_id]
     );
+    if (!prod.rows.length) return res.status(404).json({ error: "Producto no encontrado" });
 
+    // Eliminar archivos de producto_imagenes
+    const imgs = await pool.query(
+      "SELECT url FROM producto_imagenes WHERE producto_id = $1", [id]
+    );
+    imgs.rows.forEach(img => {
+      const f = `.${img.url}`;
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+    });
+
+    // Eliminar imagen_url legacy si no estaba en producto_imagenes
     if (prod.rows[0]?.imagen_url) {
-      const filePath = `.${prod.rows[0].imagen_url}`;
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      const f = `.${prod.rows[0].imagen_url}`;
+      if (fs.existsSync(f)) fs.unlinkSync(f);
     }
 
-    await pool.query(
-      "DELETE FROM productos WHERE id = $1 AND empresa_id = $2",
-      [id, empresa_id]
-    );
-
+    await pool.query("DELETE FROM productos WHERE id = $1 AND empresa_id = $2", [id, empresa_id]);
     res.json({ message: "Producto eliminado correctamente" });
   } catch (error) {
     res.status(500).json({ error: "Error al eliminar producto" });
+  }
+};
+
+// =========================
+// GET PRODUCTOS PÚBLICOS (vitrina)
+// Incluye precio_mayoreo para lógica de precio inteligente
+// =========================
+export const getProductosPorEmpresaPublico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT p.id, p.nombre, p.descripcion, p.precio, p.precio_mayoreo,
+              p.stock, p.unidad, p.categoria_id, p.imagen_url,
+              c.nombre AS categoria,
+              COALESCE(
+                json_agg(json_build_object('id', pi.id, 'url', pi.url) ORDER BY pi.orden)
+                FILTER (WHERE pi.id IS NOT NULL), '[]'
+              ) AS imagenes
+       FROM productos p
+       LEFT JOIN producto_imagenes pi ON pi.producto_id = p.id
+       LEFT JOIN categoria c ON c.id = p.categoria_id
+       WHERE p.empresa_id = $1
+       GROUP BY p.id, c.nombre
+       ORDER BY p.nombre ASC`,
+      [id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error productos públicos:", error);
+    res.status(500).json({ error: "Error al obtener productos" });
+  }
+};
+
+// =========================
+// ELIMINAR IMAGEN INDIVIDUAL
+// =========================
+export const eliminarImagenProducto = async (req, res) => {
+  try {
+    const { id, imgId } = req.params;
+    const empresa_id = req.user.empresa_id;
+
+    const prod = await pool.query(
+      "SELECT id FROM productos WHERE id = $1 AND empresa_id = $2", [id, empresa_id]
+    );
+    if (!prod.rows.length) return res.status(404).json({ error: "Producto no encontrado" });
+
+    const img = await pool.query(
+      "SELECT url FROM producto_imagenes WHERE id = $1 AND producto_id = $2", [imgId, id]
+    );
+    if (!img.rows.length) return res.status(404).json({ error: "Imagen no encontrada" });
+
+    const f = `.${img.rows[0].url}`;
+    if (fs.existsSync(f)) fs.unlinkSync(f);
+
+    await pool.query("DELETE FROM producto_imagenes WHERE id = $1", [imgId]);
+
+    // Actualizar imagen_url con la siguiente imagen disponible
+    const remaining = await pool.query(
+      "SELECT url FROM producto_imagenes WHERE producto_id = $1 ORDER BY orden ASC LIMIT 1", [id]
+    );
+    const nuevaPortada = remaining.rows[0]?.url || null;
+    await pool.query("UPDATE productos SET imagen_url = $1 WHERE id = $2", [nuevaPortada, id]);
+
+    res.json({ ok: true, nueva_portada: nuevaPortada });
+  } catch (error) {
+    console.error("Error eliminarImagenProducto:", error);
+    res.status(500).json({ error: "Error al eliminar imagen" });
+  }
+};
+
+// =========================
+// NIVELES DE LEALTAD
+// =========================
+export const getNivelesLealtad = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+    const result = await pool.query(
+      `SELECT * FROM niveles_lealtad WHERE empresa_id = $1 ORDER BY monto_minimo ASC`,
+      [empresa_id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error getNivelesLealtad:", error);
+    res.status(500).json({ error: "Error al obtener niveles de lealtad" });
+  }
+};
+
+export const crearNivelLealtad = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+    const { nombre, monto_minimo, descuento_porcentaje } = req.body;
+
+    if (!nombre || !monto_minimo || !descuento_porcentaje) {
+      return res.status(400).json({ error: "Todos los campos son obligatorios" });
+    }
+    if (descuento_porcentaje <= 0 || descuento_porcentaje > 100) {
+      return res.status(400).json({ error: "El descuento debe estar entre 1 y 100" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO niveles_lealtad (empresa_id, nombre, monto_minimo, descuento_porcentaje)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [empresa_id, nombre, monto_minimo, descuento_porcentaje]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error crearNivelLealtad:", error);
+    res.status(500).json({ error: "Error al crear nivel de lealtad" });
+  }
+};
+
+export const actualizarNivelLealtad = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+    const { id } = req.params;
+    const { nombre, monto_minimo, descuento_porcentaje, activo } = req.body;
+
+    const result = await pool.query(
+      `UPDATE niveles_lealtad
+       SET nombre=$1, monto_minimo=$2, descuento_porcentaje=$3, activo=$4
+       WHERE id=$5 AND empresa_id=$6 RETURNING *`,
+      [nombre, monto_minimo, descuento_porcentaje, activo, id, empresa_id]
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ error: "Nivel no encontrado" });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error actualizarNivelLealtad:", error);
+    res.status(500).json({ error: "Error al actualizar nivel de lealtad" });
+  }
+};
+
+export const eliminarNivelLealtad = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+    const { id } = req.params;
+    await pool.query("DELETE FROM niveles_lealtad WHERE id=$1 AND empresa_id=$2", [id, empresa_id]);
+    res.json({ message: "Nivel eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminarNivelLealtad:", error);
+    res.status(500).json({ error: "Error al eliminar nivel de lealtad" });
+  }
+};
+
+// =========================
+// CALCULAR NIVEL DEL CLIENTE
+// Suma POS + tienda online → precio inteligente
+// =========================
+export const getNivelCliente = async (req, res) => {
+  try {
+    const { clienteId, empresaId } = req.params;
+
+    const ventasPOS = await pool.query(
+      `SELECT COALESCE(SUM(total), 0) AS total FROM ventas
+       WHERE cliente_id=$1 AND empresa_id=$2
+       AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', NOW())`,
+      [clienteId, empresaId]
+    );
+
+    const ventasOnline = await pool.query(
+      `SELECT COALESCE(SUM(total), 0) AS total FROM pedidos_online
+       WHERE cliente_id=$1 AND empresa_id=$2
+       AND estado NOT IN ('cancelado', 'pendiente')
+       AND DATE_TRUNC('month', fecha_pedido) = DATE_TRUNC('month', NOW())`,
+      [clienteId, empresaId]
+    );
+
+    const totalMes =
+      parseFloat(ventasPOS.rows[0].total) +
+      parseFloat(ventasOnline.rows[0].total);
+
+    const niveles = await pool.query(
+      `SELECT * FROM niveles_lealtad
+       WHERE empresa_id=$1 AND activo=true AND monto_minimo <= $2
+       ORDER BY monto_minimo DESC LIMIT 1`,
+      [empresaId, totalMes]
+    );
+
+    const nivelActual = niveles.rows[0] || null;
+
+    res.json({
+      total_mes:    totalMes,
+      nivel_actual: nivelActual,
+      descuento:    nivelActual ? nivelActual.descuento_porcentaje : 0,
+    });
+
+  } catch (error) {
+    console.error("Error getNivelCliente:", error);
+    res.status(500).json({ error: "Error al calcular nivel del cliente" });
   }
 };
