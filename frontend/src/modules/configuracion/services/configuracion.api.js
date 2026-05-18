@@ -50,3 +50,34 @@ export async function uploadLogo(file) {
   if (!res.ok) throw new Error("Error al subir el logo");
   return res.json();
 }
+
+export async function getLayout() {
+  const res = await fetch(`${BASE_URL}/api/configuracion/layout`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!res.ok) throw new Error("Error al obtener layout");
+  return res.json();
+}
+
+export async function updateLayout(layout) {
+  const res = await fetch(`${BASE_URL}/api/configuracion/layout`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+    body: JSON.stringify({ layout }),
+  });
+  if (!res.ok) throw new Error("Error al guardar layout");
+  return res.json();
+}
+
+export async function uploadBanner(file) {
+  const formData = new FormData();
+  formData.append("banner", file);
+
+  const res = await fetch(`${BASE_URL}/api/configuracion/banner`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Error al subir el banner");
+  return res.json();
+}

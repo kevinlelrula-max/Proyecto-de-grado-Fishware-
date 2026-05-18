@@ -11,11 +11,15 @@ export const login = async (req, res) => {
     }
 
     // ✅ SELECT explícito — nunca mandar la contraseña hasheada al frontend
-    const result = await pool.query(
-      `SELECT id, nombre, apellido, usuario, empresa_id, rol_id, contrasena
-       FROM persona WHERE usuario = $1`,
-      [usuario]
-    );
+    // ✅ Cambiar el SELECT para incluir codigo_referido de la empresa
+   const result = await pool.query(
+    `SELECT p.id, p.nombre, p.apellido, p.usuario, p.empresa_id, p.rol_id, p.contrasena,
+          e.codigo_referido
+     FROM persona p
+     LEFT JOIN empresas e ON e.id = p.empresa_id
+     WHERE p.usuario = $1`,
+     [usuario]
+  );
 
     // ✅ Mensaje genérico — no revelar si el usuario existe o no
     if (result.rows.length === 0) {
@@ -45,7 +49,9 @@ export const login = async (req, res) => {
       token,
       usuario: user.usuario,
       empresa_id: user.empresa_id,
-      rol_id: user.rol_id
+      rol_id: user.rol_id,
+      codigo_referido: user.codigo_referido || null, // ✅ nuevo
+
     });
 
   } catch (error) {

@@ -45,7 +45,7 @@ function puedeEditar(rolUsuario, rolId) {
   return false;
 }
 
-export default function GestionRoles() {
+export default function Gestionroles() {
   const token      = localStorage.getItem("token");
   const rolUsuario = Number(JSON.parse(atob(token.split(".")[1]))?.rol_id);
 

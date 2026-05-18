@@ -5,6 +5,10 @@ import {
   updateMetodosPago,
   subirLogo,
   uploadLogo,
+  subirBanner,
+  uploadBanner,
+  getLayout,
+  updateLayout,
 } from "../controllers/configuracion.controller.js";
 import { verificarToken } from "../middlewares/auth.middleware.js";
 
@@ -20,6 +24,15 @@ router.put("/empresa",      verificarToken, updateDatosEmpresa);
 router.put("/metodos",      verificarToken, updateMetodosPago);
 
 // POST /api/configuracion/logo     → sube o reemplaza el logo
-router.post("/logo",        verificarToken, uploadLogo.single("logo"), subirLogo);
+router.post("/logo",        verificarToken, uploadLogo.single("logo"),     subirLogo);
+
+// POST /api/configuracion/banner   → sube o reemplaza el banner
+router.post("/banner",      verificarToken, uploadBanner.single("banner"), subirBanner);
+
+// GET  /api/configuracion/layout   → obtiene layout de secciones
+router.get("/layout",       verificarToken, getLayout);
+
+// PUT  /api/configuracion/layout   → guarda layout de secciones
+router.put("/layout",       verificarToken, updateLayout);
 
 export default router;

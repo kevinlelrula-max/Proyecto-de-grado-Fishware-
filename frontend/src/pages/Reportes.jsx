@@ -1,297 +1,647 @@
-import { useEffect, useState } from "react";
-import { getReporteProductos } from "../services/api";
-
+import { useEffect, useState, useCallback } from "react";
+import { getReporteEmpresa, getReporteRentabilidad, getReporteComparativa } from "../services/api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, PieChart, Pie, Cell, Legend
+  CartesianGrid, LineChart, Line, PieChart, Pie, Cell,
 } from "recharts";
 
-const COLORS = ["#2563eb", "#7c3aed", "#f59e0b", "#ef4444", "#0e7490", "#be185d"];
+// ── Paleta ────────────────────────────────────────────────────────────────────
+const C = {
+  verde:   "#00C9A7",
+  azul:    "#3B82F6",
+  violeta: "#8B5CF6",
+  naranja: "#F59E0B",
+  rojo:    "#EF4444",
+  cielo:   "#0EA5E9",
+  rosa:    "#EC4899",
+  lima:    "#84CC16",
+};
+const PALETTE = Object.values(C);
 
-const Reportes = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = (n) =>
+  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n ?? 0);
+
+const fmtShort = (n) => {
+  n = parseFloat(n) || 0;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${Math.round(n)}`;
+};
+
+const fmtDia = (str) => {
+  if (!str) return "";
+  const d = new Date(str + "T00:00:00");
+  return d.toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+};
+
+const pctColor = (v) => v > 0 ? C.verde : v < 0 ? C.rojo : "#94a3b8";
+const pctArrow = (v) => v > 0 ? "↑" : v < 0 ? "↓" : "—";
+
+// ── Tooltip ────────────────────────────────────────────────────────────────────
+const TooltipDark = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#0f172a", borderRadius: 8, padding: "8px 12px" }}>
+      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 3 }}>{fmtDia(label) || label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ fontSize: 13, fontWeight: 700, color: p.color || "#fff", margin: 0 }}>
+          {fmtShort(p.value)}
+          {payload.length > 1 && (
+            <span style={{ fontSize: 10, fontWeight: 400, marginLeft: 5, color: "rgba(255,255,255,0.45)" }}>
+              {p.name}
+            </span>
+          )}
+        </p>
+      ))}
+    </div>
+  );
+};
+
+// ── Componentes reutilizables ──────────────────────────────────────────────────
+function Spinner() {
+  return (
+    <>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ padding: 40, display: "flex", alignItems: "center", gap: 10, color: "#64748b", fontSize: 14 }}>
+        <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid #e2e8f0", borderTopColor: C.verde, animation: "spin 0.8s linear infinite" }} />
+        Cargando...
+      </div>
+    </>
+  );
+}
+
+function Empty({ msg = "Sin datos en este período" }) {
+  return (
+    <div style={{ padding: "32px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+      <div style={{ fontSize: 28, marginBottom: 6 }}>📭</div>
+      {msg}
+    </div>
+  );
+}
+
+function KpiCard({ label, value, sub, color, icon, delta }) {
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 5 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+          {label}
+        </span>
+        <span style={{ fontSize: 17, width: 32, height: 32, borderRadius: 8, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {icon}
+        </span>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 12, color: "#94a3b8" }}>{sub}</span>
+        {delta != null && (
+          <span style={{ fontSize: 12, fontWeight: 700, color: pctColor(delta) }}>
+            {pctArrow(delta)} {Math.abs(delta)}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Selector de período (compartido) ──────────────────────────────────────────
+const PERIODOS = [
+  { key: "hoy",    label: "Hoy" },
+  { key: "semana", label: "7 días" },
+  { key: "mes",    label: "Este mes" },
+  { key: "año",    label: "Este año" },
+];
+
+function SelectorPeriodo({ value, onChange }) {
+  return (
+    <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 2 }}>
+      {PERIODOS.map(p => (
+        <button key={p.key} onClick={() => onChange(p.key)} style={{
+          padding: "6px 14px", borderRadius: 8, border: "none",
+          fontSize: 12, fontWeight: 600, cursor: "pointer",
+          background: value === p.key ? "#fff" : "transparent",
+          color:      value === p.key ? "#0f172a" : "#94a3b8",
+          boxShadow:  value === p.key ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+          transition: "all 0.15s",
+        }}>
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 1 — RESUMEN
+// ══════════════════════════════════════════════════════════════════════════════
+function TabResumen({ periodo }) {
+  const token = localStorage.getItem("token");
+  const [data, setData]     = useState(null);
+  const [loading, setLoad]  = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      const res = await getReporteProductos(token);
-      const dataFix = res.map(item => ({
-        ...item,
-        total_vendido: Number(item.total_vendido),
-      }));
-      setData(dataFix);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+    setLoad(true);
+    getReporteEmpresa(token, periodo).then(d => { setData(d); setLoad(false); });
+  }, [periodo]);
 
-  if (loading) {
-    return (
-      <div style={{ padding: "24px", color: "#64748b", fontSize: "14px" }}>
-        Cargando reportes...
-      </div>
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <div style={s.page}>
-        <div style={s.empty}>
-          <span style={{ fontSize: "40px", display: "block", marginBottom: "12px" }}></span>
-          <p style={{ fontSize: "15px", color: "#64748b" }}>No hay datos de ventas disponibles</p>
-        </div>
-      </div>
-    );
-  }
-
-  const totalVendido = data.reduce((acc, p) => acc + p.total_vendido, 0);
-  const topProducto = data.reduce((a, b) => a.total_vendido > b.total_vendido ? a : b);
-  const totalProductos = data.length;
-
-  // Tooltip personalizado para BarChart
-  const CustomTooltipBar = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={s.tooltip}>
-          <p style={s.tooltipLabel}>{label}</p>
-          <p style={s.tooltipValue}>{payload[0].value} unidades</p>
-        </div>
-      );
-    }
-    return null;
+  const exportar = () => {
+    if (!data) return;
+    const rows = [
+      ["Reporte Resumen", periodo],
+      ["Ingresos", data.kpis.ingresos],
+      ["Ventas", data.kpis.total_ventas],
+      ["Ticket promedio", data.kpis.ticket_promedio],
+      ["Clientes activos", data.kpis.clientes_activos],
+      [],
+      ["Top productos", "Ingresos", "Unidades"],
+      ...data.topProductos.map(p => [p.nombre, p.ingresos, p.unidades]),
+      [],
+      ["Top clientes", "Total", "Compras"],
+      ...data.topClientes.map(c => [c.nombre, c.total, c.compras]),
+    ];
+    const csv  = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement("a"), { href: url, download: `resumen_${periodo}_${new Date().toISOString().slice(0,10)}.csv` });
+    a.click(); URL.revokeObjectURL(url);
   };
 
-  // Tooltip personalizado para PieChart
-  const CustomTooltipPie = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const pct = ((payload[0].value / totalVendido) * 100).toFixed(1);
-      return (
-        <div style={s.tooltip}>
-          <p style={s.tooltipLabel}>{payload[0].name}</p>
-          <p style={s.tooltipValue}>{payload[0].value} und · {pct}%</p>
-        </div>
-      );
-    }
-    return null;
-  };
+  if (loading) return <Spinner />;
+  if (!data)   return <Empty msg="No se pudo cargar el resumen." />;
+
+  const { kpis, ventasPorDia, topProductos, topClientes, posVsOnline } = data;
+  const maxIngreso   = Math.max(...topProductos.map(p => parseFloat(p.ingresos)), 1);
+  const totalCanales = parseFloat(posVsOnline.pos) + parseFloat(posVsOnline.online);
+  const pieData      = [
+    { name: "POS",    value: parseFloat(posVsOnline.pos) },
+    { name: "Online", value: parseFloat(posVsOnline.online) },
+  ].filter(d => d.value > 0);
 
   return (
-    <div style={s.page}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* HEADER */}
-      <div style={s.header}>
-        <div style={s.headerLeft}>
-          <span style={{ fontSize: "22px" }}>📊</span>
-          <h2 style={s.headerTitle}>Reportes de Ventas</h2>
-        </div>
+      {/* Botones exportar */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button onClick={exportar} style={sBtn}>📥 CSV</button>
+        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
       </div>
 
-      {/* STAT CARDS */}
-      <div style={s.statsRow}>
-        <div style={s.statCard}>
-          <span style={s.statLabel}>Total unidades vendidas</span>
-          <span style={{ ...s.statValue, color: "#2563eb" }}>{totalVendido}</span>
-        </div>
-        <div style={s.statCard}>
-          <span style={s.statLabel}>Productos con ventas</span>
-          <span style={s.statValue}>{totalProductos}</span>
-        </div>
-        <div style={s.statCard}>
-          <span style={s.statLabel}>Producto estrella</span>
-          <span style={{ ...s.statValue, fontSize: "16px", color: "#0F6E56" }}>
-            {topProducto.nombre}
-          </span>
-        </div>
+      {/* KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+        <KpiCard label="Ingresos totales"  value={fmt(kpis.ingresos)}         sub="Total del período"           color={C.verde}   icon="💰" />
+        <KpiCard label="Ticket promedio"   value={fmt(kpis.ticket_promedio)}   sub="Por transacción"             color={C.azul}    icon="🧾" />
+        <KpiCard label="Total ventas"      value={kpis.total_ventas}           sub="POS + online"                color={C.violeta} icon="📦" />
+        <KpiCard label="Clientes activos"  value={kpis.clientes_activos}       sub="Compraron en este período"   color={C.naranja} icon="👥" />
       </div>
 
-      {/* GRÁFICAS — grid 2 columnas */}
-      <div style={s.chartsGrid}>
-
-        {/* BAR CHART */}
-        <div style={s.chartCard}>
-          <div style={s.chartHeader}>
-            <h3 style={s.chartTitle}>Productos más vendidos</h3>
-            <span style={s.chartSubtitle}>Unidades totales por producto</span>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
+      {/* Línea de ingresos */}
+      <div style={sCard}>
+        <div style={sCardHdr}><h3 style={sCardTitle}>Tendencia de ingresos</h3><span style={sCardSub}>POS + Online por día</span></div>
+        {ventasPorDia.length === 0 ? <Empty /> : (
+          <ResponsiveContainer width="100%" height={210}>
+            <LineChart data={ventasPorDia} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={C.verde} /><stop offset="100%" stopColor={C.azul} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis
-                dataKey="nombre"
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
-                angle={-35}
-                textAnchor="end"
-                interval={0}
-              />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} />
-              <Tooltip content={<CustomTooltipBar />} />
-              <Bar dataKey="total_vendido" radius={[8, 8, 0, 0]}>
-                {data.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
+              <XAxis dataKey="dia" tickFormatter={fmtDia} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={fmtShort} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={52} />
+              <Tooltip content={<TooltipDark />} />
+              <Line type="monotone" dataKey="total" stroke="url(#gLine)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: C.verde }} />
+            </LineChart>
           </ResponsiveContainer>
-        </div>
-
-        {/* PIE CHART */}
-        <div style={s.chartCard}>
-          <div style={s.chartHeader}>
-            <h3 style={s.chartTitle}>Distribución de ventas</h3>
-            <span style={s.chartSubtitle}>Participación por producto</span>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="total_vendido"
-                nameKey="nombre"
-                cx="50%"
-                cy="45%"
-                outerRadius={100}
-                innerRadius={50}
-              >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltipPie />} />
-              <Legend
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
+        )}
       </div>
 
-      {/* TOP PRODUCTOS — tabla */}
-      <div style={s.tableCard}>
-        <div style={s.chartHeader}>
-          <h3 style={s.chartTitle}>Ranking de productos</h3>
-          <span style={s.chartSubtitle}>Ordenado por unidades vendidas</span>
-        </div>
-        <table style={s.table}>
-          <thead>
-            <tr>
-              <th style={s.th}>#</th>
-              <th style={s.th}>Producto</th>
-              <th style={s.th}>Unidades vendidas</th>
-              <th style={s.th}>Participación</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...data]
-              .sort((a, b) => b.total_vendido - a.total_vendido)
-              .map((p, i) => {
-                const pct = ((p.total_vendido / totalVendido) * 100).toFixed(1);
+      {/* Top productos + Canal */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+        <div style={sCard}>
+          <div style={sCardHdr}><h3 style={sCardTitle}>Top productos</h3><span style={sCardSub}>Por ingresos generados</span></div>
+          {topProductos.length === 0 ? <Empty /> : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {topProductos.map((p, i) => {
+                const pct = (parseFloat(p.ingresos) / maxIngreso * 100);
                 return (
-                  <tr key={i} style={s.row}>
-                    <td style={s.tdRank}>
-                      <span style={{
-                        ...s.rankBadge,
-                        backgroundColor: i === 0 ? "#fef9c3" : i === 1 ? "#f1f5f9" : "#f8fafc",
-                        color: i === 0 ? "#854d0e" : "#64748b",
-                      }}>
-                        {i + 1}
-                      </span>
-                    </td>
-                    <td style={s.td}>
-                      <div style={s.productRow}>
-                        <div style={{ ...s.colorDot, backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span style={s.productName}>{p.nombre}</span>
+                  <div key={i}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: PALETTE[i % PALETTE.length], flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, fontWeight: 500, color: "#0f172a" }}>{p.nombre}</span>
                       </div>
-                    </td>
-                    <td style={s.td}>
-                      <span style={s.units}>{p.total_vendido}</span>
-                    </td>
-                    <td style={s.td}>
-                      <div style={s.barWrap}>
-                        <div style={{ ...s.barFill, width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span style={s.pctLabel}>{pct}%</span>
+                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{parseFloat(p.unidades).toFixed(1)} und</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{fmtShort(p.ingresos)}</span>
+                      </div>
+                    </div>
+                    <div style={{ height: 5, borderRadius: 999, background: "#f1f5f9" }}>
+                      <div style={{ height: "100%", borderRadius: 999, width: `${pct}%`, background: PALETTE[i % PALETTE.length], transition: "width 0.4s" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div style={sCard}>
+          <div style={sCardHdr}><h3 style={sCardTitle}>Canal de venta</h3><span style={sCardSub}>POS vs Tienda online</span></div>
+          {pieData.length === 0 ? <Empty /> : (
+            <>
+              <ResponsiveContainer width="100%" height={150}>
+                <PieChart>
+                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} innerRadius={38}>
+                    {pieData.map((_, i) => <Cell key={i} fill={[C.azul, C.verde][i]} />)}
+                  </Pie>
+                  <Tooltip formatter={(v) => fmtShort(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                {pieData.map((d, i) => {
+                  const pct = totalCanales > 0 ? ((d.value / totalCanales) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 9, height: 9, borderRadius: 2, background: [C.azul, C.verde][i] }} />
+                        <span style={{ fontSize: 13, color: "#475569" }}>{d.name}</span>
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{fmtShort(d.value)} <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>{pct}%</span></span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Top clientes */}
+      <div style={sCard}>
+        <div style={sCardHdr}><h3 style={sCardTitle}>Mejores clientes</h3><span style={sCardSub}>Por ingresos generados</span></div>
+        {topClientes.length === 0 ? <Empty msg="Sin datos de clientes" /> : (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>{["#","Cliente","Compras","Total","Participación"].map(h => <th key={h} style={sTh}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {topClientes.map((c, i) => {
+                const tot = topClientes.reduce((a, x) => a + parseFloat(x.total), 0);
+                const pct = tot > 0 ? ((parseFloat(c.total) / tot) * 100).toFixed(1) : 0;
+                return (
+                  <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={sTd}><span style={{ display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,fontSize:12,fontWeight:700,background:i===0?"#fef9c3":"#f8fafc",color:i===0?"#854d0e":"#64748b" }}>{i+1}</span></td>
+                    <td style={{ ...sTd, fontWeight: 500, color: "#0f172a" }}>{c.nombre}</td>
+                    <td style={sTd}>{c.compras} compras</td>
+                    <td style={{ ...sTd, fontWeight: 700 }}>{fmt(c.total)}</td>
+                    <td style={sTd}>
+                      <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+                        <div style={{ flex:1,height:5,borderRadius:999,background:"#f1f5f9",minWidth:60 }}>
+                          <div style={{ height:"100%",borderRadius:999,width:`${pct}%`,background:C.azul }} />
+                        </div>
+                        <span style={{ fontSize:12,color:"#64748b",width:34,textAlign:"right" }}>{pct}%</span>
                       </div>
                     </td>
                   </tr>
                 );
               })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 2 — RENTABILIDAD
+// ══════════════════════════════════════════════════════════════════════════════
+function TabRentabilidad({ periodo }) {
+  const token = localStorage.getItem("token");
+  const [data, setData]    = useState(null);
+  const [loading, setLoad] = useState(true);
+  const [orden, setOrden]  = useState("ganancia"); // ganancia | margen | ingresos
+
+  useEffect(() => {
+    setLoad(true);
+    getReporteRentabilidad(token, periodo).then(d => { setData(d); setLoad(false); });
+  }, [periodo]);
+
+  if (loading) return <Spinner />;
+  if (!data || data.productos.length === 0) return <Empty msg="Sin datos de ventas para calcular rentabilidad." />;
+
+  const { productos, totales } = data;
+
+  const sorted = [...productos].sort((a, b) => parseFloat(b[orden === "ganancia" ? "ganancia_bruta" : orden === "margen" ? "margen_pct" : "ingresos_brutos"]) - parseFloat(a[orden === "ganancia" ? "ganancia_bruta" : orden === "margen" ? "margen_pct" : "ingresos_brutos"]));
+  const maxGanancia = Math.max(...sorted.map(p => parseFloat(p.ganancia_bruta)), 1);
+  const sinCosto    = productos.filter(p => !p.precio_costo || parseFloat(p.precio_costo) === 0).length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Alerta si hay productos sin costo cargado */}
+      {sinCosto > 0 && (
+        <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: "10px 16px", fontSize: 13, color: "#92400e", display: "flex", alignItems: "center", gap: 8 }}>
+          ⚠️ <span><strong>{sinCosto} producto{sinCosto > 1 ? "s" : ""}</strong> no tiene precio de costo cargado — el margen puede estar inflado. Cárgalo desde la sección de Productos.</span>
+        </div>
+      )}
+
+      {/* KPIs globales */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+        <KpiCard label="Ingresos brutos"   value={fmtShort(totales.ingresos)}  sub="Total vendido"             color={C.azul}    icon="💵" />
+        <KpiCard label="Costo total"        value={fmtShort(totales.costo)}     sub="Costo de lo vendido"       color={C.rojo}    icon="🏭" />
+        <KpiCard label="Ganancia bruta"     value={fmtShort(totales.ganancia)}  sub="Ingresos − Costos"         color={C.verde}   icon="💰" />
+        <KpiCard label="Margen promedio"    value={`${totales.margen_pct}%`}    sub="Sobre ingresos totales"    color={C.violeta} icon="📊" />
+      </div>
+
+      {/* Barra global ingresos vs costo vs ganancia */}
+      <div style={sCard}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div><h3 style={sCardTitle}>Rentabilidad por producto</h3><span style={sCardSub}>Ganancia bruta = Ingresos − Costo de lo vendido</span></div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[["ganancia","Ganancia"],["margen","Margen %"],["ingresos","Ingresos"]].map(([k,l]) => (
+              <button key={k} onClick={() => setOrden(k)} style={{
+                padding: "5px 12px", borderRadius: 7, border: "1px solid",
+                fontSize: 12, fontWeight: 600, cursor: "pointer",
+                borderColor: orden === k ? C.azul : "#e2e8f0",
+                background:  orden === k ? `${C.azul}12` : "#fff",
+                color:       orden === k ? C.azul : "#94a3b8",
+              }}>{l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {sorted.map((p, i) => {
+            const ingresos  = parseFloat(p.ingresos_brutos);
+            const ganancia  = parseFloat(p.ganancia_bruta);
+            const margen    = parseFloat(p.margen_pct);
+            const barPct    = (ganancia / maxGanancia * 100);
+            const margenColor = margen >= 30 ? C.verde : margen >= 15 ? C.naranja : C.rojo;
+
+            return (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 80px 80px 70px", gap: 12, alignItems: "center" }}>
+                {/* Nombre */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: PALETTE[i % PALETTE.length], flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.nombre}>{p.nombre}</span>
+                </div>
+                {/* Barra doble: ingreso gris, ganancia coloreada */}
+                <div style={{ position: "relative", height: 10, borderRadius: 999, background: "#f1f5f9" }}>
+                  <div style={{ position:"absolute", top:0, left:0, height:"100%", borderRadius:999, width:`${Math.min(100, ingresos / maxGanancia * 100)}%`, background:"#e2e8f0" }} />
+                  <div style={{ position:"absolute", top:0, left:0, height:"100%", borderRadius:999, width:`${Math.max(0, barPct)}%`, background: ganancia >= 0 ? PALETTE[i % PALETTE.length] : C.rojo, transition:"width 0.4s" }} />
+                </div>
+                {/* Ingresos */}
+                <span style={{ fontSize: 12, color: "#64748b", textAlign: "right" }}>{fmtShort(ingresos)}</span>
+                {/* Ganancia */}
+                <span style={{ fontSize: 13, fontWeight: 700, color: ganancia >= 0 ? "#0f172a" : C.rojo, textAlign: "right" }}>{fmtShort(ganancia)}</span>
+                {/* Margen % */}
+                <span style={{ fontSize: 12, fontWeight: 700, color: margenColor, textAlign: "right", background: `${margenColor}12`, padding: "2px 7px", borderRadius: 6 }}>
+                  {margen}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Leyenda */}
+        <div style={{ display: "flex", gap: 16, marginTop: 16, paddingTop: 12, borderTop: "1px solid #f1f5f9", fontSize: 11, color: "#94a3b8" }}>
+          <span><span style={{ color: "#e2e8f0", fontWeight:700 }}>■</span> Ingresos brutos</span>
+          <span><span style={{ color: C.azul, fontWeight:700 }}>■</span> Ganancia bruta</span>
+          <span style={{ color: C.verde }}>≥30% buen margen</span>
+          <span style={{ color: C.naranja }}>15–30% margen medio</span>
+          <span style={{ color: C.rojo }}>&lt;15% margen bajo</span>
+        </div>
+      </div>
+
+      {/* Tabla detalle */}
+      <div style={sCard}>
+        <div style={sCardHdr}><h3 style={sCardTitle}>Detalle completo</h3><span style={sCardSub}>Todos los productos con actividad en el período</span></div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>{["Producto","Und. vendidas","Precio venta","Precio costo","Ingresos","Costo total","Ganancia","Margen"].map(h => <th key={h} style={sTh}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {sorted.map((p, i) => {
+              const margen = parseFloat(p.margen_pct);
+              const mc = margen >= 30 ? C.verde : margen >= 15 ? C.naranja : C.rojo;
+              return (
+                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={{ ...sTd, fontWeight: 500, color: "#0f172a" }}>{p.nombre}</td>
+                  <td style={sTd}>{parseFloat(p.unidades_vendidas).toFixed(1)}</td>
+                  <td style={sTd}>{p.precio ? fmt(p.precio) : "—"}</td>
+                  <td style={sTd}>{p.precio_costo ? fmt(p.precio_costo) : <span style={{ color: C.naranja }}>Sin costo</span>}</td>
+                  <td style={{ ...sTd, fontWeight: 600 }}>{fmt(p.ingresos_brutos)}</td>
+                  <td style={{ ...sTd, color: "#64748b" }}>{fmt(p.costo_total)}</td>
+                  <td style={{ ...sTd, fontWeight: 700, color: parseFloat(p.ganancia_bruta) >= 0 ? "#0f172a" : C.rojo }}>{fmt(p.ganancia_bruta)}</td>
+                  <td style={sTd}><span style={{ fontSize: 12, fontWeight: 700, color: mc, background: `${mc}12`, padding: "2px 8px", borderRadius: 6 }}>{margen}%</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 3 — COMPARATIVA
+// ══════════════════════════════════════════════════════════════════════════════
+function TabComparativa({ periodo }) {
+  const token = localStorage.getItem("token");
+  const [data, setData]    = useState(null);
+  const [loading, setLoad] = useState(true);
+
+  useEffect(() => {
+    setLoad(true);
+    getReporteComparativa(token, periodo).then(d => { setData(d); setLoad(false); });
+  }, [periodo]);
+
+  if (loading) return <Spinner />;
+  if (!data)   return <Empty msg="No se pudo cargar la comparativa." />;
+
+  const { actual, anterior, cambios, label, labelAnterior } = data;
+
+  // Unir días para gráfica superpuesta
+  const todasFechas = [...new Set([
+    ...actual.ventasPorDia.map(d => d.dia),
+    ...anterior.ventasPorDia.map(d => d.dia),
+  ])].sort();
+
+  // Para la gráfica usamos índice de día (Día 1, Día 2…) alineando por posición
+  const maxLen  = Math.max(actual.ventasPorDia.length, anterior.ventasPorDia.length);
+  const grafica = Array.from({ length: maxLen }, (_, i) => ({
+    dia:      `Día ${i + 1}`,
+    actual:   actual.ventasPorDia[i]   ? parseFloat(actual.ventasPorDia[i].total)   : null,
+    anterior: anterior.ventasPorDia[i] ? parseFloat(anterior.ventasPorDia[i].total) : null,
+  }));
+
+  const kpisMeta = [
+    { key: "ingresos",         label: "Ingresos",        fmt: fmt,    icon: "💰" },
+    { key: "total_ventas",     label: "Ventas",           fmt: v => v, icon: "📦" },
+    { key: "ticket_promedio",  label: "Ticket promedio",  fmt: fmt,    icon: "🧾" },
+    { key: "clientes_activos", label: "Clientes activos", fmt: v => v, icon: "👥" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* KPIs comparativos */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+        {kpisMeta.map(m => {
+          const delta = cambios[m.key];
+          return (
+            <div key={m.key} style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "16px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>{m.label}</span>
+                <span style={{ fontSize: 16 }}>{m.icon}</span>
+              </div>
+              {/* Período actual */}
+              <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 6 }}>
+                {m.fmt(actual[m.key])}
+              </div>
+              {/* Delta */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <span style={{
+                  fontSize: 13, fontWeight: 700, color: pctColor(delta),
+                  background: `${pctColor(delta)}15`, padding: "2px 8px", borderRadius: 6,
+                }}>
+                  {pctArrow(delta)} {Math.abs(delta)}%
+                </span>
+                <span style={{ fontSize: 11, color: "#94a3b8" }}>vs {labelAnterior}</span>
+              </div>
+              {/* Período anterior */}
+              <div style={{ fontSize: 12, color: "#94a3b8", borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
+                {labelAnterior}: <strong style={{ color: "#64748b" }}>{m.fmt(anterior[m.key])}</strong>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Gráfica superpuesta */}
+      <div style={sCard}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div>
+            <h3 style={sCardTitle}>Ingresos día a día</h3>
+            <span style={sCardSub}>Comparación alineada por posición en el período</span>
+          </div>
+          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#64748b", alignItems: "center" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 3, borderRadius: 2, background: C.azul, display: "inline-block" }} />{label}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 3, borderRadius: 2, background: "#cbd5e1", display: "inline-block", borderBottom: "2px dashed #cbd5e1" }} />{labelAnterior}</span>
+          </div>
+        </div>
+        {grafica.length === 0 ? <Empty /> : (
+          <ResponsiveContainer width="100%" height={230}>
+            <LineChart data={grafica} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={fmtShort} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={52} />
+              <Tooltip content={<TooltipDark />} />
+              <Line type="monotone" dataKey="actual"   name={label}         stroke={C.azul}   strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} connectNulls />
+              <Line type="monotone" dataKey="anterior" name={labelAnterior} stroke="#cbd5e1"  strokeWidth={2}   dot={false} strokeDasharray="5 3" activeDot={{ r: 4 }} connectNulls />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Tabla resumen lado a lado */}
+      <div style={sCard}>
+        <div style={sCardHdr}><h3 style={sCardTitle}>Resumen comparativo</h3><span style={sCardSub}>{label} vs {labelAnterior}</span></div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={sTh}>Métrica</th>
+              <th style={{ ...sTh, color: C.azul }}>{label}</th>
+              <th style={{ ...sTh, color: "#94a3b8" }}>{labelAnterior}</th>
+              <th style={sTh}>Variación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {kpisMeta.map(m => {
+              const delta = cambios[m.key];
+              return (
+                <tr key={m.key} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={{ ...sTd, fontWeight: 500 }}>{m.icon} {m.label}</td>
+                  <td style={{ ...sTd, fontWeight: 700, color: "#0f172a" }}>{m.fmt(actual[m.key])}</td>
+                  <td style={{ ...sTd, color: "#94a3b8" }}>{m.fmt(anterior[m.key])}</td>
+                  <td style={sTd}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: pctColor(delta), background: `${pctColor(delta)}15`, padding: "3px 10px", borderRadius: 7 }}>
+                      {pctArrow(delta)} {Math.abs(delta)}%
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
     </div>
   );
-};
+}
 
-export default Reportes;
+// ══════════════════════════════════════════════════════════════════════════════
+// COMPONENTE RAÍZ
+// ══════════════════════════════════════════════════════════════════════════════
+const TABS = [
+  { key: "resumen",      label: "Resumen",       icon: "📊" },
+  { key: "rentabilidad", label: "Rentabilidad",  icon: "💰" },
+  { key: "comparativa",  label: "Comparativa",   icon: "📈" },
+];
 
-const s = {
-  page: { padding: "24px" },
+export default function Reportes() {
+  const [tab,     setTab]     = useState("resumen");
+  const [periodo, setPeriodo] = useState("mes");
 
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
-  headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
-  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  return (
+    <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
 
-  statsRow: { display: "flex", gap: "12px", marginBottom: "20px" },
-  statCard: {
-    flex: 1, backgroundColor: "#f8fafc", borderRadius: "12px",
-    padding: "12px 16px", display: "flex", flexDirection: "column", gap: "4px",
-    border: "1px solid #e2e8f0",
-  },
-  statLabel: { fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" },
-  statValue: { fontSize: "22px", fontWeight: "700", color: "#0f172a" },
+      {/* HEADER */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", margin: 0 }}>Reportes</h2>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: "2px 0 0" }}>
+            Análisis y toma de decisiones
+          </p>
+        </div>
+        <SelectorPeriodo value={periodo} onChange={setPeriodo} />
+      </div>
 
-  chartsGrid: {
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "16px", marginBottom: "16px",
-  },
-  chartCard: {
-    backgroundColor: "white", borderRadius: "14px",
-    border: "1px solid #e2e8f0", padding: "20px 24px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-  },
-  tableCard: {
-    backgroundColor: "white", borderRadius: "14px",
-    border: "1px solid #e2e8f0", padding: "20px 24px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-  },
-  chartHeader: { marginBottom: "16px" },
-  chartTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: "0 0 4px" },
-  chartSubtitle: { fontSize: "12px", color: "#94a3b8" },
+      {/* TABS */}
+      <div style={{ display: "flex", gap: 4, borderBottom: "2px solid #f1f5f9", paddingBottom: 0 }}>
+        {TABS.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{
+            display: "flex", alignItems: "center", gap: 7,
+            padding: "10px 20px", border: "none", background: "none",
+            fontSize: 13, fontWeight: 600, cursor: "pointer",
+            color: tab === t.key ? "#0f172a" : "#94a3b8",
+            borderBottom: `2px solid ${tab === t.key ? C.azul : "transparent"}`,
+            marginBottom: -2, transition: "color 0.15s, border-color 0.15s",
+          }}>
+            <span>{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-  // Tooltip
-  tooltip: {
-    backgroundColor: "#0f172a", borderRadius: "8px",
-    padding: "8px 12px", border: "none",
-  },
-  tooltipLabel: { fontSize: "12px", color: "rgba(255,255,255,0.6)", marginBottom: "2px" },
-  tooltipValue: { fontSize: "14px", fontWeight: "700", color: "white" },
+      {/* CONTENIDO DEL TAB ACTIVO */}
+      {tab === "resumen"      && <TabResumen      periodo={periodo} />}
+      {tab === "rentabilidad" && <TabRentabilidad periodo={periodo} />}
+      {tab === "comparativa"  && <TabComparativa  periodo={periodo} />}
 
-  // Tabla ranking
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: {
-    padding: "10px 12px", textAlign: "left",
-    fontSize: "11px", fontWeight: "700", color: "#94a3b8",
-    textTransform: "uppercase", letterSpacing: "0.05em",
-    borderBottom: "1px solid #e2e8f0",
-  },
-  row: { borderBottom: "1px solid #f1f5f9" },
-  tdRank: { padding: "12px 12px", width: "48px" },
-  td: { padding: "12px 12px", fontSize: "14px", color: "#334155" },
-  rankBadge: {
-    display: "inline-flex", alignItems: "center", justifyContent: "center",
-    width: "26px", height: "26px", borderRadius: "6px",
-    fontSize: "12px", fontWeight: "700",
-  },
-  productRow: { display: "flex", alignItems: "center", gap: "10px" },
-  colorDot: { width: "10px", height: "10px", borderRadius: "50%", flexShrink: 0 },
-  productName: { fontWeight: "500", color: "#0f172a" },
-  units: { fontWeight: "700", color: "#0f172a" },
-  barWrap: { display: "flex", alignItems: "center", gap: "8px" },
-  barFill: { height: "6px", borderRadius: "999px", minWidth: "4px", maxWidth: "160px" },
-  pctLabel: { fontSize: "12px", color: "#64748b", whiteSpace: "nowrap" },
+    </div>
+  );
+}
 
-  empty: { textAlign: "center", padding: "60px 20px" },
-};
+// ── Estilos compartidos ────────────────────────────────────────────────────────
+const sCard    = { background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "20px 24px", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" };
+const sCardHdr = { marginBottom: 14 };
+const sCardTitle = { fontSize: 15, fontWeight: 700, color: "#0f172a", margin: "0 0 3px" };
+const sCardSub   = { fontSize: 12, color: "#94a3b8" };
+const sBtn = { padding: "7px 14px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 9, fontSize: 12, fontWeight: 600, color: "#374151", cursor: "pointer" };
+const sTh  = { padding: "8px 12px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "1px solid #e2e8f0" };
+const sTd  = { padding: "11px 12px", fontSize: 13, color: "#334155" };

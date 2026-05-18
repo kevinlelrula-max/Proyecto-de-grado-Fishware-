@@ -29,6 +29,8 @@ const Ventas = () => {
       }
     };
     fetchData();
+    const intervalo = setInterval(fetchData, 30_000); // refresca cada 30s
+    return () => clearInterval(intervalo);
   }, []);
 
   useEffect(() => { setPaginaActual(1); }, [busqueda]);
@@ -119,6 +121,7 @@ const Ventas = () => {
               <th style={s.th}>Fecha</th>
               <th style={s.th}>Método de pago</th>
               <th style={{ ...s.th, textAlign: "right" }}>Total</th>
+              <th style={{ ...s.th, textAlign: "center" }}>Tipo</th>
               <th style={{ ...s.th, textAlign: "center" }}>Estado</th>
             </tr>
           </thead>
@@ -173,16 +176,42 @@ const Ventas = () => {
                     </span>
                   </td>
 
+                  {/* Tipo */}
+                  <td style={{ ...s.td, textAlign: "center" }}>
+                    <span style={{
+                      ...s.tipoBadge,
+                      backgroundColor: v.tipo === "online" ? "#eff6ff" : "#f0fdf4",
+                      color: v.tipo === "online" ? "#1d4ed8" : "#0F6E56",
+                    }}>
+                      {v.tipo === "online" ? "🛍️ Online" : "🖥️ POS"}
+                    </span>
+                  </td>
+
                   {/* Estado */}
                   <td style={{ ...s.td, textAlign: "center" }}>
-                    <span style={s.estadoBadge}>Completada</span>
+                    <span style={{
+                      ...s.estadoBadge,
+                      backgroundColor:
+                        v.estado === "entregado"  ? "#f0fdf4" :
+                        v.estado === "pendiente"  ? "#fef9c3" :
+                        v.estado === "cancelado"  ? "#fef2f2" : "#f0fdf4",
+                      color:
+                        v.estado === "entregado"  ? "#0F6E56" :
+                        v.estado === "pendiente"  ? "#854d0e" :
+                        v.estado === "cancelado"  ? "#b91c1c" : "#0F6E56",
+                    }}>
+                      {v.estado === "entregado"  ? "Entregado"  :
+                       v.estado === "pendiente"  ? "Pendiente"  :
+                       v.estado === "cancelado"  ? "Cancelado"  :
+                       v.estado === "en_proceso" ? "En proceso" : "Completada"}
+                    </span>
                   </td>
 
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5" style={s.emptyCell}>
+                <td colSpan="6" style={s.emptyCell}>
                   <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>💰</span>
                   No hay ventas registradas
                 </td>
@@ -293,6 +322,12 @@ const s = {
 
   // Total
   total: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
+
+  // Tipo
+  tipoBadge: {
+    display: "inline-block", padding: "4px 10px",
+    borderRadius: "999px", fontSize: "11px", fontWeight: "600",
+  },
 
   // Estado
   estadoBadge: {
