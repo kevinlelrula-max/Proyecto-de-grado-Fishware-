@@ -3,6 +3,7 @@ import { usePerfilCliente } from "./hooks/usePerfilCliente";
 import DatosPersonales from "./components/DatosPersonales";
 import CambiarContrasena from "./components/CambiarContrasena";
 import NivelLealtad from "./components/NivelLealtad";
+import SeccionReferido from "../referidos/components/SeccionReferido";
 
 export default function PerfilCliente() {
   const { empresaSlug } = useParams();
@@ -13,6 +14,8 @@ export default function PerfilCliente() {
     catch { return null; }
   })();
   const empresaId = ultimaEmpresa?.id || null;
+
+  const token = localStorage.getItem("cliente_token");
 
   const {
     perfil, loading, error,
@@ -71,6 +74,15 @@ export default function PerfilCliente() {
         </div>
         <div style={s.colRight}>
           <NivelLealtad nivelLealtad={nivelLealtad} />
+          <div style={s.seccionReferido}>
+            <h3 style={s.seccionTitulo}>🤝 Programa de referidos</h3>
+            <SeccionReferido
+              token={token}
+              empresaId={empresaId}
+              empresaSlug={empresaSlug}
+              colorMarca={ultimaEmpresa?.color_primario || "#00C9A7"}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -115,6 +127,18 @@ const s = {
   },
   colLeft: { display: "flex", flexDirection: "column", gap: "20px" },
   colRight: { display: "flex", flexDirection: "column", gap: "20px" },
+  seccionReferido: {
+    background: "#fff",
+    borderRadius: "16px",
+    border: "1px solid #e2e8f0",
+    padding: "20px",
+  },
+  seccionTitulo: {
+    fontSize: "15px",
+    fontWeight: "700",
+    color: "#0f172a",
+    margin: "0 0 16px",
+  },
   loading: {
     display: "flex", flexDirection: "column",
     alignItems: "center", gap: "12px",
