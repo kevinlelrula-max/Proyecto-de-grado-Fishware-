@@ -5,6 +5,9 @@
     "tailwindcss": "3"
   },
   "dependencies": {
-    "recharts": "^3.8.1"
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.4.0",
+    "recharts": "^3.8.1",
+    "stripe": "^22.1.0"
   }
 }

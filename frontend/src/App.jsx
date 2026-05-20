@@ -20,7 +20,7 @@ import RecuperarContrasena   from "./pages/RecuperarContrasena";
 import ResetearContrasena    from "./pages/ResetearContrasena";
 import TiendaEmpresa from "./pages/TiendaEmpresa";
 import MisPedidos from "./pages/MisPedidos";
-import PerfilCliente from "./modules/perfilCliente/perfilCliente";
+import PerfilCliente from "./modules/perfilCliente/PerfilCliente";
 import TiendaInicio   from "./modules/tienda/TiendaInicio";
 import TiendaCatalogo from "./modules/tienda/TiendaCatalogo";
 import TiendaContacto from "./modules/tienda/TiendaContacto";
