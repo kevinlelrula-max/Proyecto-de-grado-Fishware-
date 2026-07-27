@@ -93,7 +93,7 @@ export default function TiendaEmpresa() {
   const {
     productos, loadingProds, busqueda, setBusqueda,
     carrito, carritoAbierto, setCarritoAbierto,
-    agregarAlCarrito, cambiarKilos, quitarDelCarrito,
+    agregarAlCarrito, cambiarCantidad, quitarDelCarrito,
     vaciarCarrito, totalItems, totalPrecio,
     metodosPago, metodoPagoId, setMetodoPagoId,
     direccion, setDireccion, notas, setNotas,
@@ -451,7 +451,7 @@ export default function TiendaEmpresa() {
             <div style={{ ...s.footerDot, backgroundColor: colorMarca }} />
             <span style={s.footerNombre}>{empresaNombre}</span>
           </div>
-          <span style={s.footerText}>Powered by WareFish</span>
+          <span style={s.footerText}>Powered by Merkai</span>
         </div>
       </footer>
 
@@ -460,7 +460,7 @@ export default function TiendaEmpresa() {
         carrito={carrito}
         carritoAbierto={carritoAbierto}
         setCarritoAbierto={setCarritoAbierto}
-        cambiarKilos={cambiarKilos}
+        cambiarCantidad={cambiarCantidad}
         quitarDelCarrito={quitarDelCarrito}
         vaciarCarrito={vaciarCarrito}
         totalItems={totalItems}

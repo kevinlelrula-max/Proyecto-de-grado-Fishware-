@@ -1,25 +1,23 @@
 import { useState, useEffect } from "react";
 import EmpresaForm from "./components/EmpresaForm";
 import MetodosPago from "./components/MetodosPago";
-import TiendaForm from "./components/TiendaForm";
 import Integraciones from "../../modules/integraciones/Integraciones";
 import { useConfiguracion } from "./hooks/useConfiguracion";
 
 const TABS = [
   { key: "empresa",       label: "Empresa" },
-  { key: "tienda",        label: "Tienda" },
   { key: "pagos",         label: "Métodos de pago" },
-  { key: "integraciones", label: "🚀 Integraciones" }, // ✅ NUEVO
+  { key: "integraciones", label: "🚀 Integraciones" },
 ];
 
 export default function Configuracion() {
   const [tabActiva, setTabActiva] = useState("empresa");
 
   const {
-    empresa, metodos, logoPreview, bannerPreview,
+    empresa, metodos, logoPreview,
     cargando, guardando, error, exito,
     cargarConfiguracion, handleEmpresaChange,
-    toggleMetodo, handleLogoChange, handleBannerChange, guardar,
+    toggleMetodo, handleLogoChange, guardar,
   } = useConfiguracion();
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export default function Configuracion() {
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : exito
                 ? "bg-emerald-500 text-white"
-                : "bg-cyan-500 text-white hover:bg-cyan-600 active:scale-95"
+                : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
             }`}
           >
             {guardando ? "Guardando..." : exito ? "✓ Guardado" : "Guardar cambios"}
@@ -92,15 +90,6 @@ export default function Configuracion() {
           logoPreview={logoPreview}
           onChange={handleEmpresaChange}
           onLogoChange={handleLogoChange}
-        />
-      )}
-
-      {tabActiva === "tienda" && (
-        <TiendaForm
-          empresa={empresa}
-          bannerPreview={bannerPreview}
-          onChange={handleEmpresaChange}
-          onBannerChange={handleBannerChange}
         />
       )}
 

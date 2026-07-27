@@ -115,14 +115,14 @@ export default function RegistroCliente() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={s.logoText}>WareFish · Tienda</span>
+            <span style={s.logoText}>Merkai · Tienda</span>
           </div>
 
           {/* Hero */}
           <div>
             <h2 style={s.leftTitle}>Crea tu cuenta y empieza a comprar</h2>
             <p style={s.leftSubtitle}>
-              Regístrate gratis y accede al catálogo de las mejores pesqueras de la región.
+              Regístrate gratis y accede al catálogo de tus tiendas favoritas en la región.
             </p>
           </div>
 

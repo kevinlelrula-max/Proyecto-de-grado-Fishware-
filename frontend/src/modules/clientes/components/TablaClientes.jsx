@@ -1,16 +1,25 @@
-export default function TablaClientes({ clientes, onEditar, onEliminar }) {
+import { useState } from "react";
+
+export default function TablaClientes({ clientes, onEditar, onEliminar, onVerPerfil, onAgregar }) {
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
   if (clientes.length === 0) {
     return (
       <div style={s.empty}>
         <span style={s.emptyIcon}>👥</span>
-        <p style={s.emptyText}>No se encontraron clientes</p>
+        <p style={s.emptyTitle}>No hay clientes registrados</p>
+        <p style={s.emptyText}>Los clientes que compren en tu tienda o registres desde el POS aparecerán aquí</p>
+        {onAgregar && (
+          <button style={s.emptyBtn} onClick={onAgregar}>+ Registrar primer cliente</button>
+        )}
       </div>
     );
   }
 
   return (
     <div style={s.wrapper}>
-      <table style={s.table}>
+      <div style={{ overflowX: "auto" }}>
+      <table style={{ ...s.table, minWidth: "540px" }}>
         <thead>
           <tr>
             <th style={s.th}>Cliente</th>
@@ -40,18 +49,26 @@ export default function TablaClientes({ clientes, onEditar, onEliminar }) {
               </td>
               <td style={{ ...s.td, textAlign: "center" }}>
                 <div style={s.actions}>
-                  <button style={s.editBtn} onClick={() => onEditar(c)}>
-                    ✏️ Editar
-                  </button>
-                  <button style={s.deleteBtn} onClick={() => onEliminar(c.id)}>
-                    🗑️ Eliminar
-                  </button>
+                  {pendingDeleteId === c.id ? (
+                    <>
+                      <span style={s.confirmText}>¿Eliminar?</span>
+                      <button style={s.btnConfirmYes} onClick={() => { onEliminar(c.id); setPendingDeleteId(null); }}>Sí</button>
+                      <button style={s.btnConfirmNo} onClick={() => setPendingDeleteId(null)}>No</button>
+                    </>
+                  ) : (
+                    <>
+                      <button style={s.perfilBtn} onClick={() => onVerPerfil(c.id)}>👁 Vista 360</button>
+                      <button style={s.editBtn} onClick={() => onEditar(c)}>✏️ Editar</button>
+                      <button style={s.deleteBtn} onClick={() => setPendingDeleteId(c.id)}>🗑️ Eliminar</button>
+                    </>
+                  )}
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -88,6 +105,11 @@ const s = {
   telefono: { fontSize: "13px", color: "#64748b" },
 
   actions: { display: "flex", gap: "6px", justifyContent: "center" },
+  perfilBtn: {
+    padding: "6px 12px", fontSize: "12px", fontWeight: "600",
+    border: "1.5px solid #2563eb", borderRadius: "8px",
+    backgroundColor: "transparent", color: "#2563eb", cursor: "pointer",
+  },
   editBtn: {
     padding: "6px 12px", fontSize: "12px", fontWeight: "600",
     border: "1.5px solid #2563eb", borderRadius: "8px",
@@ -99,7 +121,29 @@ const s = {
     backgroundColor: "transparent", color: "#dc2626", cursor: "pointer",
   },
 
-  empty: { textAlign: "center", padding: "48px 20px", color: "#94a3b8" },
-  emptyIcon: { fontSize: "36px", display: "block", marginBottom: "10px" },
-  emptyText: { fontSize: "14px" },
+  empty: {
+    textAlign: "center", padding: "64px 24px",
+    display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
+  },
+  emptyIcon: { fontSize: "48px", lineHeight: 1 },
+  emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  emptyText: { fontSize: "13px", color: "#94a3b8", maxWidth: "340px", lineHeight: 1.5, margin: 0 },
+  emptyBtn: {
+    marginTop: "6px", padding: "10px 22px",
+    backgroundColor: "#2563eb", color: "white",
+    border: "none", borderRadius: "10px",
+    fontSize: "13px", fontWeight: "600", cursor: "pointer",
+  },
+
+  confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
+  btnConfirmYes: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#64748b",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
+  },
 };

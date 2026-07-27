@@ -236,7 +236,7 @@ const s = {
   btnGuardar: {
     flex: 2,
     padding: "12px",
-    backgroundColor: "#0F6E56",
+    backgroundColor: "#2563eb",
     color: "white",
     border: "none",
     borderRadius: "10px",

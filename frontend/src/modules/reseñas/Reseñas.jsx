@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { getReseñasEmpresa, toggleReseña, eliminarReseña } from "./services/reseñasService";
 import Estrellas from "./components/Estrellas";
+import { SkeletonTable } from "../../components/SkeletonLoader";
 
 export default function Reseñas() {
   const [reseñas,  setReseñas]  = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [filtro,   setFiltro]   = useState("todas"); // todas | visibles | ocultas
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const token = localStorage.getItem("token");
 
   const cargar = useCallback(async () => {
@@ -25,9 +27,9 @@ export default function Reseñas() {
   };
 
   const handleEliminar = async (id) => {
-    if (!confirm("¿Eliminar esta reseña permanentemente?")) return;
     await eliminarReseña(id, token);
     setReseñas(prev => prev.filter(r => r.id !== id));
+    setPendingDeleteId(null);
   };
 
   const filtradas = reseñas.filter(r => {
@@ -41,7 +43,7 @@ export default function Reseñas() {
     ? (reseñas.filter(r => r.activo).reduce((a, r) => a + r.calificacion, 0) / totalActivas).toFixed(1)
     : "—";
 
-  if (loading) return <div style={s.loading}>Cargando reseñas...</div>;
+  if (loading) return <div style={{ padding: 24 }}><SkeletonTable rows={5} /></div>;
 
   return (
     <div style={s.page}>
@@ -140,12 +142,20 @@ export default function Reseñas() {
                 >
                   {r.activo ? "Ocultar" : "Mostrar"}
                 </button>
-                <button
-                  style={{ ...s.accionBtn, color: "#ef4444" }}
-                  onClick={() => handleEliminar(r.id)}
-                >
-                  Eliminar
-                </button>
+                {pendingDeleteId === r.id ? (
+                  <>
+                    <span style={s.confirmText}>¿Eliminar?</span>
+                    <button style={s.btnConfirmYes} onClick={() => handleEliminar(r.id)}>Sí</button>
+                    <button style={s.btnConfirmNo} onClick={() => setPendingDeleteId(null)}>No</button>
+                  </>
+                ) : (
+                  <button
+                    style={{ ...s.accionBtn, color: "#ef4444" }}
+                    onClick={() => setPendingDeleteId(r.id)}
+                  >
+                    Eliminar
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -181,4 +191,7 @@ const s = {
   acciones:   { display: "flex", alignItems: "center", gap: "12px" },
   estadoBadge:{ padding: "3px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "600" },
   accionBtn:  { background: "none", border: "none", fontSize: "12px", fontWeight: "600", cursor: "pointer", padding: "0" },
+  confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
+  btnConfirmYes: { padding: "3px 10px", fontSize: "12px", fontWeight: "700", backgroundColor: "#dc2626", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" },
+  btnConfirmNo:  { padding: "3px 10px", fontSize: "12px", fontWeight: "600", backgroundColor: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: "6px", cursor: "pointer" },
 };

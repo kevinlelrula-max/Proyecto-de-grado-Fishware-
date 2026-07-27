@@ -35,6 +35,44 @@ async function getNivelActual(clienteId, empresaId) {
   return rows[0] || null;
 }
 
+// Retorna el nivel efectivo del cliente:
+// Si tiene herencia activa Y es mejor que el nivel ganado → usa herencia
+async function getNivelEfectivo(clienteId, empresaId) {
+  const nivelGanado = await getNivelActual(clienteId, empresaId);
+
+  // Buscar herencia activa en esta empresa
+  const { rows: [herencia] } = await pool.query(
+    `SELECT r.nivel_heredado_id, r.nivel_heredado_hasta, nl.nombre, nl.monto_minimo
+     FROM referidos r
+     JOIN niveles_lealtad nl ON nl.id = r.nivel_heredado_id
+     WHERE r.referido_id = $1
+       AND r.empresa_id  = $2
+       AND r.nivel_heredado_id IS NOT NULL
+       AND r.nivel_heredado_hasta > NOW()
+     ORDER BY nl.monto_minimo DESC
+     LIMIT 1`,
+    [clienteId, empresaId]
+  );
+
+  if (!herencia) return { nivel: nivelGanado, heredado: false };
+
+  // Si el nivel heredado es mejor (mayor monto_minimo) que el ganado → usar heredado
+  const montoGanado = nivelGanado?.monto_minimo ?? -1;
+  if (herencia.monto_minimo > montoGanado) {
+    return {
+      nivel: {
+        id:           herencia.nivel_heredado_id,
+        nombre:       herencia.nombre,
+        monto_minimo: herencia.monto_minimo,
+      },
+      heredado:       true,
+      heredado_hasta: herencia.nivel_heredado_hasta,
+    };
+  }
+
+  return { nivel: nivelGanado, heredado: false };
+}
+
 async function getConfigAmigo(empresaId, nivelId) {
   // Busca config para este nivel; si no hay, usa la de "sin nivel" (nivel_id IS NULL)
   const { rows } = await pool.query(
@@ -85,8 +123,8 @@ export const getMiReferido = async (req, res) => {
       cliente.codigo_referido = codigo;
     }
 
-    // Nivel actual en esta empresa
-    const nivel = await getNivelActual(cliente_id, empresa_id);
+    // Nivel efectivo (ganado o heredado)
+    const { nivel, heredado, heredado_hasta } = await getNivelEfectivo(cliente_id, empresa_id);
 
     // Qué recibiría el amigo hoy con este nivel
     const configAmigo = await getConfigAmigo(empresa_id, nivel?.id ?? null);
@@ -129,6 +167,7 @@ export const getMiReferido = async (req, res) => {
     res.json({
       codigo:              cliente.codigo_referido,
       nivel_actual:        nivel,
+      nivel_heredado:      heredado ? { activo: true, hasta: heredado_hasta } : { activo: false },
       config_amigo_actual: configAmigo,
       todas_configs:       todasConfigs,
       stats: {
@@ -190,16 +229,26 @@ export const validarCodigo = async (req, res) => {
     );
     if (!referidor) return res.status(404).json({ valido: false, error: "Código no válido" });
 
-    const nivel        = await getNivelActual(referidor.id, empresa_id);
-    const configAmigo  = await getConfigAmigo(empresa_id, nivel?.id ?? null);
+    const nivel       = await getNivelActual(referidor.id, empresa_id);
+    const configAmigo = await getConfigAmigo(empresa_id, nivel?.id ?? null);
+
+    // Nombre del nivel heredado si está configurado
+    let nivelHeredadoNombre = null;
+    if (configAmigo?.nivel_heredado_id) {
+      const { rows: [nl] } = await pool.query(
+        `SELECT nombre FROM niveles_lealtad WHERE id=$1`, [configAmigo.nivel_heredado_id]
+      );
+      nivelHeredadoNombre = nl?.nombre ?? null;
+    }
 
     res.json({
-      valido:            true,
-      referidor_nombre:  referidor.nombre,
-      nivel_referidor:   nivel?.nombre || "Sin nivel",
-      descuento_pct:     configAmigo.descuento_pct,
-      envio_gratis:      configAmigo.envio_gratis,
-      descripcion:       configAmigo.descripcion,
+      valido:               true,
+      referidor_nombre:     referidor.nombre,
+      nivel_referidor:      nivel?.nombre || "Sin nivel",
+      descuento_pct:        configAmigo.descuento_pct,
+      envio_gratis:         configAmigo.envio_gratis,
+      descripcion:          configAmigo.descripcion,
+      nivel_heredado:       nivelHeredadoNombre,
     });
   } catch (error) {
     console.error("validarCodigo:", error);
@@ -380,6 +429,9 @@ export async function procesarReferidoPrimeraCompra({ cliente_id, empresa_id, pe
     // Nivel actual del referidor
     const nivel = await getNivelActual(ref.referidor_id, empresa_id);
 
+    // Config del amigo — incluye nivel_heredado_id si la empresa lo configuró
+    const configAmigo = await getConfigAmigo(empresa_id, nivel?.id ?? null);
+
     // Cuántos referidos completados lleva
     const { rows: [statsRef] } = await pool.query(
       `SELECT COUNT(*) FILTER (WHERE estado='completado') AS completados
@@ -389,7 +441,13 @@ export async function procesarReferidoPrimeraCompra({ cliente_id, empresa_id, pe
     const nuevosAcumulados = parseInt(statsRef.completados) + 1;
     const configRef = await getConfigReferidor(empresa_id, nuevosAcumulados);
 
-    // Marcar como completado
+    // Calcular vigencia del nivel heredado (1 mes desde hoy)
+    const nivelHeredadoId    = configAmigo?.nivel_heredado_id ?? null;
+    const nivelHeredadoHasta = nivelHeredadoId
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      : null;
+
+    // Marcar como completado + guardar herencia
     await pool.query(
       `UPDATE referidos SET
          estado                       = 'completado',
@@ -397,16 +455,29 @@ export async function procesarReferidoPrimeraCompra({ cliente_id, empresa_id, pe
          pedido_activador_id          = $2,
          tipo_premio_referidor        = $3,
          valor_premio_referidor       = $4,
+         nivel_heredado_id            = $5,
+         nivel_heredado_hasta         = $6,
          completado_en                = NOW()
-       WHERE id = $5`,
+       WHERE id = $7`,
       [
         nivel?.nombre || "Sin nivel",
         pedido_id,
         configRef?.tipo_premio  ?? null,
         configRef?.valor        ?? null,
+        nivelHeredadoId,
+        nivelHeredadoHasta,
         ref.id,
       ]
     );
+
+    // Obtener nombre del nivel heredado para la notificación
+    let nivelHeredadoNombre = null;
+    if (nivelHeredadoId) {
+      const { rows: [nl] } = await pool.query(
+        `SELECT nombre FROM niveles_lealtad WHERE id=$1`, [nivelHeredadoId]
+      );
+      nivelHeredadoNombre = nl?.nombre ?? null;
+    }
 
     // Notificación al referidor
     await crearNotificacion({
@@ -419,6 +490,18 @@ export async function procesarReferidoPrimeraCompra({ cliente_id, empresa_id, pe
       seccion:         "referidos",
       referencia_id:   ref.referidor_id,
     });
+
+    // Notificación al amigo sobre su nivel heredado
+    if (nivelHeredadoId && nivelHeredadoNombre) {
+      await crearNotificacion({
+        empresa_id,
+        tipo:          "nivel_heredado",
+        titulo:        `¡Bienvenido con nivel ${nivelHeredadoNombre}! 🏆`,
+        mensaje:       `Gracias a quien te refirió, tienes nivel ${nivelHeredadoNombre} durante tu primer mes. ¡Aprovéchalo!`,
+        seccion:       "perfil",
+        referencia_id: cliente_id,
+      });
+    }
   } catch (err) {
     console.error("procesarReferidoPrimeraCompra:", err.message);
     // No debe interrumpir el flujo principal

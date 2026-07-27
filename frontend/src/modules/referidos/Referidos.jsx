@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getEstadisticasReferidos, getConfigReferidos, guardarConfigReferidos } from "./services/referidosService";
+import { SkeletonTable } from "../../components/SkeletonLoader";
 
 const token = () => localStorage.getItem("token");
 
@@ -36,7 +37,7 @@ function TabEstadisticas() {
     getEstadisticasReferidos(token()).then(d => { setData(d); setLoad(false); });
   }, []);
 
-  if (loading) return <div style={{ padding: 32, color: "#94a3b8", fontSize: 13 }}>Cargando...</div>;
+  if (loading) return <div style={{ padding: 24 }}><SkeletonTable rows={4} /></div>;
   if (!data)   return <div style={{ padding: 32, color: "#94a3b8", fontSize: 13 }}>Sin datos.</div>;
 
   const { general, top_referidores, recientes } = data;
@@ -217,11 +218,13 @@ function TabConfiguracion() {
 
   const [cfgAmigo, setCfgAmigo] = useState([]);
   const [cfgRef,   setCfgRef]   = useState([]);
+  const [niveles,  setNiveles]  = useState([]);
 
   const cargar = useCallback(() => {
     setLoad(true);
     getConfigReferidos(token()).then(d => {
       if (d) {
+        setNiveles(d.niveles || []);
         const nivelesConNull = [{ id: null, nombre: "Sin nivel", monto_minimo: -1 }, ...(d.niveles || [])];
         setCfgAmigo(nivelesConNull.map(n => {
           const existing = d.config_amigo.find(c => (c.nivel_id ?? null) === (n.id ?? null));
@@ -266,7 +269,7 @@ function TabConfiguracion() {
 
   const removeFila = (i) => setCfgRef(prev => prev.filter((_, idx) => idx !== i));
 
-  if (loading) return <div style={{ padding: 32, color: "#94a3b8", fontSize: 13 }}>Cargando...</div>;
+  if (loading) return <div style={{ padding: 24 }}><SkeletonTable rows={4} /></div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -281,7 +284,7 @@ function TabConfiguracion() {
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
           <thead>
             <tr>
-              {["Nivel del referidor", "Descuento %", "Envío gratis", "Beneficio extra (opcional)"].map(h => (
+              {["Nivel del referidor", "Descuento %", "Envío gratis", "Nivel heredado (1 mes) ✨", "Beneficio extra (opcional)"].map(h => (
                 <th key={h} style={sTh}>{h}</th>
               ))}
             </tr>
@@ -309,6 +312,21 @@ function TabConfiguracion() {
                       onChange={ev => updateAmigo(i, "envio_gratis", ev.target.checked)} />
                     <span style={{ fontSize: 12, color: "#64748b" }}>Incluir</span>
                   </label>
+                </td>
+                <td style={sTd}>
+                  <select
+                    value={e.nivel_heredado_id ?? ""}
+                    onChange={ev => updateAmigo(i, "nivel_heredado_id", ev.target.value ? parseInt(ev.target.value) : null)}
+                    style={{ ...sInput, width: 140, cursor: "pointer" }}
+                  >
+                    <option value="">— Ninguno —</option>
+                    {niveles.map(n => (
+                      <option key={n.id} value={n.id}>{n.nombre}</option>
+                    ))}
+                  </select>
+                  <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 3 }}>
+                    El amigo llega con este nivel por 1 mes
+                  </div>
                 </td>
                 <td style={sTd}>
                   <input type="text" value={e.descripcion || ""}
@@ -385,7 +403,7 @@ function TabConfiguracion() {
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button onClick={guardar} disabled={guardando} style={{
           padding: "10px 28px", borderRadius: 10, border: "none",
-          background: "linear-gradient(135deg, #00C9A7, #0099FF)",
+          backgroundColor: "#2563eb",
           color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
           opacity: guardando ? 0.7 : 1,
         }}>

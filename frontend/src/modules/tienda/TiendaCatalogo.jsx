@@ -63,7 +63,7 @@ useEffect(() => {
   const {
     productos, loadingProds, busqueda, setBusqueda,
     carrito, carritoAbierto, setCarritoAbierto,
-    agregarAlCarrito, cambiarKilos, quitarDelCarrito,
+    agregarAlCarrito, cambiarCantidad, quitarDelCarrito,
     vaciarCarrito, totalItems, totalPrecio,
     metodosPago, metodoPagoId, setMetodoPagoId,
     direccion, setDireccion, notas, setNotas,
@@ -205,7 +205,7 @@ useEffect(() => {
         carrito={carrito}
         carritoAbierto={carritoAbierto}
         setCarritoAbierto={setCarritoAbierto}
-        cambiarKilos={cambiarKilos}
+        cambiarCantidad={cambiarCantidad}
         quitarDelCarrito={quitarDelCarrito}
         vaciarCarrito={vaciarCarrito}
         totalItems={totalItems}

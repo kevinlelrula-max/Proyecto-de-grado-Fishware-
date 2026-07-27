@@ -479,8 +479,9 @@ export default function DashboardEmpresa() {
 
   const [seccion, setSeccion]             = useState(null);
   const [open, setOpen]                   = useState(false);
+  const [sidebarAbierto, setSidebarAbierto] = useState(false);
   const [logoUrl, setLogoUrl]             = useState(null);
-  const [nombreEmpresa, setNombreEmpresa] = useState("FishWare");
+  const [nombreEmpresa, setNombreEmpresa] = useState("Merkai");
 
   // Grupos abiertos — arranca todo abierto
   const [gruposAbiertos, setGruposAbiertos] = useState({
@@ -528,6 +529,7 @@ export default function DashboardEmpresa() {
   const irA = (key) => {
     if (permisosRol?.includes(key)) {
       setSeccion(key);
+      setSidebarAbierto(false);
       if (key === "mensajes") setMensajesNoLeidos(0);
       // Auto-abrir el grupo que contiene la sección
       const gid = grupoDeSeccion(key);
@@ -620,12 +622,30 @@ export default function DashboardEmpresa() {
         .fw-content-card:has(.editor-fullbleed) { overflow: visible; background: transparent; border: none; box-shadow: none; }
         .fw-soporte-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; background-color: #25D366; color: white; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; position: fixed; bottom: 28px; right: 28px; z-index: 999; box-shadow: 0 4px 20px rgba(37,211,102,0.4); transition: transform 0.2s, box-shadow 0.2s; }
         .fw-soporte-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,0.5); }
+        .fw-hamburger { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9px; background: #fff; border: 1px solid rgba(0,0,0,0.08); cursor: pointer; padding: 0; color: #5A7090; flex-shrink: 0; margin-right: 4px; }
+        .fw-hamburger:hover { background: #f5f7fa; color: #0B1628; }
+        .fw-overlay { display: none; position: fixed; inset: 0; background: rgba(11,22,40,0.55); z-index: 39; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+        @media (max-width: 768px) {
+          .fw-sidebar { transform: translateX(-240px); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+          .fw-sidebar.fw-sb-open { transform: translateX(0); box-shadow: 4px 0 32px rgba(0,0,0,0.35); }
+          .fw-main { margin-left: 0 !important; }
+          .fw-overlay.fw-overlay-on { display: block; }
+          .fw-hamburger { display: flex; }
+          .fw-content { padding: 16px; }
+          .fw-topbar { padding: 0 16px; }
+        }
       `}</style>
 
       <div className="fw-shell">
 
+        {/* ── OVERLAY MOBILE ── */}
+        <div
+          className={`fw-overlay ${sidebarAbierto ? "fw-overlay-on" : ""}`}
+          onClick={() => setSidebarAbierto(false)}
+        />
+
         {/* ── SIDEBAR ── */}
-        <aside className="fw-sidebar">
+        <aside className={`fw-sidebar ${sidebarAbierto ? "fw-sb-open" : ""}`}>
           <div className="fw-sb-top">
             <div className="fw-sb-brand">
               {logoUrl ? (
@@ -732,7 +752,14 @@ export default function DashboardEmpresa() {
           {/* TOPBAR */}
           <div className="fw-topbar">
             <div className="fw-topbar-left">
-              <span className="fw-breadcrumb">FishWare</span>
+              <button className="fw-hamburger" onClick={() => setSidebarAbierto(v => !v)} aria-label="Menú">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <line x1="3" y1="12" x2="21" y2="12"/>
+                  <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+              </button>
+              <span className="fw-breadcrumb">Merkai</span>
               <span className="fw-breadcrumb" style={{ margin: "0 4px" }}>›</span>
               <span className="fw-page-title">
                 {menu.find(m => m.key === seccion)?.label || seccion}

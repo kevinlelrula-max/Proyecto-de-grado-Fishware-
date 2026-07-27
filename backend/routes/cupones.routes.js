@@ -7,13 +7,15 @@ import {
   eliminarCupon,
   getUsosCupon,
   validarCupon,
+  getCuponesActivos,
 } from "../controllers/cupones.controller.js";
 import { verificarToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// 🎫 PÚBLICO — validar un código de cupón en el carrito
+// 🎫 PÚBLICO
 router.post("/validar", validarCupon);
+router.get("/activos/:empresa_id", getCuponesActivos);
 
 // 🔒 EMPRESA — gestión de cupones (requieren autenticación)
 router.get("/",           verificarToken, getCupones);

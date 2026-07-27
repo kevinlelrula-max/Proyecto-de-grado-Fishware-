@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import usePerfil from "./hooks/usePerfil";
+import { cambiarContrasena } from "./services/perfil.api";
 
 export default function Perfil() {
   const { perfil, guardarPerfil } = usePerfil();
@@ -9,6 +10,7 @@ export default function Perfil() {
   const [showActual, setShowActual] = useState(false);
   const [showNueva, setShowNueva] = useState(false);
   const [savedMsg, setSavedMsg] = useState("");
+  const [passError, setPassError] = useState("");
 
   useEffect(() => { setForm(perfil); }, [perfil]);
 
@@ -19,10 +21,25 @@ export default function Perfil() {
     setTimeout(() => setSavedMsg(""), 3000);
   };
 
-  const handlePassword = () => {
-    // lógica de cambio de contraseña
-    setSavedMsg("password");
-    setTimeout(() => setSavedMsg(""), 3000);
+  const handlePassword = async () => {
+    setPassError("");
+    if (!passwords.actual || !passwords.nueva) {
+      setPassError("Completa ambos campos.");
+      return;
+    }
+    if (passwords.nueva.length < 6) {
+      setPassError("La nueva contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    const token = localStorage.getItem("token");
+    try {
+      await cambiarContrasena(passwords.actual, passwords.nueva, token);
+      setPasswords({ actual: "", nueva: "" });
+      setSavedMsg("password");
+      setTimeout(() => setSavedMsg(""), 3000);
+    } catch (err) {
+      setPassError(err.response?.data?.error || "Error al cambiar contraseña.");
+    }
   };
 
   const iniciales = `${form.nombre?.charAt(0) || ""}${form.apellido?.charAt(0) || ""}`.toUpperCase() || "U";
@@ -141,6 +158,9 @@ export default function Perfil() {
 
             {savedMsg === "password" && (
               <div style={s.successBox}>✅ Contraseña actualizada correctamente</div>
+            )}
+            {passError && (
+              <div style={s.errorBox}>⚠️ {passError}</div>
             )}
 
             <div style={s.secFields}>
@@ -314,6 +334,11 @@ const s = {
     backgroundColor: "#E1F5EE", border: "1px solid #9FE1CB",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#0F6E56", fontWeight: "500",
+  },
+  errorBox: {
+    backgroundColor: "#fef2f2", border: "1px solid #fecaca",
+    borderRadius: "10px", padding: "10px 14px",
+    fontSize: "13px", color: "#b91c1c", fontWeight: "500",
   },
 
   // Campos

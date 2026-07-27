@@ -53,7 +53,7 @@ export default function LoginEmpresa() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={s.leftLogoText}>FishWare</span>
+            <span style={s.leftLogoText}>Merkai</span>
           </div>
 
           <div style={s.leftHero}>
@@ -169,7 +169,7 @@ export default function LoginEmpresa() {
 
           <p style={s.registerText}>
             ¿Tu empresa aún no está registrada?{" "}
-            <a href="/registroempresa" style={s.registerLink}>Crear cuenta</a>
+            <a href="/empresa/registro" style={s.registerLink}>Crear cuenta</a>
           </p>
 
         </div>

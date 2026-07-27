@@ -311,7 +311,7 @@ export const actualizarPerfil = async (req, res) => {
     const { nombre, apellido, telefono, direccion } = req.body;
 
     const result = await pool.query(
-      `UPDATE persona 
+      `UPDATE persona
        SET nombre=$1, apellido=$2, telefono=$3, direccion=$4
        WHERE id=$5
        RETURNING *`,
@@ -322,5 +322,47 @@ export const actualizarPerfil = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al actualizar perfil" });
+  }
+};
+
+// =========================
+// CAMBIAR CONTRASEÑA — usuario admin/empleado
+// =========================
+export const cambiarContrasenaUsuario = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const { contrasena_actual, contrasena_nueva } = req.body;
+
+    if (!contrasena_actual || !contrasena_nueva) {
+      return res.status(400).json({ error: "Completa ambos campos" });
+    }
+    if (contrasena_nueva.length < 6) {
+      return res.status(400).json({ error: "La nueva contraseña debe tener al menos 6 caracteres" });
+    }
+
+    const result = await pool.query(
+      "SELECT contrasena FROM persona WHERE id = $1",
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const match = await bcrypt.compare(contrasena_actual, result.rows[0].contrasena);
+    if (!match) {
+      return res.status(400).json({ error: "Contraseña actual incorrecta" });
+    }
+
+    const hashedNueva = await bcrypt.hash(contrasena_nueva, 10);
+    await pool.query(
+      "UPDATE persona SET contrasena=$1 WHERE id=$2",
+      [hashedNueva, id]
+    );
+
+    res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al cambiar contraseña" });
   }
 };

@@ -86,7 +86,7 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
             {pedido.detalle?.map((item, i) => (
               <div key={i} style={s.productoRow}>
                 <span style={s.productoNombre}>🐟 {item.nombre}</span>
-                <span style={s.productoKilos}>{item.kilos} kg</span>
+                <span style={s.productoKilos}>{Number(item.cantidad).toFixed(1)} {item.unidad || "uds."}</span>
                 <span style={s.productoSubtotal}>
                   ${Number(item.subtotal).toLocaleString("es-CO")}
                 </span>
@@ -184,7 +184,7 @@ const s = {
   },
   acciones: { display: "flex", gap: "10px", flexWrap: "wrap" },
   btnAvanzar: {
-    padding: "10px 20px", backgroundColor: "#0F6E56",
+    padding: "10px 20px", backgroundColor: "#2563eb",
     color: "white", border: "none", borderRadius: "9px",
     fontSize: "13px", fontWeight: "700", cursor: "pointer",
   },

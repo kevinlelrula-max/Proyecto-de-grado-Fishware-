@@ -229,7 +229,7 @@ const s = {
     fontSize: "13px", fontWeight: "600", cursor: "pointer",
   },
   btnGuardar: {
-    padding: "9px 24px", backgroundColor: "#0F6E56", color: "white",
+    padding: "9px 24px", backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "13px", fontWeight: "700", cursor: "pointer",
   },

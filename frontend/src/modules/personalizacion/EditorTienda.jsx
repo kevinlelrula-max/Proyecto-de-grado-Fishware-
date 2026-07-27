@@ -42,6 +42,7 @@ function EditorFullscreen({ onCerrar }) {
     cargando, guardando, exito, error,
     layout, onLayoutChange, onToggleSeccion,
     onDeleteSeccion, onAddSeccion, onSeccionConfigChange,
+    aplicarPlantilla,
     cargar, onChange, onBannerChange, guardar,
   } = useEditor();
 
@@ -125,7 +126,7 @@ function EditorFullscreen({ onCerrar }) {
             disabled={guardando}
             style={{
               ...fs.publishBtn,
-              background: exito ? "#10b981" : guardando ? "#475569" : "linear-gradient(135deg,#00C9A7,#0099FF)",
+              background: exito ? "#10b981" : guardando ? "#475569" : "#2563eb",
               cursor: guardando ? "not-allowed" : "pointer",
             }}
           >
@@ -159,12 +160,12 @@ function EditorFullscreen({ onCerrar }) {
                 onDeleteSeccion={onDeleteSeccion}
                 onAddSeccion={onAddSeccion}
                 onSeccionConfigChange={onSeccionConfigChange}
-                // El botón publicar está en el topbar — ocultamos el del panel
+                onAplicarPlantilla={aplicarPlantilla}
                 guardando={false}
                 exito={false}
                 error={error}
                 onGuardar={handleGuardar}
-                ocultarHeader // prop para que PanelEditor oculte su propio header
+                ocultarHeader
               />
             </div>
           )}
@@ -353,7 +354,7 @@ const s = {
   },
   entryBtn: {
     padding: "12px 28px",
-    background: "linear-gradient(135deg, #00C9A7, #0099FF)",
+    background: "#2563eb",
     border: "none",
     borderRadius: 12,
     color: "white",

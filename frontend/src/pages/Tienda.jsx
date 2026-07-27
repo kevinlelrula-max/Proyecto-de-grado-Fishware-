@@ -85,7 +85,7 @@ export default function Tienda() {
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
             <div>
-              <span style={s.navBrandName}>WareFish</span>
+              <span style={s.navBrandName}>Merkai</span>
               <span style={s.navBrandSub}>Tienda</span>
             </div>
           </div>
@@ -138,11 +138,11 @@ export default function Tienda() {
       {/* ── HERO ── */}
       <div style={s.hero}>
         <div style={s.heroInner}>
-          <div style={s.heroBadge}>🛒 Marketplace de pesqueras</div>
-          <h1 style={s.heroTitle}>Encuentra tu empresa favorita</h1>
+          <div style={s.heroBadge}>🛒 Marketplace</div>
+          <h1 style={s.heroTitle}>Encuentra tu tienda favorita</h1>
           <p style={s.heroSubtitle}>
-            Compra pescado fresco directo de las mejores pesqueras de la región.
-            Sin intermediarios, con entrega a domicilio.
+            Explora el catálogo de las empresas disponibles y haz tu pedido
+            directamente. Sin intermediarios, con entrega a domicilio.
           </p>
         </div>
         {/* Decoración */}
@@ -254,7 +254,7 @@ export default function Tienda() {
       {/* ── FOOTER ── */}
       <footer style={s.footer}>
         <div style={s.footerInner}>
-          <span style={s.footerText}>© 2026 WareFish · Marketplace de pesqueras</span>
+          <span style={s.footerText}>© 2026 Merkai · Marketplace</span>
           <button style={s.footerEmpresa} onClick={() => navigate("/empresa/login")}>
             ¿Eres una empresa? Ingresa aquí →
           </button>

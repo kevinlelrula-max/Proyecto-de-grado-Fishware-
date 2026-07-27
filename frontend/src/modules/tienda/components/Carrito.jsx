@@ -8,7 +8,7 @@ export default function Carrito({
   carrito,
   carritoAbierto,
   setCarritoAbierto,
-  cambiarKilos,
+  cambiarCantidad,
   quitarDelCarrito,
   vaciarCarrito,
   totalItems,
@@ -143,15 +143,15 @@ export default function Carrito({
                     <div style={s.itemEmoji}>🐟</div>
                     <div style={s.itemInfo}>
                       <p style={s.itemNombre}>{item.nombre}</p>
-                      <p style={s.itemPrecio}>${Number(item.precio).toLocaleString("es-CO")} / kg</p>
+                      <p style={s.itemPrecio}>${Number(item.precio).toLocaleString("es-CO")} / {item.unidad || "uds."}</p>
                     </div>
                     <div style={s.itemKilos}>
-                      <button style={s.kilosBtn} onClick={() => cambiarKilos(item.id, item.kilos - 0.5)}>−</button>
-                      <span style={s.kilosVal}>{item.kilos.toFixed(1)}</span>
-                      <button style={s.kilosBtn} onClick={() => cambiarKilos(item.id, item.kilos + 0.5)}>+</button>
+                      <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad - 0.5)}>−</button>
+                      <span style={s.kilosVal}>{Number(item.cantidad).toFixed(1)}</span>
+                      <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad + 0.5)}>+</button>
                     </div>
                     <div style={s.itemRight}>
-                      <p style={s.itemSubtotal}>${(item.kilos * item.precio).toLocaleString("es-CO")}</p>
+                      <p style={s.itemSubtotal}>${(item.cantidad * item.precio).toLocaleString("es-CO")}</p>
                       <button style={s.quitarBtn} onClick={() => quitarDelCarrito(item.id)}>🗑️</button>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 export default function BtnSoporte() {
   return (
     <a
-      href="https://wa.me/573001234567?text=Hola,%20necesito%20ayuda%20con%20WareFish%20%F0%9F%90%9F"
+      href="https://wa.me/573001234567?text=Hola,%20necesito%20ayuda%20con%20Merkai"
       target="_blank"
       rel="noreferrer"
       style={s.btn}

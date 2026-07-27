@@ -4,6 +4,17 @@ import FormProducto from "./components/FormProducto";
 import Categorias from "./components/Categorias"; // ✅ nuevo
 import useProductos from "./hooks/useProductos";
 
+function getUnidadPredeterminada() {
+  try {
+    const raw = localStorage.getItem("fishware_configuracion");
+    if (!raw) return "unidad";
+    const data = JSON.parse(raw);
+    return data?.empresa?.unidad_predeterminada || "unidad";
+  } catch {
+    return "unidad";
+  }
+}
+
 export default function Productos() {
   const { productos, agregar, eliminar, actualizar } = useProductos();
 
@@ -32,6 +43,52 @@ export default function Productos() {
   const handleNuevo = () => { setProductoEditar(null); setMostrarForm(true); };
   const handleEditar = (p) => { setProductoEditar(p); setMostrarForm(true); };
 
+  const generarCatalogoPDF = () => {
+    const config       = JSON.parse(localStorage.getItem("fishware_configuracion") || "{}");
+    const empresaNombre = config?.empresa?.nombre || "Mi Empresa";
+    const fecha        = new Date().toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" });
+
+    const productosHTML = productosFiltrados.map(p => `
+      <div class="producto">
+        <h3>${p.nombre}</h3>
+        <p class="precio">$${Number(p.precio).toLocaleString("es-CO")}</p>
+        <p class="stock">Stock: ${p.stock} ${p.unidad || "uds."}</p>
+        ${p.descripcion ? `<p class="desc">${p.descripcion}</p>` : ""}
+      </div>
+    `).join("");
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+      <title>Catálogo · ${empresaNombre}</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Arial,sans-serif;color:#0f172a;padding:32px}
+        .header{text-align:center;border-bottom:3px solid #0F6E56;padding-bottom:20px;margin-bottom:28px}
+        .empresa{font-size:26px;font-weight:800;color:#0F6E56}
+        .fecha{font-size:13px;color:#64748b;margin-top:6px}
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .producto{border:1px solid #e2e8f0;border-radius:10px;padding:14px;break-inside:avoid}
+        .producto h3{font-size:14px;font-weight:700;margin-bottom:8px;color:#0f172a}
+        .precio{font-size:17px;font-weight:800;color:#0F6E56;margin-bottom:4px}
+        .stock{font-size:11px;color:#64748b}
+        .desc{font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.4}
+        .footer{text-align:center;margin-top:36px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:14px}
+        @media print{body{padding:16px}}
+      </style></head><body>
+      <div class="header">
+        <div class="empresa">${empresaNombre}</div>
+        <div class="fecha">Catálogo de productos · ${fecha}</div>
+      </div>
+      <div class="grid">${productosHTML}</div>
+      <div class="footer">${empresaNombre} · Generado con Merkai</div>
+    </body></html>`;
+
+    const ventana = window.open("", "_blank");
+    ventana.document.write(html);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => ventana.print(), 400);
+  };
+
   const handleGuardar = async (formData) => {
     if (productoEditar) {
       await actualizar(productoEditar.id, formData);
@@ -53,9 +110,14 @@ export default function Productos() {
         </div>
         {/* Botón solo visible en pestaña productos */}
         {pestana === "productos" && (
-          <button style={s.btnNew} onClick={handleNuevo}>
-            Nuevo Producto
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button style={s.btnExport} onClick={generarCatalogoPDF} title="Exportar catálogo como PDF">
+              📄 Exportar catálogo
+            </button>
+            <button style={s.btnNew} onClick={handleNuevo}>
+              Nuevo Producto
+            </button>
+          </div>
         )}
       </div>
 
@@ -141,6 +203,7 @@ export default function Productos() {
             productos={productosPaginados}
             onEliminar={eliminar}
             onEditar={handleEditar}
+            onAgregar={handleNuevo}
             vista={vista}
           />
 
@@ -172,6 +235,7 @@ export default function Productos() {
           producto={productoEditar}
           onClose={() => setMostrarForm(false)}
           onSave={handleGuardar}
+          unidadPredeterminada={getUnidadPredeterminada()}
         />
       )}
     </div>
@@ -188,9 +252,15 @@ const s = {
   headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
   btnNew: {
     display: "flex", alignItems: "center", gap: "6px",
-    padding: "9px 20px", backgroundColor: "#0F6E56",
-    color: "#E1F5EE", border: "none", borderRadius: "10px",
+    padding: "9px 20px", backgroundColor: "#2563eb",
+    color: "white", border: "none", borderRadius: "10px",
     cursor: "pointer", fontSize: "14px", fontWeight: "600",
+  },
+  btnExport: {
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "9px 16px", backgroundColor: "transparent",
+    color: "#2563eb", border: "1.5px solid #2563eb", borderRadius: "10px",
+    cursor: "pointer", fontSize: "13px", fontWeight: "600",
   },
 
   // ✅ Pestañas
@@ -244,7 +314,7 @@ const s = {
     padding: "7px 12px", background: "transparent", border: "none",
     cursor: "pointer", fontSize: "16px", color: "#94a3b8", lineHeight: 1,
   },
-  viewBtnActive: { backgroundColor: "#E1F5EE", color: "#0F6E56" },
+  viewBtnActive: { backgroundColor: "#eff6ff", color: "#2563eb" },
 
   // Paginación
   pagination: { display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginTop: "20px" },

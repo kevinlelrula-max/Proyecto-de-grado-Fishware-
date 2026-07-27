@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
+  const [confirmando, setConfirmando] = useState(false);
   const iconos = ["🥉", "🥈", "🥇", "💎", "👑"];
   const colores = [
     { bg: "#fef3c7", color: "#92400e", border: "#fde68a" }, // bronce
@@ -33,15 +36,21 @@ export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
           </p>
         </div>
         <div style={s.actions}>
-          <button style={s.btnToggle} onClick={() => onToggle(nivel)} title={nivel.activo ? "Desactivar" : "Activar"}>
-            {nivel.activo ? "⏸" : "▶"}
-          </button>
-          <button style={s.btnEditar} onClick={() => onEditar(nivel)}>
-            ✏️
-          </button>
-          <button style={s.btnEliminar} onClick={() => onEliminar(nivel.id)}>
-            🗑️
-          </button>
+          {confirmando ? (
+            <>
+              <span style={s.confirmText}>¿Eliminar?</span>
+              <button style={s.btnConfirmYes} onClick={() => { onEliminar(nivel.id); setConfirmando(false); }}>Sí</button>
+              <button style={s.btnConfirmNo} onClick={() => setConfirmando(false)}>No</button>
+            </>
+          ) : (
+            <>
+              <button style={s.btnToggle} onClick={() => onToggle(nivel)} title={nivel.activo ? "Desactivar" : "Activar"}>
+                {nivel.activo ? "⏸" : "▶"}
+              </button>
+              <button style={s.btnEditar} onClick={() => onEditar(nivel)}>✏️</button>
+              <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>🗑️</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -139,6 +148,17 @@ const s = {
     padding: "5px 8px",
     cursor: "pointer",
     fontSize: "13px",
+  },
+  confirmText: { fontSize: "11px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
+  btnConfirmYes: {
+    padding: "4px 10px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "4px 10px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#64748b",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
   },
   detalles: {
     display: "flex",

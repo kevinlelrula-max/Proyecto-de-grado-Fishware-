@@ -34,9 +34,9 @@ export const crearVenta = async (req, res) => {
     for (const item of productos) {
       const { producto_id, cantidad } = item;
 
-      // ✅ Validar kilos > 0 antes del INSERT para dar mensaje claro
+      // ✅ Validar cantidad > 0 antes del INSERT para dar mensaje claro
       if (!cantidad || cantidad <= 0) {
-        throw new Error("La cantidad de kilos debe ser mayor a 0");
+        throw new Error("La cantidad debe ser mayor a 0");
       }
 
       const productoResult = await client.query(
@@ -58,7 +58,7 @@ export const crearVenta = async (req, res) => {
       total += subtotal;
 
       await client.query(
-        `INSERT INTO detalle_venta (venta_id, producto_id, kilos, precio_unitario)
+        `INSERT INTO detalle_venta (venta_id, producto_id, cantidad, precio_unitario)
          VALUES ($1, $2, $3, $4)`,
         [venta.id, producto_id, cantidad, producto.precio]
       );
@@ -201,7 +201,7 @@ export const detalleVenta = async (req, res) => {
     const detalleResult = await pool.query(
       `SELECT 
          p.nombre AS producto,
-         dv.kilos,
+         dv.cantidad,
          dv.precio_unitario,
          dv.subtotal
        FROM detalle_venta dv
@@ -237,7 +237,8 @@ export const historialCliente = async (req, res) => {
          mp.metodo AS metodo_pago,
          json_agg(json_build_object(
            'producto',        p.nombre,
-           'kilos',           dv.kilos,
+           'cantidad',        dv.cantidad,
+           'unidad',          p.unidad,
            'precio_unitario', dv.precio_unitario,
            'subtotal',        dv.subtotal
          )) AS detalle
@@ -269,8 +270,8 @@ export const reporteProductos = async (req, res) => {
     const result = await pool.query(
       `SELECT 
         p.nombre,
-        SUM(dv.kilos) AS total_vendido,
-        SUM(dv.kilos * dv.precio_unitario) AS total_ingresos
+        SUM(dv.cantidad) AS total_vendido,
+        SUM(dv.cantidad * dv.precio_unitario) AS total_ingresos
       FROM detalle_venta dv
       JOIN productos p ON dv.producto_id = p.id
       JOIN ventas v ON dv.venta_id = v.id

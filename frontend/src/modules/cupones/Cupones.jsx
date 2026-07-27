@@ -2,6 +2,7 @@ import { useCupones } from "./hooks/useCupones";
 import CuponCard  from "./components/CuponCard";
 import CuponForm  from "./components/CuponForm";
 import ModalUsos  from "./components/ModalUsos";
+import { SkeletonGrid } from "../../components/SkeletonLoader";
 
 export default function Cupones() {
   const {
@@ -52,10 +53,7 @@ export default function Cupones() {
 
       {/* Contenido */}
       {loading ? (
-        <div style={s.loading}>
-          <span style={s.loadingIcon}>🎫</span>
-          <p style={s.loadingText}>Cargando cupones...</p>
-        </div>
+        <SkeletonGrid count={3} height={180} />
       ) : cupones.length === 0 ? (
         <div style={s.empty}>
           <span style={s.emptyIcon}>🎫</span>
@@ -159,7 +157,7 @@ const s = {
   title:    { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "4px" },
   subtitle: { fontSize: "14px", color: "#64748b", lineHeight: "1.5", maxWidth: "520px" },
   btnNuevo: {
-    padding: "10px 20px", backgroundColor: "#0F6E56", color: "white",
+    padding: "10px 20px", backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px", fontSize: "14px",
     fontWeight: "600", cursor: "pointer", flexShrink: 0,
   },
@@ -185,7 +183,7 @@ const s = {
   emptyDesc:  { fontSize: "14px", color: "#64748b", maxWidth: "420px", lineHeight: "1.6" },
   emptyBtn: {
     marginTop: "8px", padding: "11px 24px",
-    backgroundColor: "#0F6E56", color: "white",
+    backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "14px", fontWeight: "600", cursor: "pointer",
   },

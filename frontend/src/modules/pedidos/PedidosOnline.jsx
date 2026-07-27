@@ -9,7 +9,7 @@ const TABS = [
 ];
 
 export default function PedidosOnline() {
-  const { pedidos, loading, error, cambiando, conteos, fetchPedidos, cambiarEstado } = usePedidosAdmin();
+  const { pedidos, loading, error, cambiando, conteos, fetchPedidos, cambiarEstado, notifPermiso, pedirPermiso } = usePedidosAdmin();
   const [filtro,    setFiltro]    = useState("todos");
   const [busqueda,  setBusqueda]  = useState("");
   const [tabActiva, setTabActiva] = useState("pedidos"); // 2️⃣ estado de tab
@@ -27,10 +27,17 @@ export default function PedidosOnline() {
     });
 
   return (
-    <div style={s.wrap}>
+    <div style={s.wrap} className="pedidos-wrap">
+      <style>{`
+        @media (max-width: 768px) {
+          .pedidos-wrap { padding: 16px !important; }
+          .pedidos-header { flex-wrap: wrap !important; gap: 10px !important; }
+          .pedidos-notif { flex-wrap: wrap !important; }
+        }
+      `}</style>
 
       {/* ── HEADER ── */}
-      <div style={s.header}>
+      <div style={s.header} className="pedidos-header">
         <div>
           <h1 style={s.title}>Pedidos online</h1>
           <p style={s.subtitle}>
@@ -44,6 +51,21 @@ export default function PedidosOnline() {
           </button>
         )}
       </div>
+
+      {notifPermiso !== "granted" && (
+        <div style={s.notifBanner} className="pedidos-notif">
+          <span style={s.notifText}>
+            🔔 Activa las notificaciones para recibir alertas cuando llegue un nuevo pedido
+          </span>
+          <button
+            onClick={pedirPermiso}
+            style={{ ...s.notifBtn, ...(notifPermiso === "denied" ? s.notifBtnBloq : {}) }}
+            disabled={notifPermiso === "denied"}
+          >
+            {notifPermiso === "denied" ? "Bloqueadas en el navegador" : "Activar notificaciones"}
+          </button>
+        </div>
+      )}
 
       {/* 3️⃣ TABS */}
       <div style={s.tabs}>
@@ -152,11 +174,11 @@ const s = {
   // Tabs
   tabs:          { display: "flex", gap: "4px", marginBottom: "24px", borderBottom: "2px solid #e2e8f0", paddingBottom: "0" },
   tabBtn:        { padding: "8px 18px", border: "none", background: "none", fontSize: "13px", fontWeight: "600", color: "#94a3b8", cursor: "pointer", borderBottom: "2px solid transparent", marginBottom: "-2px", borderRadius: "0", transition: "all 0.15s" },
-  tabBtnActive:  { color: "#0F6E56", borderBottom: "2px solid #0F6E56" },
+  tabBtnActive:  { color: "#2563eb", borderBottom: "2px solid #2563eb" },
 
   filtros:       { display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" },
   filtroBtn:     { display: "flex", alignItems: "center", gap: "6px", padding: "6px 14px", borderRadius: "999px", border: "1.5px solid #e2e8f0", backgroundColor: "white", fontSize: "12px", fontWeight: "600", color: "#64748b", cursor: "pointer", transition: "all 0.15s" },
-  filtroBtnActive: { borderColor: "#0F6E56", color: "#0F6E56", backgroundColor: "#E1F5EE" },
+  filtroBtnActive: { borderColor: "#2563eb", color: "#2563eb", backgroundColor: "#eff6ff" },
   filtroCount:   { backgroundColor: "#e2e8f0", color: "#64748b", fontSize: "10px", fontWeight: "700", padding: "1px 6px", borderRadius: "999px" },
   buscadorWrap:  { display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", backgroundColor: "white", border: "1.5px solid #e2e8f0", borderRadius: "10px", marginBottom: "20px" },
   buscador:      { flex: 1, border: "none", outline: "none", fontSize: "13px", color: "#0f172a", background: "none" },
@@ -166,4 +188,8 @@ const s = {
   empty:         { textAlign: "center", padding: "60px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", color: "#64748b", fontSize: "14px" },
   errorBox:      { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "12px 16px", fontSize: "13px", color: "#b91c1c" },
   lista:         { display: "flex", flexDirection: "column", gap: "10px" },
+  notifBanner:   { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 16px", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "10px", marginBottom: "16px" },
+  notifText:     { fontSize: "13px", color: "#92400e", flex: 1 },
+  notifBtn:      { flexShrink: 0, padding: "6px 14px", backgroundColor: "#f59e0b", color: "white", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
+  notifBtnBloq:  { backgroundColor: "#e2e8f0", color: "#94a3b8", cursor: "not-allowed" },
 };

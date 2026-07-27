@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import ModalPlantillas from "./ModalPlantillas";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -8,11 +9,26 @@ const TIPOS_INFO = {
   nosotros:    { label: "Sobre nosotros",   emoji: "🏢", fija: false, desc: "Historia de tu negocio" },
   contacto:    { label: "Contacto & Redes", emoji: "📱", fija: true,  desc: "Info y redes sociales" },
   texto_libre: { label: "Bloque de texto",  emoji: "📝", fija: false, desc: "Texto personalizable" },
+  faq:          { label: "Preguntas frecuentes", emoji: "❓", fija: false, desc: "Responde dudas comunes" },
+  galeria:      { label: "Galería",          emoji: "🖼️", fija: false, desc: "Imágenes de tu negocio" },
+  testimonios:  { label: "Testimonios",      emoji: "⭐", fija: false, desc: "Reseñas de tus clientes" },
+  promociones:  { label: "Promociones",      emoji: "🎫", fija: false, desc: "Cupones activos" },
 };
+
+const FUENTES = [
+  { value: "Inter",       label: "Inter (Moderna)" },
+  { value: "Poppins",     label: "Poppins (Redondeada)" },
+  { value: "Montserrat",  label: "Montserrat (Elegante)" },
+  { value: "Playfair Display", label: "Playfair (Clásica)" },
+];
 
 const TIPOS_AGREGABLES = [
   { tipo: "texto_libre", label: "Bloque de texto", emoji: "📝", desc: "Título + texto libre, color de fondo personalizable" },
   { tipo: "nosotros",    label: "Sobre nosotros",  emoji: "🏢", desc: "Presenta tu negocio a los clientes" },
+  { tipo: "faq",         label: "Preguntas frecuentes", emoji: "❓", desc: "Preguntas y respuestas de tus clientes" },
+  { tipo: "galeria",     label: "Galería de imágenes",  emoji: "🖼️", desc: "Muestra fotos de tu negocio o productos" },
+  { tipo: "testimonios", label: "Testimonios",          emoji: "⭐", desc: "Muestra reseñas destacadas de clientes" },
+  { tipo: "promociones", label: "Promociones",          emoji: "🎫", desc: "Cupones y descuentos activos" },
 ];
 
 export default function PanelEditor({
@@ -20,13 +36,15 @@ export default function PanelEditor({
   seccionActiva, setSeccionActiva,
   onChange, onBannerChange,
   onLayoutChange, onToggleSeccion, onDeleteSeccion, onAddSeccion, onSeccionConfigChange,
+  onAplicarPlantilla,
   guardando, exito, error, onGuardar,
-  ocultarHeader, // ← prop nueva: oculta el header cuando el editor está en fullscreen
+  ocultarHeader,
 }) {
   const bannerRef      = useRef(null);
-  const [draggingIdx, setDraggingIdx] = useState(null);
-  const [dragOverIdx, setDragOverIdx] = useState(null);
-  const [showAgregar, setShowAgregar] = useState(false);
+  const [draggingIdx, setDraggingIdx]     = useState(null);
+  const [dragOverIdx, setDragOverIdx]     = useState(null);
+  const [showAgregar, setShowAgregar]     = useState(false);
+  const [showPlantillas, setShowPlantillas] = useState(false);
 
   const bannerSrc = bannerPreview?.startsWith("data:") ? bannerPreview
     : bannerPreview ? `${API_BASE}${bannerPreview}` : null;
@@ -72,8 +90,23 @@ export default function PanelEditor({
 
       {error && <div style={s.errorMsg}>{error}</div>}
 
-      {/* Secciones */}
-      <div style={s.seccionesLabel}>Secciones</div>
+      {/* Plantillas */}
+      <div style={s.plantillasRow}>
+        <span style={s.seccionesLabel2}>Secciones</span>
+        <button style={s.plantillasBtn} onClick={() => setShowPlantillas(true)}>
+          Plantillas
+        </button>
+      </div>
+
+      {showPlantillas && (
+        <ModalPlantillas
+          onCerrar={() => setShowPlantillas(false)}
+          onAplicar={(plantilla) => {
+            onAplicarPlantilla(plantilla);
+            setSeccionActiva(null);
+          }}
+        />
+      )}
       <div style={s.lista}>
         {layout.map((sec, idx) => {
           const info     = TIPOS_INFO[sec.tipo] || TIPOS_INFO.texto_libre;
@@ -211,13 +244,29 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
 
   if (seccion.tipo === "hero") return (
     <div style={f.wrap}>
-      <Field label="Color de marca">
+      <Field label="Variante de diseño">
+        <select value={seccion.config?.variante || "oscuro"} onChange={e => cfg("variante", e.target.value)} style={f.input}>
+          <option value="oscuro">Oscuro (fondo de color)</option>
+          <option value="lateral">Lateral (panel dividido)</option>
+          <option value="minimalista">Minimalista (fondo blanco)</option>
+        </select>
+      </Field>
+      <Field label="Color principal">
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input type="color" value={datos.color_primario || "#0F6E56"}
             onChange={e => onChange("color_primario", e.target.value)} style={f.colorInput} />
           <input type="text" value={datos.color_primario || ""} placeholder="#0F6E56"
             onChange={e => onChange("color_primario", e.target.value)} style={f.input} />
         </div>
+      </Field>
+      <Field label="Color secundario">
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input type="color" value={datos.color_secundario || "#0B1628"}
+            onChange={e => onChange("color_secundario", e.target.value)} style={f.colorInput} />
+          <input type="text" value={datos.color_secundario || ""} placeholder="#0B1628"
+            onChange={e => onChange("color_secundario", e.target.value)} style={f.input} />
+        </div>
+        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se usa en navbar, footer y elementos secundarios</div>
       </Field>
       <Field label="Banner de fondo">
         <div onClick={() => bannerRef.current?.click()} style={{ ...f.bannerUpload, overflow: "hidden" }}>
@@ -243,6 +292,12 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
         <input type="text" value={datos.hero_btn_texto || ""} onChange={e => onChange("hero_btn_texto", e.target.value)}
           placeholder="Ver catálogo" style={f.input} />
       </Field>
+      <Field label="Tipografía">
+        <select value={datos.fuente || "Inter"} onChange={e => onChange("fuente", e.target.value)} style={f.input}>
+          {FUENTES.map(ft => <option key={ft.value} value={ft.value}>{ft.label}</option>)}
+        </select>
+        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se aplica en toda la tienda</div>
+      </Field>
       <Field label="Horario de atención">
         <input type="text" value={datos.horario || ""} onChange={e => onChange("horario", e.target.value)}
           placeholder="Lun – Sáb: 7am – 6pm" style={f.input} />
@@ -251,8 +306,18 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
   );
 
   if (seccion.tipo === "catalogo") return (
-    <div style={f.infoBox}>
-      Los productos se gestionan desde la sección <strong style={{ color: "#00C9A7" }}>Productos</strong> del dashboard. Esta sección siempre muestra los productos con stock disponible.
+    <div style={f.wrap}>
+      <div style={f.infoBox}>
+        Los productos se gestionan desde la sección <strong style={{ color: "#00C9A7" }}>Productos</strong> del dashboard.
+      </div>
+      <Field label="Productos destacados en inicio">
+        <select value={datos.productos_destacados_cantidad || 4} onChange={e => onChange("productos_destacados_cantidad", Number(e.target.value))} style={f.input}>
+          <option value={4}>4 productos</option>
+          <option value={6}>6 productos</option>
+          <option value={8}>8 productos</option>
+        </select>
+        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Cantidad que se muestran en la página de inicio</div>
+      </Field>
     </div>
   );
 
@@ -313,6 +378,81 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
     </div>
   );
 
+  if (seccion.tipo === "faq") {
+    const preguntas = seccion.config?.preguntas || [];
+    const addPregunta = () => cfg("preguntas", [...preguntas, { pregunta: "", respuesta: "" }]);
+    const updatePregunta = (idx, campo, valor) => {
+      const copia = [...preguntas];
+      copia[idx] = { ...copia[idx], [campo]: valor };
+      cfg("preguntas", copia);
+    };
+    const removePregunta = (idx) => cfg("preguntas", preguntas.filter((_, i) => i !== idx));
+    return (
+      <div style={f.wrap}>
+        {preguntas.map((p, i) => (
+          <div key={i} style={{ padding: "10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, color: "#4A6080", fontWeight: 700 }}>PREGUNTA {i + 1}</span>
+              <button onClick={() => removePregunta(i)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>✕</button>
+            </div>
+            <input style={f.input} placeholder="¿Cuál es la pregunta?" value={p.pregunta} onChange={e => updatePregunta(i, "pregunta", e.target.value)} />
+            <textarea style={f.textarea} placeholder="Escribe la respuesta..." value={p.respuesta} onChange={e => updatePregunta(i, "respuesta", e.target.value)} rows={2} />
+          </div>
+        ))}
+        <button onClick={addPregunta} style={{ ...f.input, textAlign: "center", cursor: "pointer", color: "#00C9A7", border: "1px dashed rgba(0,201,167,0.3)" }}>
+          + Agregar pregunta
+        </button>
+      </div>
+    );
+  }
+
+  if (seccion.tipo === "galeria") {
+    const imagenes = seccion.config?.imagenes || [];
+    const addImagen = () => cfg("imagenes", [...imagenes, { url: "", titulo: "" }]);
+    const updateImagen = (idx, campo, valor) => {
+      const copia = [...imagenes];
+      copia[idx] = { ...copia[idx], [campo]: valor };
+      cfg("imagenes", copia);
+    };
+    const removeImagen = (idx) => cfg("imagenes", imagenes.filter((_, i) => i !== idx));
+    return (
+      <div style={f.wrap}>
+        <div style={f.infoBox}>
+          Agrega URLs de imágenes que quieras mostrar. Pueden ser de tus productos, local o equipo.
+        </div>
+        {imagenes.map((img, i) => (
+          <div key={i} style={{ padding: "10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 10, color: "#4A6080", fontWeight: 700 }}>IMAGEN {i + 1}</span>
+              <button onClick={() => removeImagen(i)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>✕</button>
+            </div>
+            <input style={f.input} placeholder="URL de la imagen" value={img.url} onChange={e => updateImagen(i, "url", e.target.value)} />
+            <input style={f.input} placeholder="Título (opcional)" value={img.titulo} onChange={e => updateImagen(i, "titulo", e.target.value)} />
+          </div>
+        ))}
+        <button onClick={addImagen} style={{ ...f.input, textAlign: "center", cursor: "pointer", color: "#00C9A7", border: "1px dashed rgba(0,201,167,0.3)" }}>
+          + Agregar imagen
+        </button>
+      </div>
+    );
+  }
+
+  if (seccion.tipo === "testimonios") return (
+    <div style={f.wrap}>
+      <div style={f.infoBox}>
+        Se muestran automáticamente las mejores reseñas (4-5 estrellas) de tus productos. Gestiónalas desde la sección <strong style={{ color: "#00C9A7" }}>Reseñas</strong> del dashboard.
+      </div>
+    </div>
+  );
+
+  if (seccion.tipo === "promociones") return (
+    <div style={f.wrap}>
+      <div style={f.infoBox}>
+        Se muestran automáticamente los cupones activos y vigentes. Gestiónalos desde la sección <strong style={{ color: "#00C9A7" }}>Cupones</strong> del dashboard.
+      </div>
+    </div>
+  );
+
   if (seccion.tipo === "contacto") return (
     <div style={f.wrap}>
       <Field label="Teléfono">
@@ -342,6 +482,14 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
         <input type="text" value={datos.facebook || ""} onChange={e => onChange("facebook", e.target.value)}
           placeholder="mitienda" style={f.input} />
       </Field>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.08em", margin: "10px 0 8px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
+        Footer
+      </div>
+      <Field label="Texto personalizado del footer">
+        <input type="text" value={datos.footer_texto || ""} onChange={e => onChange("footer_texto", e.target.value)}
+          placeholder="Ej: Todos los derechos reservados" style={f.input} maxLength={200} />
+        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Reemplaza "Powered by Merkai" en el pie de página</div>
+      </Field>
     </div>
   );
 
@@ -367,6 +515,9 @@ const s = {
   btnGuardar: { padding: "8px 16px", border: "none", borderRadius: 9, color: "white", fontSize: 12, fontWeight: 700, flexShrink: 0, transition: "all 0.2s" },
   errorMsg: { margin: "0 14px 8px", padding: "8px 12px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, fontSize: 12, color: "#fca5a5" },
   seccionesLabel: { padding: "12px 14px 6px", fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.1em" },
+  plantillasRow:  { padding: "12px 14px 6px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  seccionesLabel2: { fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.1em" },
+  plantillasBtn:  { fontSize: 11, fontWeight: 600, color: "#00C9A7", background: "rgba(0,201,167,0.08)", border: "1px solid rgba(0,201,167,0.2)", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
   lista: { padding: "0 10px", display: "flex", flexDirection: "column", gap: 3 },
   seccionItem: { display: "flex", alignItems: "center", gap: 6, padding: "8px 8px", borderRadius: 10, border: "1px solid", cursor: "default", transition: "all 0.15s", userSelect: "none" },
   dragHandle: { color: "#2D4060", fontSize: 14, cursor: "grab", flexShrink: 0, lineHeight: 1, letterSpacing: "-2px" },

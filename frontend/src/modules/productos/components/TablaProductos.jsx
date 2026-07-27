@@ -1,14 +1,31 @@
+import { useState } from "react";
 import { formatearPrecio } from "../helpers/formatearPrecio";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const IMG_PLACEHOLDER = "https://placehold.co/300x200/E1F5EE/0F6E56?text=🐟";
 
-export default function TablaProductos({ productos, onEliminar, onEditar, vista = "grid" }) {
+export default function TablaProductos({ productos, onEliminar, onEditar, onAgregar, vista = "grid" }) {
+  const [copiadoId, setCopiadoId] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
+  const copiarLink = (productoId) => {
+    const slug = localStorage.getItem("empresa_slug") || "";
+    const url  = `${window.location.origin}/tienda/${slug}/catalogo?producto=${productoId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiadoId(productoId);
+      setTimeout(() => setCopiadoId(null), 2000);
+    });
+  };
+
   if (productos.length === 0) {
     return (
       <div style={styles.empty}>
-        <span style={styles.emptyIcon}></span>
-        <p style={styles.emptyText}>No se encontraron productos</p>
+        <span style={styles.emptyIcon}>📦</span>
+        <p style={styles.emptyTitle}>No hay productos aún</p>
+        <p style={styles.emptyText}>Agrega tu primer producto para que aparezca en tu tienda online</p>
+        {onAgregar && (
+          <button style={styles.emptyBtn} onClick={onAgregar}>+ Agregar primer producto</button>
+        )}
       </div>
     );
   }
@@ -32,8 +49,25 @@ export default function TablaProductos({ productos, onEliminar, onEditar, vista 
                 Stock: {p.stock}
               </span>
               <div style={styles.cardActions}>
-                <button style={styles.editBtn} onClick={() => onEditar(p)}>Editar</button>
-                <button style={styles.deleteBtn} onClick={() => onEliminar(p.id)}>Eliminar</button>
+                {pendingDeleteId === p.id ? (
+                  <>
+                    <span style={styles.confirmText}>¿Eliminar?</span>
+                    <button style={styles.btnConfirmYes} onClick={() => { onEliminar(p.id); setPendingDeleteId(null); }}>Sí</button>
+                    <button style={styles.btnConfirmNo} onClick={() => setPendingDeleteId(null)}>No</button>
+                  </>
+                ) : (
+                  <>
+                    <button style={styles.editBtn} onClick={() => onEditar(p)}>Editar</button>
+                    <button style={styles.deleteBtn} onClick={() => setPendingDeleteId(p.id)}>Eliminar</button>
+                    <button
+                      style={copiadoId === p.id ? styles.copiadoBtn : styles.copiarBtn}
+                      onClick={() => copiarLink(p.id)}
+                      title="Copiar link de producto para compartir"
+                    >
+                      {copiadoId === p.id ? "✓" : "🔗"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           );
@@ -63,8 +97,25 @@ export default function TablaProductos({ productos, onEliminar, onEditar, vista 
               <p style={styles.cardName}>{p.nombre}</p>
               <p style={styles.cardPrice}>{formatearPrecio(p.precio)}</p>
               <div style={styles.cardActions}>
-                <button style={styles.editBtn} onClick={() => onEditar(p)}>Editar</button>
-                <button style={styles.deleteBtn} onClick={() => onEliminar(p.id)}> Eliminar</button>
+                {pendingDeleteId === p.id ? (
+                  <>
+                    <span style={styles.confirmText}>¿Eliminar?</span>
+                    <button style={styles.btnConfirmYes} onClick={() => { onEliminar(p.id); setPendingDeleteId(null); }}>Sí</button>
+                    <button style={styles.btnConfirmNo} onClick={() => setPendingDeleteId(null)}>No</button>
+                  </>
+                ) : (
+                  <>
+                    <button style={styles.editBtn} onClick={() => onEditar(p)}>Editar</button>
+                    <button style={styles.deleteBtn} onClick={() => setPendingDeleteId(p.id)}>Eliminar</button>
+                    <button
+                      style={copiadoId === p.id ? styles.copiadoBtn : styles.copiarBtn}
+                      onClick={() => copiarLink(p.id)}
+                      title="Copiar link de producto para compartir"
+                    >
+                      {copiadoId === p.id ? "✓" : "🔗"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -194,11 +245,11 @@ const styles = {
   editBtn: {
     flex: 1,
     padding: "6px 0",
-    border: "1.5px solid #1D9E75",
+    border: "1.5px solid #2563eb",
     borderRadius: "8px",
     cursor: "pointer",
     backgroundColor: "transparent",
-    color: "#0F6E56",
+    color: "#2563eb",
     fontSize: "12px",
     fontWeight: "600",
   },
@@ -214,12 +265,55 @@ const styles = {
     fontWeight: "600",
   },
 
+  copiarBtn: {
+    padding: "6px 10px",
+    border: "1.5px solid #3b82f6",
+    borderRadius: "8px",
+    cursor: "pointer",
+    backgroundColor: "transparent",
+    color: "#3b82f6",
+    fontSize: "13px",
+    fontWeight: "600",
+    flexShrink: 0,
+  },
+  copiadoBtn: {
+    padding: "6px 10px",
+    border: "1.5px solid #10b981",
+    borderRadius: "8px",
+    cursor: "pointer",
+    backgroundColor: "#f0fdf4",
+    color: "#10b981",
+    fontSize: "12px",
+    fontWeight: "700",
+    flexShrink: 0,
+  },
+
+  // Confirm delete
+  confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
+  btnConfirmYes: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#64748b",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
+  },
+
   // Empty
   empty: {
     textAlign: "center",
-    padding: "48px 20px",
-    color: "#94a3b8",
+    padding: "64px 24px",
+    display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
   },
-  emptyIcon: { fontSize: "40px", display: "block", marginBottom: "10px" },
-  emptyText: { fontSize: "14px" },
+  emptyIcon: { fontSize: "48px", lineHeight: 1 },
+  emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  emptyText: { fontSize: "13px", color: "#94a3b8", maxWidth: "320px", lineHeight: 1.5, margin: 0 },
+  emptyBtn: {
+    marginTop: "6px", padding: "10px 22px",
+    backgroundColor: "#2563eb", color: "white",
+    border: "none", borderRadius: "10px",
+    fontSize: "13px", fontWeight: "600", cursor: "pointer",
+  },
 };

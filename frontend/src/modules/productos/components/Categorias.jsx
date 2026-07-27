@@ -150,7 +150,7 @@ export default function Categorias() {
         .cat-nueva-input:focus { border-color: #00C9A7; }
         .cat-nueva-btn {
           padding: 9px 18px;
-          background: linear-gradient(135deg, #00C9A7, #0099FF);
+          background: #2563eb;
           border: none; border-radius: 10px;
           color: #fff; font-family: 'DM Sans', sans-serif;
           font-size: 13px; font-weight: 500; cursor: pointer;

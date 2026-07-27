@@ -16,7 +16,10 @@ export const DEFAULT_LAYOUT = [
 
 const DATOS_INICIAL = {
   nombre: "", nit: "", slug: "", logoUrl: null,
-  color_primario: "#0F6E56", descripcion: "", horario: "",
+  color_primario: "#0F6E56", color_secundario: "#0B1628",
+  unidad_predeterminada: "unidad", fuente: "Inter",
+  productos_destacados_cantidad: 4, footer_texto: "",
+  descripcion: "", horario: "",
   banner_url: null,
   hero_titulo: "", hero_subtitulo: "", hero_btn_texto: "",
   nosotros_titulo: "", nosotros_contenido: "",
@@ -44,7 +47,12 @@ export function useEditor() {
         slug:               data.slug               || "",
         logoUrl:            data.logoUrl            || null,
         color_primario:     data.color_primario     || "#0F6E56",
-        descripcion:        data.descripcion        || "",
+        color_secundario:   data.color_secundario   || "#0B1628",
+        unidad_predeterminada:         data.unidad_predeterminada         || "unidad",
+        fuente:                        data.fuente                        || "Inter",
+        productos_destacados_cantidad: data.productos_destacados_cantidad || 4,
+        footer_texto:                  data.footer_texto                  || "",
+        descripcion:                   data.descripcion                   || "",
         horario:            data.horario            || "",
         banner_url:         data.banner_url         || null,
         hero_titulo:        data.hero_titulo        || "",
@@ -107,9 +115,12 @@ export function useEditor() {
 
   const onAddSeccion = useCallback((tipo) => {
     const id = `${tipo}_${Date.now()}`;
-    const config = tipo === "texto_libre"
-      ? { titulo: "", contenido: "", color_fondo: "#ffffff", color_texto: "#0f172a", alineacion: "center" }
-      : {};
+    const configs = {
+      texto_libre: { titulo: "", contenido: "", color_fondo: "#ffffff", color_texto: "#0f172a", alineacion: "center" },
+      faq: { preguntas: [{ pregunta: "", respuesta: "" }] },
+      galeria: { imagenes: [{ url: "", titulo: "" }] },
+    };
+    const config = configs[tipo] || {};
     setLayout(prev => {
       // Insertar antes de "contacto" si existe, si no al final
       const idxContacto = prev.findIndex(s => s.tipo === "contacto");
@@ -129,6 +140,33 @@ export function useEditor() {
     ));
   }, []);
 
+  const SECCIONES_FIJAS = new Set(["hero", "catalogo", "contacto"]);
+
+  const aplicarPlantilla = useCallback((plantilla) => {
+    const nuevoLayout = plantilla.secciones.map(sec => ({
+      id: SECCIONES_FIJAS.has(sec.tipo)
+        ? sec.tipo
+        : `${sec.tipo}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      tipo: sec.tipo,
+      visible: true,
+      config: { ...sec.config },
+    }));
+    setLayout(nuevoLayout);
+    setDatos(prev => ({
+      ...prev,
+      color_primario:     plantilla.color_primario,
+      color_secundario:   plantilla.color_secundario,
+      fuente:             plantilla.fuente,
+      hero_titulo:        plantilla.hero_titulo        ?? prev.hero_titulo,
+      hero_subtitulo:     plantilla.hero_subtitulo     ?? prev.hero_subtitulo,
+      hero_btn_texto:     plantilla.hero_btn_texto     ?? prev.hero_btn_texto,
+      horario:            plantilla.horario            ?? prev.horario,
+      nosotros_titulo:    plantilla.nosotros_titulo    ?? prev.nosotros_titulo,
+      nosotros_contenido: plantilla.nosotros_contenido ?? prev.nosotros_contenido,
+      footer_texto:       plantilla.footer_texto       ?? prev.footer_texto,
+    }));
+  }, []);
+
   // ── Guardar ──────────────────────────────────────────────────────
   const guardar = useCallback(async () => {
     setGuardando(true);
@@ -138,11 +176,15 @@ export function useEditor() {
         updateDatosEmpresa({
           nombre: datos.nombre, nit: datos.nit,
           telefono: datos.telefono, email: datos.email, direccion: datos.direccion,
-          descripcion: datos.descripcion, color_primario: datos.color_primario,
+          descripcion: datos.descripcion, color_primario: datos.color_primario, color_secundario: datos.color_secundario,
           instagram: datos.instagram, whatsapp: datos.whatsapp, facebook: datos.facebook,
           horario: datos.horario,
           hero_titulo: datos.hero_titulo, hero_subtitulo: datos.hero_subtitulo, hero_btn_texto: datos.hero_btn_texto,
           nosotros_titulo: datos.nosotros_titulo, nosotros_contenido: datos.nosotros_contenido,
+          unidad_predeterminada: datos.unidad_predeterminada,
+          fuente: datos.fuente,
+          productos_destacados_cantidad: datos.productos_destacados_cantidad,
+          footer_texto: datos.footer_texto,
         }),
         updateLayout(layout),
       ]);
@@ -165,6 +207,7 @@ export function useEditor() {
     cargando, guardando, exito, error,
     cargar, onChange, onBannerChange,
     onLayoutChange, onToggleSeccion, onDeleteSeccion, onAddSeccion, onSeccionConfigChange,
+    aplicarPlantilla,
     guardar,
   };
 }

@@ -62,11 +62,16 @@ export default function TiendaOnline() {
       nombre: empresa.nombre, nit: empresa.nit,
       email: empresa.email, telefono: empresa.telefono,
       direccion: empresa.direccion, descripcion: empresa.descripcion,
-      color_primario: empresa.color_primario, instagram: empresa.instagram,
-      whatsapp: empresa.whatsapp, facebook: empresa.facebook,
-      horario: empresa.horario, hero_titulo: empresa.hero_titulo,
-      hero_subtitulo: empresa.hero_subtitulo, hero_btn_texto: empresa.hero_btn_texto,
-      nosotros_titulo: empresa.nosotros_titulo, nosotros_contenido: empresa.nosotros_contenido,
+      color_primario: empresa.color_primario, color_secundario: empresa.color_secundario,
+      instagram: empresa.instagram, whatsapp: empresa.whatsapp,
+      facebook: empresa.facebook, horario: empresa.horario,
+      hero_titulo: empresa.hero_titulo, hero_subtitulo: empresa.hero_subtitulo,
+      hero_btn_texto: empresa.hero_btn_texto, nosotros_titulo: empresa.nosotros_titulo,
+      nosotros_contenido: empresa.nosotros_contenido,
+      unidad_predeterminada: empresa.unidad_predeterminada,
+      fuente: empresa.fuente,
+      productos_destacados_cantidad: empresa.productos_destacados_cantidad,
+      footer_texto: empresa.footer_texto,
     });
     setIframeKey(k => k + 1);
   }, [empresa, guardar]);
@@ -198,10 +203,12 @@ export default function TiendaOnline() {
 // ── Contenido de subsecciones ────────────────────────────────────────────────
 function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange, onQuitarBanner }) {
   const COLORES = ["#0F6E56", "#0099FF", "#7c3aed", "#db2777", "#dc2626", "#d97706", "#0e7490", "#0B1628"];
+  const COLORES_SEC = ["#0B1628", "#1e293b", "#334155", "#1e3a5f", "#312e81", "#3f3f46", "#18181b", "#0c4a6e"];
 
   if (subKey === "color") return (
     <div style={f.wrap}>
       <p style={f.tip}>💡 Se aplica en botones y precios de tu tienda.</p>
+      <label style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em" }}>Color principal</label>
       <div style={f.colorRow}>
         {COLORES.map(c => (
           <button key={c} type="button"
@@ -216,6 +223,24 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
       <div style={f.colorValRow}>
         <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b" }}>{empresa?.color_primario || "#0F6E56"}</span>
         <div style={{ ...f.colorPreview, backgroundColor: empresa?.color_primario || "#0F6E56" }}>Vista previa</div>
+      </div>
+      <div style={{ height: 1, backgroundColor: "#e2e8f0", margin: "6px 0" }} />
+      <label style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em" }}>Color secundario</label>
+      <p style={{ fontSize: 10, color: "#94a3b8", marginTop: -6 }}>Navbar, footer y elementos secundarios</p>
+      <div style={f.colorRow}>
+        {COLORES_SEC.map(c => (
+          <button key={c} type="button"
+            style={{ ...f.colorDot, backgroundColor: c, outline: empresa?.color_secundario === c ? `3px solid #0f172a` : "none", outlineOffset: "2px", transform: empresa?.color_secundario === c ? "scale(1.15)" : "scale(1)" }}
+            onClick={() => onChange("color_secundario", c)}
+          />
+        ))}
+        <input type="color" value={empresa?.color_secundario || "#0B1628"} onChange={e => onChange("color_secundario", e.target.value)}
+          style={{ width: 22, height: 22, border: "none", cursor: "pointer", borderRadius: "50%", padding: 0 }} title="Color personalizado"
+        />
+      </div>
+      <div style={f.colorValRow}>
+        <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b" }}>{empresa?.color_secundario || "#0B1628"}</span>
+        <div style={{ ...f.colorPreview, backgroundColor: empresa?.color_secundario || "#0B1628" }}>Vista previa</div>
       </div>
     </div>
   );

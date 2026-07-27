@@ -189,7 +189,7 @@ function TabResumen({ periodo }) {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
         <KpiCard label="Ingresos totales"  value={fmt(kpis.ingresos)}         sub="Total del período"           color={C.verde}   icon="💰" />
         <KpiCard label="Ticket promedio"   value={fmt(kpis.ticket_promedio)}   sub="Por transacción"             color={C.azul}    icon="🧾" />
         <KpiCard label="Total ventas"      value={kpis.total_ventas}           sub="POS + online"                color={C.violeta} icon="📦" />
@@ -218,7 +218,7 @@ function TabResumen({ periodo }) {
       </div>
 
       {/* Top productos + Canal */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }} className="rep-two-col">
         <div style={sCard}>
           <div style={sCardHdr}><h3 style={sCardTitle}>Top productos</h3><span style={sCardSub}>Por ingresos generados</span></div>
           {topProductos.length === 0 ? <Empty /> : (
@@ -349,7 +349,7 @@ function TabRentabilidad({ periodo }) {
       )}
 
       {/* KPIs globales */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
         <KpiCard label="Ingresos brutos"   value={fmtShort(totales.ingresos)}  sub="Total vendido"             color={C.azul}    icon="💵" />
         <KpiCard label="Costo total"        value={fmtShort(totales.costo)}     sub="Costo de lo vendido"       color={C.rojo}    icon="🏭" />
         <KpiCard label="Ganancia bruta"     value={fmtShort(totales.ganancia)}  sub="Ingresos − Costos"         color={C.verde}   icon="💰" />
@@ -490,7 +490,7 @@ function TabComparativa({ periodo }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* KPIs comparativos */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
         {kpisMeta.map(m => {
           const delta = cambios[m.key];
           return (
@@ -598,10 +598,20 @@ export default function Reportes() {
   const [periodo, setPeriodo] = useState("mes");
 
   return (
-    <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 20 }} className="rep-page">
+      <style>{`
+        @media (max-width: 768px) {
+          .rep-page { padding: 16px !important; }
+          .rep-tabs { overflow-x: auto; flex-wrap: nowrap !important; }
+          .rep-tabs button { white-space: nowrap; padding: 10px 14px !important; font-size: 12px !important; }
+          .rep-kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .rep-two-col  { grid-template-columns: 1fr !important; }
+          .rep-header   { flex-direction: column !important; align-items: flex-start !important; }
+        }
+      `}</style>
 
       {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }} className="rep-header">
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", margin: 0 }}>Reportes</h2>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: "2px 0 0" }}>
@@ -612,7 +622,7 @@ export default function Reportes() {
       </div>
 
       {/* TABS */}
-      <div style={{ display: "flex", gap: 4, borderBottom: "2px solid #f1f5f9", paddingBottom: 0 }}>
+      <div style={{ display: "flex", gap: 4, borderBottom: "2px solid #f1f5f9", paddingBottom: 0 }} className="rep-tabs">
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             display: "flex", alignItems: "center", gap: 7,

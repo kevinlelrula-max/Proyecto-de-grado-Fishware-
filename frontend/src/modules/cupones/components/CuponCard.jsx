@@ -1,4 +1,7 @@
+import { useState } from "react";
+
 export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVerUsos }) {
+  const [confirmando, setConfirmando] = useState(false);
   const esVigente = () => {
     const ahora = new Date();
     if (cupon.fecha_inicio && new Date(cupon.fecha_inicio) > ahora) return false;
@@ -83,15 +86,19 @@ export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVer
 
       {/* Acciones */}
       <div style={s.acciones}>
-        <button style={s.btnUsos} onClick={() => onVerUsos(cupon)}>
-          📊 Ver usos
-        </button>
-        <button style={s.btnEditar} onClick={() => onEditar(cupon)}>
-          ✏️ Editar
-        </button>
-        <button style={s.btnEliminar} onClick={() => onEliminar(cupon.id)}>
-          🗑️
-        </button>
+        {confirmando ? (
+          <>
+            <span style={s.confirmText}>¿Eliminar?</span>
+            <button style={s.btnConfirmYes} onClick={() => { onEliminar(cupon.id); setConfirmando(false); }}>Sí</button>
+            <button style={s.btnConfirmNo} onClick={() => setConfirmando(false)}>No</button>
+          </>
+        ) : (
+          <>
+            <button style={s.btnUsos} onClick={() => onVerUsos(cupon)}>📊 Ver usos</button>
+            <button style={s.btnEditar} onClick={() => onEditar(cupon)}>✏️ Editar</button>
+            <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>🗑️</button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -170,5 +177,16 @@ const s = {
     padding: "7px 12px", fontSize: "13px",
     backgroundColor: "#fef2f2", color: "#b91c1c",
     border: "1px solid #fecaca", borderRadius: "8px", cursor: "pointer",
+  },
+  confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap", alignSelf: "center" },
+  btnConfirmYes: {
+    padding: "6px 12px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "6px 12px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#64748b",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
   },
 };

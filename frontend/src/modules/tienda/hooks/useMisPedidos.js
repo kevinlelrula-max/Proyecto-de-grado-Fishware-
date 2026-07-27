@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getMisPedidos, getEstadoPedido } from "../../../services/api";
 
 const POLL_INTERVAL = 30000; // 30 segundos
@@ -14,19 +14,32 @@ export const ESTADOS = {
 };
 
 export function useMisPedidos() {
-  const [pedidos, setPedidos]   = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState("");
+  const [pedidos,      setPedidos]      = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState("");
+  const [notifPermiso, setNotifPermiso] = useState(
+    typeof Notification !== "undefined" ? Notification.permission : "denied"
+  );
 
   const clienteToken  = localStorage.getItem("cliente_token");
   const clienteNombre = localStorage.getItem("cliente_nombre");
   const estaLogueado  = !!clienteToken;
+
+  const prevEstadosRef = useRef(new Map());
+
+  const pedirPermiso = useCallback(async () => {
+    if (typeof Notification === "undefined") return;
+    const permiso = await Notification.requestPermission();
+    setNotifPermiso(permiso);
+  }, []);
 
   // Cargar todos los pedidos
   const fetchPedidos = useCallback(async () => {
     if (!clienteToken) return;
     try {
       const data = await getMisPedidos(clienteToken);
+      // Inicializar mapa de estados (sin notificar en la carga inicial)
+      data.forEach(p => prevEstadosRef.current.set(p.id, p.estado));
       setPedidos(data);
     } catch {
       setError("No se pudieron cargar los pedidos.");
@@ -57,6 +70,25 @@ export function useMisPedidos() {
         pedidosActivos.map((p) => getEstadoPedido(p.id, clienteToken))
       );
 
+      // Notificar cambios de estado
+      actualizaciones.forEach(actualizado => {
+        if (!actualizado) return;
+        const estadoPrev = prevEstadosRef.current.get(actualizado.id);
+        if (
+          estadoPrev &&
+          estadoPrev !== actualizado.estado &&
+          typeof Notification !== "undefined" &&
+          Notification.permission === "granted"
+        ) {
+          const estadoInfo = ESTADOS[actualizado.estado];
+          new Notification(`Tu pedido #${actualizado.id} fue actualizado`, {
+            body: `Estado: ${estadoInfo?.icon ?? ""} ${estadoInfo?.label ?? actualizado.estado}`,
+            icon: "/favicon.ico",
+          });
+        }
+        prevEstadosRef.current.set(actualizado.id, actualizado.estado);
+      });
+
       setPedidos((prev) =>
         prev.map((pedido) => {
           const actualizado = actualizaciones.find(
@@ -80,5 +112,7 @@ export function useMisPedidos() {
     estaLogueado,
     clienteNombre,
     refetch: fetchPedidos,
+    notifPermiso,
+    pedirPermiso,
   };
 }

@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 import { crearRol } from "../services/usuarios.api";
 
 const ROLES_FIJOS = [1, 2, 3, 4];
@@ -62,7 +65,7 @@ export default function Gestionroles() {
   const cargar = async () => {
     setCargando(true);
     try {
-      const res = await fetch("http://localhost:3000/api/usuarios/roles/todos", {
+      const res = await fetch(`${API}/api/usuarios/roles/todos`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -86,7 +89,7 @@ export default function Gestionroles() {
       setRoles([...roles, creado]);
       setNuevoRol("");
     } catch (error) {
-      alert(error.response?.data?.error || "Error al crear rol");
+      toast.error(error.response?.data?.error || "Error al crear rol");
     } finally {
       setGuardando(false);
     }
@@ -100,7 +103,7 @@ export default function Gestionroles() {
     }
     setRolEditando(rol);
     try {
-      const res = await fetch(`http://localhost:3000/api/usuarios/roles/${rol.id}/permisos`, {
+      const res = await fetch(`${API}/api/usuarios/roles/${rol.id}/permisos`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -124,7 +127,7 @@ export default function Gestionroles() {
   const guardarPermisos = async () => {
     setGuardandoPermisos(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/usuarios/roles/${rolEditando.id}/permisos`, {
+      const res = await fetch(`${API}/api/usuarios/roles/${rolEditando.id}/permisos`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -135,14 +138,14 @@ export default function Gestionroles() {
 
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Error al guardar");
+        toast.error(err.error || "Error al guardar");
         return;
       }
 
-      alert(`Permisos de "${rolEditando.nombre}" actualizados ✅`);
+      toast.success(`Permisos de "${rolEditando.nombre}" actualizados`);
       setRolEditando(null);
     } catch (e) {
-      alert("Error al guardar permisos");
+      toast.error("Error al guardar permisos");
     } finally {
       setGuardandoPermisos(false);
     }

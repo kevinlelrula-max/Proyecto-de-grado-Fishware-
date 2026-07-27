@@ -75,8 +75,8 @@ export const getreporteEmpresa = async (req, res) => {
       `SELECT nombre, SUM(ingresos) AS ingresos, SUM(unidades) AS unidades
        FROM (
          SELECT p.nombre,
-                SUM(dv.kilos * dv.precio_unitario) AS ingresos,
-                SUM(dv.kilos) AS unidades
+                SUM(dv.cantidad * dv.precio_unitario) AS ingresos,
+                SUM(dv.cantidad) AS unidades
          FROM detalle_venta dv
          JOIN productos p  ON p.id = dv.producto_id
          JOIN ventas v      ON v.id = dv.venta_id
@@ -86,8 +86,8 @@ export const getreporteEmpresa = async (req, res) => {
          UNION ALL
 
          SELECT p.nombre,
-                SUM(dp.kilos * dp.precio_unitario) AS ingresos,
-                SUM(dp.kilos) AS unidades
+                SUM(dp.cantidad * dp.precio_unitario) AS ingresos,
+                SUM(dp.cantidad) AS unidades
          FROM detalle_pedido_online dp
          JOIN productos p         ON p.id = dp.producto_id
          JOIN pedidos_online po    ON po.id = dp.pedido_id
@@ -183,9 +183,9 @@ export const getRentabilidad = async (req, res) => {
          END AS margen_pct
        FROM (
          SELECT dv.producto_id,
-                SUM(dv.kilos)                                        AS unidades,
-                SUM(dv.kilos * dv.precio_unitario)                   AS ingresos,
-                SUM(dv.kilos * COALESCE(pr.precio_costo, 0))         AS costo
+                SUM(dv.cantidad)                                        AS unidades,
+                SUM(dv.cantidad * dv.precio_unitario)                   AS ingresos,
+                SUM(dv.cantidad * COALESCE(pr.precio_costo, 0))         AS costo
          FROM detalle_venta dv
          JOIN ventas v    ON v.id  = dv.venta_id
          JOIN productos pr ON pr.id = dv.producto_id
@@ -195,9 +195,9 @@ export const getRentabilidad = async (req, res) => {
          UNION ALL
 
          SELECT dp.producto_id,
-                SUM(dp.kilos)                                        AS unidades,
-                SUM(dp.kilos * dp.precio_unitario)                   AS ingresos,
-                SUM(dp.kilos * COALESCE(pr.precio_costo, 0))         AS costo
+                SUM(dp.cantidad)                                        AS unidades,
+                SUM(dp.cantidad * dp.precio_unitario)                   AS ingresos,
+                SUM(dp.cantidad * COALESCE(pr.precio_costo, 0))         AS costo
          FROM detalle_pedido_online dp
          JOIN pedidos_online po ON po.id  = dp.pedido_id
          JOIN productos pr      ON pr.id  = dp.producto_id
@@ -467,6 +467,84 @@ export const getResumenInicio = async (req, res) => {
       [empresa_id]
     );
 
+    // Sugerencias de reorden: promedio diario (30 días) y cantidad sugerida (7 días)
+    const sugerenciasReorden = await pool.query(
+      `SELECT
+         p.id,
+         p.nombre,
+         p.stock,
+         p.stock_minimo,
+         p.unidad,
+         ROUND(COALESCE(v30.total_vendido / 30.0, 0)::numeric, 2) AS promedio_diario,
+         GREATEST(0, ROUND((COALESCE(v30.total_vendido / 30.0, 0) * 7 - p.stock)::numeric, 1)) AS cantidad_sugerida
+       FROM productos p
+       LEFT JOIN (
+         SELECT producto_id, SUM(cantidad) AS total_vendido
+         FROM (
+           SELECT dv.producto_id, dv.cantidad
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1
+             AND v.fecha >= NOW() - INTERVAL '30 days'
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.fecha_pedido >= NOW() - INTERVAL '30 days'
+             AND po.estado != 'cancelado'
+         ) t
+         GROUP BY producto_id
+       ) v30 ON v30.producto_id = p.id
+       WHERE p.empresa_id = $1
+         AND p.stock_minimo IS NOT NULL
+         AND p.stock <= p.stock_minimo
+       ORDER BY p.stock ASC
+       LIMIT 8`,
+      [empresa_id]
+    );
+
+    // Ventas del mes actual (POS + pedidos online)
+    const ventasMes = await pool.query(
+      `SELECT
+         COALESCE(
+           (SELECT SUM(total) FROM ventas
+            WHERE empresa_id = $1
+            AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)), 0
+         )
+         +
+         COALESCE(
+           (SELECT SUM(total) FROM pedidos_online
+            WHERE empresa_id = $1
+            AND DATE_TRUNC('month', fecha_pedido) = DATE_TRUNC('month', CURRENT_DATE)
+            AND estado != 'cancelado'), 0
+         ) AS total_mes`,
+      [empresa_id]
+    );
+
+    // Clientes dormidos: sin compra en los últimos 30 días
+    const clientesDormidos = await pool.query(
+      `SELECT p.id, p.nombre, p.apellido, p.telefono,
+              MAX(GREATEST(
+                COALESCE(v.fecha::date, '2000-01-01'::date),
+                COALESCE(po.fecha_pedido::date, '2000-01-01'::date)
+              )) AS ultima_compra
+       FROM persona p
+       LEFT JOIN ventas v ON v.cliente_id = p.id AND v.empresa_id = $1
+       LEFT JOIN pedidos_online po ON po.cliente_id = p.id AND po.empresa_id = $1
+                                   AND po.estado != 'cancelado'
+       WHERE p.empresa_id = $1 AND p.rol_id = 4
+       GROUP BY p.id, p.nombre, p.apellido, p.telefono
+       HAVING MAX(GREATEST(
+                COALESCE(v.fecha::date, '2000-01-01'::date),
+                COALESCE(po.fecha_pedido::date, '2000-01-01'::date)
+              )) < CURRENT_DATE - INTERVAL '30 days'
+          OR (MAX(v.fecha) IS NULL AND MAX(po.fecha_pedido) IS NULL)
+       ORDER BY ultima_compra ASC NULLS FIRST
+       LIMIT 8`,
+      [empresa_id]
+    );
+
     // ── ONBOARDING: verificar qué pasos están completos ──
     const [empresaInfo, lealtadCount, equipoCount, referidosCount] = await Promise.all([
       pool.query(
@@ -506,12 +584,15 @@ export const getResumenInicio = async (req, res) => {
 
     res.json({
       ventasHoy:          ventasHoy.rows[0],
+      ventasMes:          parseFloat(ventasMes.rows[0].total_mes),
       pedidosPendientes:  parseInt(pedidosPendientes.rows[0].total),
       stockBajo:          parseInt(stockBajo.rows[0].total),
       totalClientes:      parseInt(clientes.rows[0].total),
       totalProductos:     parseInt(productos.rows[0].total),
       ultimosPedidos:     ultimosPedidos.rows,
       productosStockBajo: productosStockBajo.rows,
+      sugerenciasReorden: sugerenciasReorden.rows,
+      clientesDormidos:   clientesDormidos.rows,
       onboarding,
     });
 

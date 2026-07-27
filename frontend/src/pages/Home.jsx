@@ -67,7 +67,7 @@ export default function Home() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={n.brandName}>WareFish</span>
+            <span style={n.brandName}>Merkai</span>
           </div>
 
           <div style={n.navLinks}>
@@ -122,7 +122,7 @@ export default function Home() {
             <div style={h.imgFrame}>
               <img
                 src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&q=80"
-                alt="Dashboard FishWare"
+                alt="Dashboard Merkai"
                 style={h.img}
               />
               <div style={h.floatBadge}>
@@ -249,7 +249,7 @@ export default function Home() {
         <motion.div style={ct.inner} {...fadeUp(0)}>
           <h2 style={ct.title}>¿Listo para transformar tu empresa?</h2>
           <p style={ct.subtitle}>
-            Únete a cientos de empresas que ya gestionan su negocio con FishWare.
+            Únete a cientos de empresas que ya gestionan su negocio con Merkai.
           </p>
           <div style={ct.btns}>
             <button onClick={() => navigate("/empresa/registro")} style={ct.btnPrimary}>
@@ -272,9 +272,9 @@ export default function Home() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={fo.brandName}>FishWare</span>
+            <span style={fo.brandName}>Merkai</span>
           </div>
-          <span style={fo.copy}>© 2026 FishWare · Plataforma empresarial</span>
+          <span style={fo.copy}>© 2026 Merkai · Plataforma empresarial</span>
         </div>
       </footer>
               <BtnSoporte />

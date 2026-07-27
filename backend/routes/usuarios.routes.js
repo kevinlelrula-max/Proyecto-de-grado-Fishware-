@@ -11,7 +11,8 @@ import {
   getPermisosRol,
   actualizarPermisosRol,
   getPerfil,
-  actualizarPerfil
+  actualizarPerfil,
+  cambiarContrasenaUsuario
 } from "../controllers/usuarios.controller.js";
 import { verificarToken } from "../middlewares/auth.middleware.js";
 
@@ -19,8 +20,9 @@ const router = Router();
 
 // ✅ Rutas específicas SIEMPRE antes de /:id
 // Perfil
-router.get("/perfil",       verificarToken, getPerfil);
-router.put("/perfil",       verificarToken, actualizarPerfil);
+router.get("/perfil",             verificarToken, getPerfil);
+router.put("/perfil",             verificarToken, actualizarPerfil);
+router.put("/perfil/contrasena",  verificarToken, cambiarContrasenaUsuario);
 
 // Roles
 router.get("/roles",              verificarToken, getRoles);

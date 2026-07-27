@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ESTADOS } from "../hooks/useMisPedidos";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -27,8 +28,22 @@ function useHistorial(pedidoId) {
 }
 
 export default function PedidoCard({ pedido }) {
+  const navigate = useNavigate();
   const { historial, abierto, loading, cargar } = useHistorial(pedido.id);
   const estado  = ESTADOS[pedido.estado] || ESTADOS.pendiente;
+
+  const repetirPedido = () => {
+    const items = pedido.detalle?.map(item => ({
+      producto_id: item.producto_id,
+      cantidad:    Math.max(1, Math.ceil(item.cantidad)),
+      nombre:      item.nombre,
+    })) || [];
+    localStorage.setItem("fishware_repetir_pedido", JSON.stringify({
+      empresa_slug: pedido.empresa_slug,
+      items,
+    }));
+    navigate(`/tienda/${pedido.empresa_slug}/catalogo`);
+  };
   const fecha   = new Date(pedido.fecha_pedido).toLocaleDateString("es-CO", {
     year: "numeric", month: "long", day: "numeric",
     hour: "2-digit", minute: "2-digit",
@@ -97,7 +112,7 @@ export default function PedidoCard({ pedido }) {
         {pedido.detalle?.map((item, i) => (
           <div key={i} style={s.detalleItem}>
             <span style={s.detalleNombre}>🐟 {item.nombre}</span>
-            <span style={s.detalleKilos}>{item.kilos} kg</span>
+            <span style={s.detalleKilos}>{Number(item.cantidad).toFixed(1)} {item.unidad || "uds."}</span>
             <span style={s.detalleSubtotal}>
               ${Number(item.subtotal).toLocaleString("es-CO")}
             </span>
@@ -131,6 +146,15 @@ export default function PedidoCard({ pedido }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Repetir pedido — solo pedidos entregados */}
+      {pedido.estado === "entregado" && pedido.empresa_slug && (
+        <div style={s.repetirRow}>
+          <button style={s.repetirBtn} onClick={repetirPedido}>
+            🔄 Repetir pedido
+          </button>
         </div>
       )}
 
@@ -284,4 +308,21 @@ const s = {
   historialEstado: { fontSize: "13px", fontWeight: "600" },
   historialFecha:  { fontSize: "11px", color: "#94a3b8" },
   historialNota:   { fontSize: "11px", color: "#64748b", fontStyle: "italic" },
+
+  repetirRow: {
+    padding: "10px 20px",
+    borderTop: "1px solid #f1f5f9",
+    backgroundColor: "#f8fafc",
+  },
+  repetirBtn: {
+    width: "100%",
+    padding: "9px 0",
+    backgroundColor: "transparent",
+    border: "1.5px solid #0F6E56",
+    borderRadius: "10px",
+    color: "#0F6E56",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
 };

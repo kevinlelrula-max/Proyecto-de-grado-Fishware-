@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -25,13 +26,39 @@ export function usePedidosAdmin() {
   const [pedidos,   setPedidos]   = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState("");
-  const [cambiando, setCambiando] = useState(null);
+  const [cambiando,    setCambiando]    = useState(null);
+  const [notifPermiso, setNotifPermiso] = useState(
+    typeof Notification !== "undefined" ? Notification.permission : "denied"
+  );
+  const prevPendientesRef = useRef(null);
+
+  const pedirPermiso = useCallback(async () => {
+    if (typeof Notification === "undefined") return;
+    const permiso = await Notification.requestPermission();
+    setNotifPermiso(permiso);
+  }, []);
 
   const fetchPedidos = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/pedidos/empresa`, { headers });
       if (!res.ok) throw new Error("Error al cargar pedidos");
-      setPedidos(await res.json());
+      const nuevos = await res.json();
+
+      const pendientesAhora = nuevos.filter(p => p.estado === "pendiente").length;
+      if (
+        prevPendientesRef.current !== null &&
+        pendientesAhora > prevPendientesRef.current &&
+        typeof Notification !== "undefined" &&
+        Notification.permission === "granted"
+      ) {
+        const diff = pendientesAhora - prevPendientesRef.current;
+        new Notification("Nuevo pedido recibido 🛒", {
+          body: `Tienes ${diff} nuevo${diff > 1 ? "s" : ""} pedido${diff > 1 ? "s" : ""} sin atender`,
+          icon: "/favicon.ico",
+        });
+      }
+      prevPendientesRef.current = pendientesAhora;
+      setPedidos(nuevos);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -60,7 +87,7 @@ export function usePedidosAdmin() {
         prev.map(p => p.id === pedidoId ? { ...p, estado: nuevoEstado } : p)
       );
     } catch (e) {
-      alert(e.message);
+      toast.error(e.message);
     } finally {
       setCambiando(null);
     }
@@ -79,5 +106,7 @@ export function usePedidosAdmin() {
     conteos,
     fetchPedidos,
     cambiarEstado,
+    notifPermiso,
+    pedirPermiso,
   };
 }

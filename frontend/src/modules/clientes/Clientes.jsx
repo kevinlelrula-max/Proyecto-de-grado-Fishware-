@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import useClientes from "./hooks/useClientes";
 import TablaClientes from "./components/TablaClientes";
 import FormCliente from "./components/FormCliente";
+import Vista360 from "./components/Vista360";
 
 export default function Clientes() {
   const { clientes, agregarCliente, editarCliente, borrarCliente } = useClientes();
 
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [vista360Id, setVista360Id] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const [clientesPorPagina, setClientesPorPagina] = useState(10);
@@ -104,6 +106,8 @@ export default function Clientes() {
         clientes={clientesPaginados}
         onEditar={handleEditar}
         onEliminar={borrarCliente}
+        onVerPerfil={(id) => setVista360Id(id)}
+        onAgregar={() => { setMostrarForm(true); }}
       />
 
       {/* PAGINACIÓN */}
@@ -126,6 +130,14 @@ export default function Clientes() {
           Siguiente →
         </button>
       </div>
+
+      {/* VISTA 360 */}
+      {vista360Id && (
+        <Vista360
+          clienteId={vista360Id}
+          onCerrar={() => setVista360Id(null)}
+        />
+      )}
 
       {/* MODAL FORM */}
       {mostrarForm && (

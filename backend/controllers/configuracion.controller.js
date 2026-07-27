@@ -63,10 +63,12 @@ export const getConfiguracion = async (req, res) => {
 
     const empresaResult = await pool.query(
       `SELECT id, nombre, nit, email, telefono, direccion, logo_url, slug,
-              descripcion, color_primario, banner_url,
+              descripcion, color_primario, color_secundario, banner_url,
               instagram, whatsapp, facebook, horario,
               hero_titulo, hero_subtitulo, hero_btn_texto,
-              nosotros_titulo, nosotros_contenido
+              nosotros_titulo, nosotros_contenido,
+              unidad_predeterminada, fuente, productos_destacados_cantidad,
+              footer_texto
        FROM empresas WHERE id = $1`,
       [empresa_id]
     );
@@ -99,6 +101,7 @@ export const getConfiguracion = async (req, res) => {
       slug:               empresa.slug               || "",
       descripcion:        empresa.descripcion        || "",
       color_primario:     empresa.color_primario     || "#0F6E56",
+      color_secundario:   empresa.color_secundario   || "#0B1628",
       banner_url:         empresa.banner_url         || null,
       instagram:          empresa.instagram          || "",
       whatsapp:           empresa.whatsapp           || "",
@@ -108,9 +111,13 @@ export const getConfiguracion = async (req, res) => {
       hero_titulo:        empresa.hero_titulo        || "",
       hero_subtitulo:     empresa.hero_subtitulo     || "",
       hero_btn_texto:     empresa.hero_btn_texto     || "",
-      nosotros_titulo:    empresa.nosotros_titulo    || "",
-      nosotros_contenido: empresa.nosotros_contenido || "",
-      metodosPago:        metodosResult.rows,
+      nosotros_titulo:       empresa.nosotros_titulo       || "",
+      nosotros_contenido:    empresa.nosotros_contenido    || "",
+      unidad_predeterminada:         empresa.unidad_predeterminada         || "unidad",
+      fuente:                        empresa.fuente                        || "Inter",
+      productos_destacados_cantidad: empresa.productos_destacados_cantidad || 4,
+      footer_texto:                  empresa.footer_texto                  || "",
+      metodosPago:                   metodosResult.rows,
     });
   } catch (error) {
     console.error("Error en getConfiguracion:", error);
@@ -126,10 +133,12 @@ export const updateDatosEmpresa = async (req, res) => {
     const empresa_id = req.user.empresa_id;
     const {
       nombre, nit, email, telefono, direccion,
-      descripcion, color_primario,
+      descripcion, color_primario, color_secundario,
       instagram, whatsapp, facebook, horario,
       hero_titulo, hero_subtitulo, hero_btn_texto,
       nosotros_titulo, nosotros_contenido,
+      unidad_predeterminada, fuente, productos_destacados_cantidad,
+      footer_texto,
     } = req.body;
 
     if (!nombre) {
@@ -139,29 +148,38 @@ export const updateDatosEmpresa = async (req, res) => {
     const result = await pool.query(
       `UPDATE empresas
        SET nombre=$1, nit=$2, email=$3, telefono=$4, direccion=$5,
-           descripcion=$6, color_primario=$7,
-           instagram=$8, whatsapp=$9, facebook=$10, horario=$11,
-           hero_titulo=$12, hero_subtitulo=$13, hero_btn_texto=$14,
-           nosotros_titulo=$15, nosotros_contenido=$16
-       WHERE id=$17
+           descripcion=$6, color_primario=$7, color_secundario=$8,
+           instagram=$9, whatsapp=$10, facebook=$11, horario=$12,
+           hero_titulo=$13, hero_subtitulo=$14, hero_btn_texto=$15,
+           nosotros_titulo=$16, nosotros_contenido=$17,
+           unidad_predeterminada=$18, fuente=$19,
+           productos_destacados_cantidad=$20, footer_texto=$21
+       WHERE id=$22
        RETURNING id, nombre, nit, email, telefono, direccion, logo_url,
-                 slug, descripcion, color_primario, banner_url,
+                 slug, descripcion, color_primario, color_secundario, banner_url,
                  instagram, whatsapp, facebook, horario,
                  hero_titulo, hero_subtitulo, hero_btn_texto,
-                 nosotros_titulo, nosotros_contenido`,
+                 nosotros_titulo, nosotros_contenido,
+                 unidad_predeterminada, fuente, productos_destacados_cantidad,
+                 footer_texto`,
       [
         nombre, nit, email, telefono, direccion,
-        descripcion       || null,
-        color_primario    || "#0F6E56",
-        instagram         || null,
-        whatsapp          || null,
-        facebook          || null,
-        horario           || null,
-        hero_titulo       || null,
-        hero_subtitulo    || null,
-        hero_btn_texto    || null,
-        nosotros_titulo   || null,
-        nosotros_contenido || null,
+        descripcion           || null,
+        color_primario        || "#0F6E56",
+        color_secundario      || "#0B1628",
+        instagram             || null,
+        whatsapp              || null,
+        facebook              || null,
+        horario               || null,
+        hero_titulo           || null,
+        hero_subtitulo        || null,
+        hero_btn_texto        || null,
+        nosotros_titulo       || null,
+        nosotros_contenido    || null,
+        unidad_predeterminada || "unidad",
+        fuente                || "Inter",
+        productos_destacados_cantidad || 4,
+        footer_texto          || null,
         empresa_id,
       ]
     );

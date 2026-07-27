@@ -5,6 +5,11 @@ const COLORES_PRESET = [
   "#dc2626", "#d97706", "#0e7490", "#0B1628",
 ];
 
+const COLORES_SECUNDARIOS = [
+  "#0B1628", "#1e293b", "#334155", "#1e3a5f",
+  "#312e81", "#3f3f46", "#18181b", "#0c4a6e",
+];
+
 export default function AparienciaForm({
   empresa, onChange,
   bannerPreview, onBannerChange, onQuitarBanner,
@@ -41,13 +46,12 @@ export default function AparienciaForm({
         </div>
       </div>
 
-      {/* Color de marca */}
+      {/* Color primario */}
       <div style={s.section}>
-        <h4 style={s.sectionTitle}>Color de marca</h4>
-        <p style={s.sectionDesc}>Se aplica en botones y elementos destacados de tu tienda</p>
+        <h4 style={s.sectionTitle}>Color principal</h4>
+        <p style={s.sectionDesc}>Se aplica en botones, precios y elementos destacados de tu tienda</p>
 
         <div style={s.colorWrap}>
-          {/* Colores preset */}
           <div style={s.colorPresets}>
             {COLORES_PRESET.map((color) => (
               <button
@@ -65,7 +69,6 @@ export default function AparienciaForm({
             ))}
           </div>
 
-          {/* Input color personalizado */}
           <div style={s.colorCustom}>
             <input
               type="color"
@@ -76,16 +79,60 @@ export default function AparienciaForm({
             <span style={s.colorValue}>{empresa?.color_primario || "#0F6E56"}</span>
           </div>
         </div>
+      </div>
 
-        {/* Preview del color */}
-        <div style={s.colorPreview}>
+      {/* Color secundario */}
+      <div style={s.section}>
+        <h4 style={s.sectionTitle}>Color secundario</h4>
+        <p style={s.sectionDesc}>Se usa en el navbar, footer y botones de acción secundarios</p>
+
+        <div style={s.colorWrap}>
+          <div style={s.colorPresets}>
+            {COLORES_SECUNDARIOS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                style={{
+                  ...s.colorDot,
+                  backgroundColor: color,
+                  border: empresa?.color_secundario === color
+                    ? "3px solid #0f172a" : "3px solid transparent",
+                  transform: empresa?.color_secundario === color ? "scale(1.2)" : "scale(1)",
+                }}
+                onClick={() => onChange("color_secundario", color)}
+              />
+            ))}
+          </div>
+
+          <div style={s.colorCustom}>
+            <input
+              type="color"
+              value={empresa?.color_secundario || "#0B1628"}
+              onChange={e => onChange("color_secundario", e.target.value)}
+              style={s.colorInput}
+            />
+            <span style={s.colorValue}>{empresa?.color_secundario || "#0B1628"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Preview de ambos colores */}
+      <div style={s.section}>
+        <h4 style={s.sectionTitle}>Vista previa</h4>
+        <div style={s.colorPreviewDual}>
           <button style={{
             ...s.previewBtn,
             backgroundColor: empresa?.color_primario || "#0F6E56",
           }}>
             Agregar al carrito
           </button>
-          <p style={s.previewHint}>Así se verá el botón en tu tienda</p>
+          <button style={{
+            ...s.previewBtn,
+            backgroundColor: empresa?.color_secundario || "#0B1628",
+          }}>
+            Ver más
+          </button>
+          <p style={s.previewHint}>Así se verán los botones en tu tienda</p>
         </div>
       </div>
 
@@ -139,7 +186,7 @@ const s = {
   },
   colorInput: { width: "32px", height: "32px", border: "none", cursor: "pointer", borderRadius: "6px" },
   colorValue: { fontSize: "13px", fontFamily: "monospace", color: "#0f172a" },
-  colorPreview: { display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" },
+  colorPreviewDual: { display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", flexWrap: "wrap" },
   previewBtn: {
     padding: "10px 20px",
     color: "white", border: "none",

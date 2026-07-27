@@ -65,7 +65,7 @@ export function useCheckout({ empresaId, carrito, totalPrecio, direccion, notas,
             descuento:         descuentoCupon || 0,
             detalle: carrito.map(item => ({
               producto_id:     item.id,
-              kilos:           item.kilos,
+              cantidad:        item.cantidad,
               precio_unitario: item.precio,
             })),
           },

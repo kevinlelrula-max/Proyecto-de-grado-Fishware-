@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 
 // Empresas
@@ -6,6 +8,8 @@ import RegistroEmpresa from "./components/RegistroEmpresa";
 import LoginEmpresa from "./components/LoginEmpresa";
 import DashboardEmpresa from "./components/DashboardEmpresa";
 import Perfil from "./modules/perfil/Perfil";
+import ProtectedRoute from "./components/ProtectedRoute";
+import NotFound from "./components/NotFound";
 
 // POS
 import Ventas from "./pages/VentasEmpresa";
@@ -18,7 +22,6 @@ import LoginCliente          from "./pages/LoginCliente";
 import RegistroCliente       from "./pages/RegistroCliente";
 import RecuperarContrasena   from "./pages/RecuperarContrasena";
 import ResetearContrasena    from "./pages/ResetearContrasena";
-import TiendaEmpresa from "./pages/TiendaEmpresa";
 import MisPedidos from "./pages/MisPedidos";
 import PerfilCliente from "./modules/perfilCliente/PerfilCliente";
 import TiendaInicio   from "./modules/tienda/TiendaInicio";
@@ -36,11 +39,11 @@ function App() {
         <Route path="/empresa/registro" element={<RegistroEmpresa />} />
         <Route path="/empresa/login"    element={<LoginEmpresa />} />
 
-        {/* ── Dashboard empresa ── */}
-        <Route path="/dashboard" element={<DashboardEmpresa />} />
-        <Route path="/perfil"    element={<Perfil />} />
-        <Route path="/ventas"    element={<Ventas />} />
-        <Route path="/reportes"  element={<Reportes />} />
+        {/* ── Dashboard empresa (requiere sesión) ── */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardEmpresa /></ProtectedRoute>} />
+        <Route path="/perfil"    element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+        <Route path="/ventas"    element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
+        <Route path="/reportes"  element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
 
         {/* ── Tienda online del cliente ── */}
         <Route path="/tienda/login"                element={<LoginCliente />} />
@@ -55,9 +58,10 @@ function App() {
         <Route path="/tienda/:empresaSlug/pedidos"  element={<MisPedidos />} />
 
         {/* 🚫 Fallback global */}
-        <Route path="*" element={<h1>404 - Página no encontrada</h1>} />
+        <Route path="*" element={<NotFound />} />
 
       </Routes>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
     </BrowserRouter>
   );
 }

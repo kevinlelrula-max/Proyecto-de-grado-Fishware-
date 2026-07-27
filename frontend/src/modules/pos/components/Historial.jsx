@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export default function Historial({ token }) {
   const [ventas, setVentas] = useState([]);
 
   useEffect(() => {
     const fetchHistorial = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/ventas/empresa", {
+        const res = await fetch(`${API}/api/ventas/empresa`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

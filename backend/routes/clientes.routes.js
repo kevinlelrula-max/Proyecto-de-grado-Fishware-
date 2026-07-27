@@ -12,6 +12,7 @@ import {
   cambiarContrasenaCliente,
   solicitarRecuperacion,
   resetearContrasena,
+  getVista360,
 } from "../controllers/clientes.controller.js";
 
 import { verificarToken } from "../middlewares/auth.middleware.js";
@@ -28,8 +29,9 @@ router.get("/buscar", verificarToken, buscarClientes);
 router.get("/",       verificarToken, getClientes);
 router.post("/",      verificarToken, crearCliente);
 router.post("/login", loginCliente); // ← pública, sin middleware // 👈 NUEVO
-router.put("/:id",    verificarToken, actualizarCliente);
-router.delete("/:id", verificarToken, eliminarCliente);
+router.get("/:id/vista360", verificarToken, getVista360);
+router.put("/:id",          verificarToken, actualizarCliente);
+router.delete("/:id",       verificarToken, eliminarCliente);
 router.get("/perfil",            verificarToken, getPerfilCliente);
 router.put("/perfil",            verificarToken, actualizarPerfilCliente);
 router.put("/perfil/contrasena", verificarToken, cambiarContrasenaCliente);

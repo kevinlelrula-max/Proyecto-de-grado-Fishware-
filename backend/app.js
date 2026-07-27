@@ -28,7 +28,7 @@ const app = express();
 // =========================
 // 🔹 MIDDLEWARES
 // =========================
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 // ⚠️ El webhook de Stripe necesita raw body — va ANTES de express.json()
 app.use("/api/pagos/webhook/stripe", express.raw({ type: "application/json" }));
@@ -62,7 +62,7 @@ app.use("/api/tienda",          tiendaRoutes);
 app.use("/api/pedidos",         pedidosRoutes);
 app.use("/api/envio",            envioRoutes);
 app.use("/api/cupones",         cuponesRoutes);
-app.use("/api/reseñas",         reseñasRoutes);
+app.use("/api/resenas",         reseñasRoutes);
 app.use("/api/notificaciones",  notificacionesRoutes);
 app.use("/api/contacto",        contactoRoutes);
 app.use("/api/integraciones",   integracionesRoutes);

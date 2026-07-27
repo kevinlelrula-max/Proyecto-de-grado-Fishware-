@@ -15,7 +15,7 @@ const UNIDADES = [
   { value: "docena",  label: "Docena" },
 ];
 
-export default function FormProducto({ producto, onClose, onSave }) {
+export default function FormProducto({ producto, onClose, onSave, unidadPredeterminada = "unidad" }) {
   const [form, setForm] = useState({
     nombre:               "",
     descripcion:          "",
@@ -26,7 +26,7 @@ export default function FormProducto({ producto, onClose, onSave }) {
     stock:                "",
     stock_minimo:         "",
     stock_maximo:         "",
-    unidad:               "unidad",
+    unidad:               unidadPredeterminada,
     codigo_barras:        "",
     categoria_id:         "",
   });

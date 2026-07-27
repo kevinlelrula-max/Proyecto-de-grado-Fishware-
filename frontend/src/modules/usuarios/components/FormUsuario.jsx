@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { getRoles } from "../services/usuarios.api";
 
 export default function FormUsuario({ usuario, onGuardar, onCerrar }) {
@@ -38,11 +39,11 @@ export default function FormUsuario({ usuario, onGuardar, onCerrar }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.nombre || !form.usuario) {
-      alert("Nombre y usuario son obligatorios");
+      toast.error("Nombre y usuario son obligatorios");
       return;
     }
     if (!esEdicion && !form.contrasena) {
-      alert("La contraseña es obligatoria");
+      toast.error("La contraseña es obligatoria");
       return;
     }
     setGuardando(true);

@@ -20,12 +20,14 @@ const EMPRESA_INICIAL = {
   nombre: "", nit: "", telefono: "", email: "",
   direccion: "", logoUrl: null, slug: "",
   // ✅ Personalización
-  descripcion: "", color_primario: "#0F6E56",
+  descripcion: "", color_primario: "#0F6E56", color_secundario: "#0B1628",
   banner_url: null, instagram: "", whatsapp: "",
   facebook: "", horario: "",
   // ✅ Hero y nosotros
   hero_titulo: "", hero_subtitulo: "", hero_btn_texto: "",
   nosotros_titulo: "", nosotros_contenido: "",
+  unidad_predeterminada: "unidad",
+  fuente: "Inter", productos_destacados_cantidad: 4, footer_texto: "",
 };
 
 function cargarDesdeStorage() {
@@ -71,6 +73,7 @@ export function useConfiguracion() {
   slug:               data.slug               || "",
   descripcion:        data.descripcion        || "",
   color_primario:     data.color_primario     || "#0F6E56",
+  color_secundario:   data.color_secundario   || "#0B1628",
   banner_url:         data.banner_url         || null,
   instagram:          data.instagram          || "",
   whatsapp:           data.whatsapp           || "",
@@ -79,8 +82,12 @@ export function useConfiguracion() {
   hero_titulo:        data.hero_titulo        || "",
   hero_subtitulo:     data.hero_subtitulo     || "",
   hero_btn_texto:     data.hero_btn_texto     || "",
-  nosotros_titulo:    data.nosotros_titulo    || "",
-  nosotros_contenido: data.nosotros_contenido || "",
+  nosotros_titulo:      data.nosotros_titulo      || "",
+  nosotros_contenido:   data.nosotros_contenido   || "",
+  unidad_predeterminada:         data.unidad_predeterminada         || "unidad",
+  fuente:                        data.fuente                        || "Inter",
+  productos_destacados_cantidad: data.productos_destacados_cantidad || 4,
+  footer_texto:                  data.footer_texto                  || "",
 };
 
       // Mezcla los metodos del backend con los labels del frontend
@@ -146,6 +153,7 @@ export function useConfiguracion() {
         direccion:          empresa.direccion,
         descripcion:        empresa.descripcion,
         color_primario:     empresa.color_primario,
+        color_secundario:   empresa.color_secundario,
         instagram:          empresa.instagram,
         whatsapp:           empresa.whatsapp,
         facebook:           empresa.facebook,
@@ -153,8 +161,12 @@ export function useConfiguracion() {
         hero_titulo:        empresa.hero_titulo,
         hero_subtitulo:     empresa.hero_subtitulo,
         hero_btn_texto:     empresa.hero_btn_texto,
-        nosotros_titulo:    empresa.nosotros_titulo,
-        nosotros_contenido: empresa.nosotros_contenido,
+        nosotros_titulo:      empresa.nosotros_titulo,
+        nosotros_contenido:   empresa.nosotros_contenido,
+        unidad_predeterminada:         empresa.unidad_predeterminada,
+        fuente:                        empresa.fuente,
+        productos_destacados_cantidad: empresa.productos_destacados_cantidad,
+        footer_texto:                  empresa.footer_texto,
       });
 
       await updateMetodosPago(

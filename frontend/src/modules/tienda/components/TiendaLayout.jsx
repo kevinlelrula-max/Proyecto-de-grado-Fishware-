@@ -1,5 +1,7 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const SLUGS_RESERVADOS = ["mis-pedidos", "perfil", "login", "registro"];
 
 export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, children }) {
@@ -13,8 +15,37 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
       ? localStorage.getItem("ultima_empresa_slug") || slugParam
       : slugParam;
 
-  const colorMarca    = empresa?.color_primario || "#0F6E56";
-  const empresaNombre = empresa?.nombre || empresaSlug;
+  const colorMarca      = empresa?.color_primario    || "#0F6E56";
+  const colorSecundario = empresa?.color_secundario  || "#0B1628";
+  const empresaNombre   = empresa?.nombre || empresaSlug;
+  const logoUrl         = empresa?.logo_url || null;
+  const fuente          = empresa?.fuente   || "Inter";
+
+  useEffect(() => {
+    if (!logoUrl) return;
+    const fullUrl = logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`;
+    let link = document.querySelector("link[rel='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = fullUrl;
+    return () => { link.href = "/favicon.ico"; };
+  }, [logoUrl]);
+
+  useEffect(() => {
+    if (fuente === "Inter") return;
+    const id = "tienda-font";
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fuente.replace(/ /g, "+")}:wght@400;500;600;700;800&display=swap`;
+      document.head.appendChild(link);
+    }
+    return () => { const el = document.getElementById(id); if (el) el.remove(); };
+  }, [fuente]);
 
   const clienteToken  = localStorage.getItem("cliente_token");
   const clienteNombre = localStorage.getItem("cliente_nombre");
@@ -39,15 +70,23 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
   };
 
   return (
-    <div style={s.wrap}>
+    <div style={{ ...s.wrap, fontFamily: `'${fuente}', 'Segoe UI', sans-serif` }}>
 
       {/* ── NAVBAR ── */}
-      <nav style={s.nav}>
+      <nav style={{ ...s.nav, backgroundColor: `${colorSecundario}f7` }}>
         <div style={s.navInner}>
 
           {/* Marca */}
           <div style={s.navBrand} onClick={() => navigate(`/tienda/${empresaSlug}`)}>
-            <div style={{ ...s.navBrandDot, backgroundColor: colorMarca }} />
+            {logoUrl ? (
+              <img
+                src={logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`}
+                alt={empresaNombre}
+                style={s.navLogo}
+              />
+            ) : (
+              <div style={{ ...s.navBrandDot, backgroundColor: colorMarca }} />
+            )}
             <span style={s.navBrandName}>{empresaNombre}</span>
           </div>
 
@@ -121,10 +160,18 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
       {children}
 
       {/* ── FOOTER ── */}
-      <footer style={{ ...s.footer, borderTop: `3px solid ${colorMarca}` }}>
+      <footer style={{ ...s.footer, backgroundColor: colorSecundario, borderTop: `3px solid ${colorMarca}` }}>
         <div style={s.footerInner}>
           <div style={s.footerBrand}>
-            <div style={{ ...s.footerDot, backgroundColor: colorMarca }} />
+            {logoUrl ? (
+              <img
+                src={logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`}
+                alt={empresaNombre}
+                style={s.footerLogo}
+              />
+            ) : (
+              <div style={{ ...s.footerDot, backgroundColor: colorMarca }} />
+            )}
             <span style={s.footerNombre}>{empresaNombre}</span>
           </div>
           <div style={s.footerLinks}>
@@ -138,7 +185,7 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
               </button>
             ))}
           </div>
-          <span style={s.footerPowered}>Powered by WareFish</span>
+          <span style={s.footerPowered}>{empresa?.footer_texto || "Powered by Merkai"}</span>
         </div>
       </footer>
 
@@ -148,10 +195,11 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
 
 const s = {
   wrap:          { minHeight: "100vh", backgroundColor: "#f8fafc", fontFamily: "'Inter', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column" },
-  nav:           { position: "sticky", top: 0, zIndex: 100, backgroundColor: "rgba(15,23,42,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" },
+  nav:           { position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" },
   navInner:      { maxWidth: "1300px", margin: "0 auto", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", gap: "16px" },
   navBrand:      { display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, cursor: "pointer" },
   navBrandDot:   { width: "8px", height: "8px", borderRadius: "50%" },
+  navLogo:       { height: "32px", width: "auto", objectFit: "contain", borderRadius: "6px" },
   navBrandName:  { fontSize: "15px", fontWeight: "700", color: "white", letterSpacing: "-0.02em" },
   navLinks:      { display: "flex", alignItems: "center", gap: "4px", marginLeft: "24px" },
   navLink:       { padding: "8px 16px", background: "none", border: "none", fontSize: "14px", cursor: "pointer", fontWeight: "500", transition: "all 0.15s" },
@@ -161,10 +209,11 @@ const s = {
   navBtnSalir:   { background: "none", border: "none", color: "#64748b", fontSize: "12px", cursor: "pointer" },
   carritoBtn:    { position: "relative", width: "38px", height: "38px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.15)", fontSize: "16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
   carritoBadge:  { position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#ef4444", color: "white", fontSize: "10px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center" },
-  footer:        { backgroundColor: "#0B1628", padding: "24px" },
+  footer:        { padding: "24px" },
   footerInner:   { maxWidth: "1300px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" },
   footerBrand:   { display: "flex", alignItems: "center", gap: "8px" },
   footerDot:     { width: "8px", height: "8px", borderRadius: "50%" },
+  footerLogo:    { height: "28px", width: "auto", objectFit: "contain", borderRadius: "4px" },
   footerNombre:  { fontSize: "14px", fontWeight: "600", color: "white" },
   footerLinks:   { display: "flex", gap: "4px" },
   footerLink:    { background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: "13px", cursor: "pointer", padding: "4px 10px" },

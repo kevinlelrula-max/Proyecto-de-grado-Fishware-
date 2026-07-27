@@ -113,6 +113,37 @@ export const getReseñasEmpresa = async (req, res) => {
 };
 
 // =============================================
+// RESEÑAS DESTACADAS (público — tienda)
+// =============================================
+export const getReseñasDestacadas = async (req, res) => {
+  try {
+    const { empresa_id } = req.params;
+
+    const result = await pool.query(
+      `SELECT
+         r.id,
+         r.calificacion,
+         r.comentario,
+         r.creado_en,
+         p.nombre AS producto_nombre,
+         per.nombre || ' ' || per.apellido AS cliente_nombre
+       FROM reseñas r
+       JOIN productos p  ON p.id  = r.producto_id
+       JOIN persona per  ON per.id = r.cliente_id
+       WHERE r.empresa_id = $1 AND r.activo = TRUE AND r.calificacion >= 4
+       ORDER BY r.calificacion DESC, r.creado_en DESC
+       LIMIT 6`,
+      [empresa_id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error getReseñasDestacadas:", error);
+    res.status(500).json({ error: "Error al obtener reseñas destacadas" });
+  }
+};
+
+// =============================================
 // TOGGLE ACTIVO (moderar — empresa admin)
 // =============================================
 export const toggleReseña = async (req, res) => {

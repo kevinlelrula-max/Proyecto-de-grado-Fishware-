@@ -1,6 +1,7 @@
 import { useLealtad } from "./hooks/useLealtad";
 import NivelCard from "./components/NivelCard";
 import NivelForm from "./components/NivelForm";
+import { SkeletonGrid } from "../../components/SkeletonLoader";
 
 export default function NivelesLealtad() {
   const {
@@ -49,10 +50,7 @@ export default function NivelesLealtad() {
 
       {/* Loading */}
       {loading ? (
-        <div style={s.loading}>
-          <span style={s.loadingIcon}>🏆</span>
-          <p style={s.loadingText}>Cargando niveles...</p>
-        </div>
+        <SkeletonGrid count={3} height={160} />
       ) : niveles.length === 0 ? (
         /* Empty state */
         <div style={s.empty}>
@@ -138,7 +136,7 @@ const s = {
   },
   btnNuevo: {
     padding: "10px 20px",
-    backgroundColor: "#0F6E56",
+    backgroundColor: "#2563eb",
     color: "white",
     border: "none",
     borderRadius: "10px",
@@ -187,7 +185,7 @@ const s = {
   emptyBtn: {
     marginTop: "8px",
     padding: "11px 24px",
-    backgroundColor: "#0F6E56",
+    backgroundColor: "#2563eb",
     color: "white",
     border: "none",
     borderRadius: "10px",

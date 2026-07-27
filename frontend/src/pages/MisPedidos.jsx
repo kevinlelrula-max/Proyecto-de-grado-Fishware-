@@ -1,15 +1,13 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useMisPedidos, ESTADOS } from "../modules/tienda/hooks/useMisPedidos";
 import PedidoCard from "../modules/tienda/components/PedidoCard";
 
 export default function MisPedidos() {
   const navigate = useNavigate();
-  const { pedidos, loading, error, estaLogueado, clienteNombre, refetch } = useMisPedidos();
+  const { pedidos, loading, error, estaLogueado, clienteNombre, refetch, notifPermiso, pedirPermiso } = useMisPedidos();
 
-  // Si no está logueado, redirigir al login
   if (!estaLogueado) {
-    navigate("/tienda/login", { state: { from: "/tienda/mis-pedidos" } });
-    return null;
+    return <Navigate to="/tienda/login" state={{ from: "/tienda/mis-pedidos" }} replace />;
   }
 
   // Agrupar pedidos por estado activo vs finalizado
@@ -30,7 +28,7 @@ export default function MisPedidos() {
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
             <div>
-              <span style={s.navBrandName}>WareFish</span>
+              <span style={s.navBrandName}>Merkai</span>
               <span style={s.navBrandSub}>Tienda</span>
             </div>
           </div>
@@ -66,6 +64,20 @@ export default function MisPedidos() {
             🔄 Actualizar
           </button>
         </div>
+        {notifPermiso !== "granted" && (
+          <div style={s.notifBanner}>
+            <span style={s.notifText}>
+              🔔 Activa las notificaciones para saber cuándo cambia el estado de tu pedido
+            </span>
+            <button
+              onClick={pedirPermiso}
+              style={{ ...s.notifBtn, ...(notifPermiso === "denied" ? s.notifBtnBloq : {}) }}
+              disabled={notifPermiso === "denied"}
+            >
+              {notifPermiso === "denied" ? "Bloqueadas en el navegador" : "Activar"}
+            </button>
+          </div>
+        )}
         <div style={s.heroGlow} />
       </div>
 
@@ -132,7 +144,7 @@ export default function MisPedidos() {
 
       {/* ── FOOTER ── */}
       <footer style={s.footer}>
-        <span style={s.footerText}>© 2026 WareFish · Marketplace</span>
+        <span style={s.footerText}>© 2026 Merkai · Marketplace</span>
         <button style={s.footerBack} onClick={() => navigate("/tienda")}>
           ← Volver al marketplace
         </button>
@@ -275,4 +287,8 @@ const s = {
     background: "none", border: "none",
     color: "#0F6E56", fontSize: "12px", fontWeight: "600", cursor: "pointer",
   },
+  notifBanner: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 16px", backgroundColor: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "10px", marginTop: "14px", position: "relative", zIndex: 1 },
+  notifText:   { fontSize: "13px", color: "rgba(255,255,255,0.85)", flex: 1 },
+  notifBtn:    { flexShrink: 0, padding: "6px 14px", backgroundColor: "#f59e0b", color: "white", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
+  notifBtnBloq: { backgroundColor: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.4)", cursor: "not-allowed" },
 };

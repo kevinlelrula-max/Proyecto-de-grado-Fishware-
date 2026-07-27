@@ -75,13 +75,63 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
     });
   }, []);
 
+  // ── Detectar "repetir pedido" desde localStorage y pre-poblar carrito
+  useEffect(() => {
+    if (!productos.length || !empresaSlug) return;
+    const raw = localStorage.getItem("fishware_repetir_pedido");
+    if (!raw) return;
+
+    try {
+      const { empresa_slug: targetSlug, items } = JSON.parse(raw);
+      if (targetSlug !== empresaSlug) return;
+      localStorage.removeItem("fishware_repetir_pedido");
+      localStorage.removeItem(`fishware_carrito_${empresaSlug}`); // repetir tiene prioridad sobre carrito guardado
+      items.forEach(item => {
+        const producto = productos.find(p => p.id === item.producto_id);
+        if (producto && producto.stock > 0) {
+          agregarAlCarrito(producto, Math.min(item.cantidad, producto.stock));
+        }
+      });
+    } catch { /* silencioso */ }
+  }, [productos, empresaSlug]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Restaurar carrito desde localStorage al cargar productos
+  useEffect(() => {
+    if (!productos.length || !empresaSlug) return;
+    if (localStorage.getItem("fishware_repetir_pedido")) return; // repetir toma prioridad
+    const raw = localStorage.getItem(`fishware_carrito_${empresaSlug}`);
+    if (!raw) return;
+
+    try {
+      const guardado = JSON.parse(raw);
+      const carritoValido = guardado
+        .map(item => {
+          const producto = productos.find(p => p.id === item.id);
+          if (!producto || producto.stock <= 0) return null;
+          return { ...producto, cantidad: Math.min(item.cantidad, producto.stock) };
+        })
+        .filter(Boolean);
+      if (carritoValido.length > 0) setCarrito(carritoValido);
+    } catch { /* silencioso */ }
+  }, [productos, empresaSlug]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Persistir carrito en localStorage al cambiar
+  useEffect(() => {
+    if (!empresaSlug) return;
+    if (carrito.length === 0) {
+      localStorage.removeItem(`fishware_carrito_${empresaSlug}`);
+    } else {
+      localStorage.setItem(`fishware_carrito_${empresaSlug}`, JSON.stringify(carrito));
+    }
+  }, [carrito, empresaSlug]);
+
   // ── Filtrar productos por búsqueda
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   // ── CARRITO: agregar producto
-  const agregarAlCarrito = useCallback((producto, kilos = 1) => {
+  const agregarAlCarrito = useCallback((producto, cantidad = 1) => {
     if (!localStorage.getItem("cliente_token")) {
       navigate("/tienda/login", { state: { from: location.pathname } });
       return;
@@ -91,27 +141,27 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
     setCarrito((prev) => {
       const existe = prev.find((item) => item.id === producto.id);
       if (existe) {
-        const nuevosKilos = Math.min(existe.kilos + kilos, producto.stock);
+        const nuevaCantidad = Math.min(existe.cantidad + cantidad, producto.stock);
         return prev.map((item) =>
-          item.id === producto.id ? { ...item, kilos: nuevosKilos } : item
+          item.id === producto.id ? { ...item, cantidad: nuevaCantidad } : item
         );
       }
-      return [...prev, { ...producto, kilos }];
+      return [...prev, { ...producto, cantidad }];
     });
 
     setCarritoAbierto(true);
   }, [navigate, location.pathname]);
 
   // ── CARRITO: cambiar cantidad
-  const cambiarKilos = useCallback((productoId, kilos) => {
-    if (kilos <= 0) {
+  const cambiarCantidad = useCallback((productoId, cantidad) => {
+    if (cantidad <= 0) {
       quitarDelCarrito(productoId);
       return;
     }
     setCarrito((prev) =>
       prev.map((item) =>
         item.id === productoId
-          ? { ...item, kilos: Math.min(kilos, item.stock) }
+          ? { ...item, cantidad: Math.min(cantidad, item.stock) }
           : item
       )
     );
@@ -126,8 +176,8 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
   const vaciarCarrito = useCallback(() => setCarrito([]), []);
 
   // ── CARRITO: totales
-  const totalItems  = carrito.reduce((acc, item) => acc + item.kilos, 0);
-  const totalPrecio = carrito.reduce((acc, item) => acc + item.kilos * item.precio, 0);
+  const totalItems  = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+  const totalPrecio = carrito.reduce((acc, item) => acc + item.cantidad * item.precio, 0);
 
   // ── PEDIDO: confirmar
   const confirmarPedido = useCallback(async (totalFinal = totalPrecio, cuponId = null, descuentoCupon = 0) => {
@@ -163,7 +213,7 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
         descuento:         descuentoCupon || 0,
         detalle: carrito.map((item) => ({
           producto_id:     item.id,
-          kilos:           item.kilos,
+          cantidad:        item.cantidad,
           precio_unitario: item.precio,
         })),
       };
@@ -211,7 +261,7 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
     carritoAbierto,
     setCarritoAbierto,
     agregarAlCarrito,
-    cambiarKilos,
+    cambiarCantidad,
     quitarDelCarrito,
     vaciarCarrito,
     totalItems,

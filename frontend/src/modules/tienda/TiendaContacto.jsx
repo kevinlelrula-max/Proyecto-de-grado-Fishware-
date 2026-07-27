@@ -10,7 +10,8 @@ export default function TiendaContacto() {
 
   const empresa    = location.state?.empresa
     || JSON.parse(localStorage.getItem("ultima_empresa") || "null");
-  const colorMarca = empresa?.color_primario || "#0F6E56";
+  const colorMarca      = empresa?.color_primario   || "#0F6E56";
+  const colorSecundario = empresa?.color_secundario || "#0B1628";
 
   // ── Form state
   const [form, setForm]         = useState({ nombre: "", email: "", telefono: "", mensaje: "" });
@@ -53,7 +54,7 @@ export default function TiendaContacto() {
     <TiendaLayout empresa={empresa} carrito={[]} onAbrirCarrito={() => {}}>
 
       {/* ── HEADER ── */}
-      <div style={{ ...s.pageHeader, borderBottom: `3px solid ${colorMarca}` }}>
+      <div style={{ ...s.pageHeader, backgroundColor: colorSecundario, borderBottom: `3px solid ${colorMarca}` }}>
         <div style={s.pageHeaderInner}>
           <h1 style={s.pageTitle}>Contacto</h1>
           <p style={s.pageSubtitle}>Estamos aquí para ayudarte</p>
@@ -219,7 +220,7 @@ export default function TiendaContacto() {
 
         {/* ── CTA WhatsApp ── */}
         {empresa?.whatsapp && (
-          <div style={{ ...s.ctaWrap, background: `linear-gradient(135deg, ${colorMarca}, #0B1628)` }}>
+          <div style={{ ...s.ctaWrap, background: `linear-gradient(135deg, ${colorMarca}, ${colorSecundario})` }}>
             <div>
               <p style={s.ctaTitle}>¿Prefieres una respuesta inmediata?</p>
               <p style={s.ctaSubtitle}>Escríbenos por WhatsApp y te atendemos al instante</p>
@@ -266,7 +267,6 @@ function ContactoItem({ icon, label, valor }) {
 
 const s = {
   pageHeader: {
-    backgroundColor: "#0B1628",
     padding: "48px 24px 32px",
   },
   pageHeaderInner: { maxWidth: "1300px", margin: "0 auto" },

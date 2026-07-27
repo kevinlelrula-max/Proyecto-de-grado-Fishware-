@@ -128,9 +128,9 @@ export default function CheckoutModal({
                 <p style={s.resumenTitle}>Resumen del pedido</p>
                 {carrito.map(item => (
                   <div key={item.id} style={s.resumenItem}>
-                    <span style={s.resumenNombre}>🐟 {item.nombre} · {item.kilos} kg</span>
+                    <span style={s.resumenNombre}>🐟 {item.nombre} · {Number(item.cantidad).toFixed(1)} {item.unidad || "uds."}</span>
                     <span style={s.resumenPrecio}>
-                      ${(item.kilos * item.precio).toLocaleString("es-CO")}
+                      ${(item.cantidad * item.precio).toLocaleString("es-CO")}
                     </span>
                   </div>
                 ))}

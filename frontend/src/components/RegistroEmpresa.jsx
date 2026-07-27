@@ -87,7 +87,7 @@ export default function RegistroEmpresa() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={s.logoText}>FishWare</span>
+            <span style={s.logoText}>Merkai</span>
           </div>
 
           <div>
@@ -273,6 +273,13 @@ export default function RegistroEmpresa() {
             )}
           </div>
 
+          <p style={s.loginLink}>
+            ¿Ya tienes cuenta?{" "}
+            <span style={s.loginLinkSpan} onClick={() => navigate("/empresa/login")}>
+              Iniciar sesión
+            </span>
+          </p>
+
         </div>
       </div>
     </div>
@@ -318,7 +325,9 @@ const s = {
   fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" },
   label: { display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
   input: { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box" },
-  btnRow: { display: "flex", gap: "10px" },
+  btnRow: { display: "flex", gap: "10px", marginBottom: "0" },
+  loginLink: { textAlign: "center", fontSize: "13px", color: "#64748b", marginTop: "18px" },
+  loginLinkSpan: { color: "#2563eb", fontWeight: "600", cursor: "pointer" },
   btnBack: { padding: "12px 20px", background: "transparent", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "14px", color: "#64748b", cursor: "pointer", fontWeight: "500" },
   btnNext: { flex: 1, padding: "13px", backgroundColor: "#2563eb", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "opacity 0.2s" },
   // ✅ Estilos nuevos para el campo de referido

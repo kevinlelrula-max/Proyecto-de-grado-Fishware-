@@ -3,6 +3,7 @@ import { verificarToken } from "../middlewares/auth.middleware.js";
 import {
   crearReseña,
   getReseñasProducto,
+  getReseñasDestacadas,
   getReseñasEmpresa,
   toggleReseña,
   eliminarReseña,
@@ -13,6 +14,7 @@ const router = Router();
 
 // ── Públicas ──────────────────────────────────────────────
 router.get("/producto/:producto_id", getReseñasProducto);
+router.get("/destacadas/:empresa_id", getReseñasDestacadas);
 
 // ── Cliente autenticado ───────────────────────────────────
 router.post("/",                             verificarToken, crearReseña);

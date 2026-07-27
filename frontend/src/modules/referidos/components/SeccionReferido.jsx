@@ -19,7 +19,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
   );
   if (!data)   return null;
 
-  const { codigo, nivel_actual, config_amigo_actual, todas_configs, stats, proximo_premio, historial } = data;
+  const { codigo, nivel_actual, nivel_heredado, config_amigo_actual, todas_configs, stats, proximo_premio, historial } = data;
   const enlace = `${window.location.origin}/tienda/${empresaSlug}?ref=${codigo}`;
 
   const copiar = () => {
@@ -28,9 +28,17 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
     setTimeout(() => setCopiado(false), 2000);
   };
 
+  // Nombre del nivel heredado que recibirá el amigo
+  const nivelHeredadoAmigo = todas_configs.find(
+    c => (c.nivel_id === nivel_actual?.id || (nivel_actual === null && c.nivel_id === null))
+  )?.nivel_heredado_nombre ?? null;
+
   const compartirWhatsApp = () => {
+    const heredadoMsg = nivelHeredadoAmigo
+      ? ` Además llegarás con nivel ${nivelHeredadoAmigo} durante tu primer mes.`
+      : "";
     const msg = encodeURIComponent(
-      `¡Te recomiendo esta tienda! Regístrate con mi enlace y obtén ${config_amigo_actual?.descuento_pct ?? 5}% de descuento en tu primera compra: ${enlace}`
+      `¡Te recomiendo esta tienda! Regístrate con mi enlace y obtén ${config_amigo_actual?.descuento_pct ?? 5}% de descuento en tu primera compra.${heredadoMsg} Úsalo aquí: ${enlace}`
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
@@ -40,6 +48,21 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
 
       {/* Tu código + enlace */}
       <div style={{ background: `linear-gradient(135deg, ${colorMarca}18, ${colorMarca}08)`, border: `1px solid ${colorMarca}30`, borderRadius: 14, padding: "20px 22px" }}>
+        {/* Badge nivel heredado activo */}
+        {nivel_heredado?.activo && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${colorMarca}15`, border: `1px solid ${colorMarca}40`, borderRadius: 9, padding: "8px 14px", marginBottom: 12 }}>
+            <span style={{ fontSize: 18 }}>🏆</span>
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: colorMarca }}>
+                Tienes nivel heredado activo
+              </span>
+              <span style={{ fontSize: 11, color: "#64748b", display: "block" }}>
+                Válido hasta {new Date(nivel_heredado.hasta).toLocaleDateString("es-CO", { day: "numeric", month: "long" })} — ¡compra para mantenerlo!
+              </span>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <span style={{ fontSize: 22 }}>🔗</span>
           <div>
@@ -48,6 +71,9 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
               Como eres cliente{nivel_actual ? ` ${nivel_actual.nombre}` : ""}, tu amigo recibirá{" "}
               <strong style={{ color: colorMarca }}>{config_amigo_actual?.descuento_pct ?? 5}% de descuento</strong>
               {config_amigo_actual?.envio_gratis && " + envío gratis"}
+              {nivelHeredadoAmigo && (
+                <> + <strong style={{ color: colorMarca }}>nivel {nivelHeredadoAmigo} por 1 mes ✨</strong></>
+              )}
               {" "}en su primera compra.
             </p>
           </div>
@@ -128,7 +154,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
-                {["Tu nivel", "Tu amigo recibe", "Envío gratis"].map(h => (
+                {["Tu nivel", "Tu amigo recibe", "Envío gratis", "Nivel inicial ✨"].map(h => (
                   <th key={h} style={{ padding: "6px 10px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", borderBottom: "1px solid #f1f5f9" }}>{h}</th>
                 ))}
               </tr>
@@ -152,6 +178,12 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
                     </td>
                     <td style={{ padding: "8px 10px", fontSize: 13, color: c.envio_gratis ? "#00A884" : "#94a3b8" }}>
                       {c.envio_gratis ? "✓ Sí" : "—"}
+                    </td>
+                    <td style={{ padding: "8px 10px", fontSize: 13 }}>
+                      {c.nivel_heredado_nombre
+                        ? <span style={{ color: colorMarca, fontWeight: 600 }}>🏆 {c.nivel_heredado_nombre}</span>
+                        : <span style={{ color: "#94a3b8" }}>—</span>
+                      }
                     </td>
                   </tr>
                 );

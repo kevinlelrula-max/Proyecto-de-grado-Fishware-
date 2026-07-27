@@ -16,7 +16,7 @@ export const crearPedido = async (req, res) => {
       direccion_entrega,
       notas,
       total,
-      detalle, // [{ producto_id, kilos, precio_unitario }]
+      detalle, // [{ producto_id, cantidad, precio_unitario }]
       cupon_id,
       descuento,
     } = req.body;
@@ -41,9 +41,9 @@ export const crearPedido = async (req, res) => {
     // Insertar detalle
     for (const item of detalle) {
       await client.query(
-        `INSERT INTO detalle_pedido_online (pedido_id, producto_id, kilos, precio_unitario)
+        `INSERT INTO detalle_pedido_online (pedido_id, producto_id, cantidad, precio_unitario)
          VALUES ($1, $2, $3, $4)`,
-        [pedido.id, item.producto_id, item.kilos, item.precio_unitario]
+        [pedido.id, item.producto_id, item.cantidad, item.precio_unitario]
       );
     }
 
@@ -104,12 +104,14 @@ export const getMisPedidos = async (req, res) => {
          p.fecha_actualizacion,
          e.nombre AS empresa_nombre,
          e.telefono AS empresa_telefono,
+         e.slug AS empresa_slug,
          mp.metodo AS metodo_pago,
          json_agg(
            json_build_object(
              'producto_id',    dp.producto_id,
              'nombre',         pr.nombre,
-             'kilos',          dp.kilos,
+             'cantidad',       dp.cantidad,
+             'unidad',         pr.unidad,
              'precio_unitario', dp.precio_unitario,
              'subtotal',       dp.subtotal
            )
@@ -120,7 +122,7 @@ export const getMisPedidos = async (req, res) => {
        JOIN detalle_pedido_online dp ON dp.pedido_id = p.id
        JOIN productos pr      ON pr.id = dp.producto_id
        WHERE p.cliente_id = $1
-       GROUP BY p.id, e.nombre, e.telefono, mp.metodo
+       GROUP BY p.id, e.nombre, e.telefono, e.slug, mp.metodo
        ORDER BY p.fecha_pedido DESC`,
       [cliente_id]
     );
@@ -184,7 +186,8 @@ export const getPedidosEmpresa = async (req, res) => {
            json_build_object(
              'producto_id',     dp.producto_id,
              'nombre',          pr.nombre,
-             'kilos',           dp.kilos,
+             'cantidad',        dp.cantidad,
+             'unidad',          pr.unidad,
              'precio_unitario', dp.precio_unitario,
              'subtotal',        dp.subtotal
            )

@@ -1,7 +1,7 @@
 export default function Sidebar({ setSeccion }) {
   return (
     <div style={styles.sidebar}>
-      <h2 style={styles.logo}>🐟 FishWare</h2>
+      <h2 style={styles.logo}>Merkai</h2>
 
       <button onClick={() => setSeccion("productos")} style={styles.item}>
         📦 Productos

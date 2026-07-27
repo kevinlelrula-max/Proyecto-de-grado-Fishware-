@@ -180,7 +180,7 @@ const s = {
   header:        { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" },
   title:         { fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" },
   subtitle:      { fontSize: "13px", color: "#64748b" },
-  btnGuardar:    { padding: "9px 20px", backgroundColor: "#0F6E56", color: "white", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: "700", cursor: "pointer", flexShrink: 0 },
+  btnGuardar:    { padding: "9px 20px", backgroundColor: "#2563eb", color: "white", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: "700", cursor: "pointer", flexShrink: 0 },
   errorBox:      { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "12px 16px", fontSize: "13px", color: "#b91c1c" },
   card:          { backgroundColor: "white", border: "1.5px solid #e2e8f0", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" },
   cardTitle:     { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 },

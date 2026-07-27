@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import { getProductos } from "../productos/services/productos.api";
 import { crearVenta } from "./services/pos.api";
 import { crearCliente } from "../clientes/services/clientes.api";
@@ -21,11 +22,11 @@ export default function PuntoDeVenta() {
   const token = localStorage.getItem("token");
 
   const [pestana, setPestana] = useState("venta");
-  const [toast, setToast] = useState(null);
 
   const [productos, setProductos] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [metodoPago, setMetodoPago] = useState(1);
+  const [ticketVenta, setTicketVenta] = useState(null);
 
   const {
     carrito,
@@ -77,7 +78,7 @@ export default function PuntoDeVenta() {
 
   const handleCrearCliente = async () => {
     if (!nuevoCliente.nombre.trim()) {
-      alert("El nombre es obligatorio");
+      toast.error("El nombre es obligatorio");
       return;
     }
 
@@ -118,15 +119,15 @@ export default function PuntoDeVenta() {
       setMunicipios([]);
 
     } catch (error) {
-      alert(error.response?.data?.error || "Error al crear cliente");
+      toast.error(error.response?.data?.error || "Error al crear cliente");
     } finally {
       setCreandoCliente(false);
     }
   };
 
   const confirmarVenta = async () => {
-    if (!clienteSeleccionado) return alert("Selecciona un cliente");
-    if (!carrito.length) return alert("El carrito está vacío");
+    if (!clienteSeleccionado) { toast.warning("Selecciona un cliente"); return; }
+    if (!carrito.length) { toast.warning("El carrito está vacío"); return; }
 
     try {
       const res = await crearVenta(
@@ -141,12 +142,17 @@ export default function PuntoDeVenta() {
         token
       );
 
-      setToast({
-        type: "success",
-        message: "Venta realizada correctamente"
+      // Guardar datos del ticket antes de limpiar el carrito
+      setTicketVenta({
+        cliente: clienteSeleccionado,
+        items: [...carrito],
+        total,
+        metodoPago,
+        fecha: new Date(),
+        id: res?.id || res?.venta_id || null,
       });
 
-      setTimeout(() => setToast(null), 3000);
+      toast.success("Venta realizada correctamente");
 
       setCarrito([]);
       setClienteSeleccionado(null);
@@ -156,12 +162,7 @@ export default function PuntoDeVenta() {
       setPestana("venta");
 
     } catch (error) {
-      setToast({
-        type: "error",
-        message: error.response?.data?.error || "Error al registrar la venta"
-      });
-
-      setTimeout(() => setToast(null), 3000);
+      toast.error(error.response?.data?.error || "Error al registrar la venta");
     }
   };
 
@@ -169,13 +170,6 @@ export default function PuntoDeVenta() {
 
   return (
     <div className="pos-wrap">
-
-      {/* TOAST */}
-      {toast && (
-        <div className="toast">
-          {toast.type === "success" ? "✅" : "⚠️"} {toast.message}
-        </div>
-      )}
 
       {/* TABS */}
       <div className="pos-tabs">
@@ -283,6 +277,116 @@ export default function PuntoDeVenta() {
         onDepartamentoChange={handleDepartamentoChange}
       />
 
+      {ticketVenta && (
+        <ModalTicket
+          venta={ticketVenta}
+          empresa={localStorage.getItem("empresa_nombre") || "Pesquera Estrada"}
+          onClose={() => setTicketVenta(null)}
+          fmt={fmt}
+        />
+      )}
+
     </div>
+  );
+}
+
+// ── Modal de ticket de impresión ─────────────────────────────────────────────
+const METODOS = { 1: "Efectivo", 2: "Tarjeta", 3: "Transferencia", 4: "Nequi / Daviplata" };
+
+function ModalTicket({ venta, empresa, onClose, fmt }) {
+  const handlePrint = () => window.print();
+  const { cliente, items, total, metodoPago, fecha, id } = venta;
+
+  return (
+    <>
+      <style>{`
+        @media print {
+          body > *:not(.pos-ticket-overlay) { display: none !important; }
+          .pos-ticket-overlay { position: static !important; background: none !important; padding: 0 !important; }
+          .pos-ticket-box { box-shadow: none !important; max-width: 100% !important; border: none !important; }
+          .pos-ticket-no-print { display: none !important; }
+          @page { margin: 10mm; size: 80mm auto; }
+        }
+        .pos-ticket-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 9000; padding: 20px;
+        }
+        .pos-ticket-box {
+          background: white; border-radius: 16px; padding: 28px 24px;
+          max-width: 380px; width: 100%;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+          font-family: 'Sora', 'Inter', monospace;
+          display: flex; flex-direction: column; gap: 0;
+        }
+        .pos-ticket-head { text-align: center; padding-bottom: 14px; border-bottom: 1px dashed #e2e8f0; margin-bottom: 14px; }
+        .pos-ticket-empresa { font-size: 16px; font-weight: 800; color: #0B1628; letter-spacing: -0.02em; }
+        .pos-ticket-meta { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+        .pos-ticket-section { margin-bottom: 14px; }
+        .pos-ticket-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+        .pos-ticket-cliente { font-size: 13px; font-weight: 600; color: #0f172a; }
+        .pos-ticket-item { display: flex; justify-content: space-between; font-size: 12px; color: #374151; padding: 3px 0; }
+        .pos-ticket-item-name { flex: 1; }
+        .pos-ticket-item-qty { color: #94a3b8; margin: 0 10px; }
+        .pos-ticket-divider { border: none; border-top: 1px dashed #e2e8f0; margin: 14px 0; }
+        .pos-ticket-total-row { display: flex; justify-content: space-between; align-items: center; }
+        .pos-ticket-total-label { font-size: 13px; font-weight: 700; color: #0f172a; }
+        .pos-ticket-total-val { font-size: 20px; font-weight: 800; color: #2563eb; letter-spacing: -0.02em; }
+        .pos-ticket-metodo { font-size: 11px; color: #64748b; margin-top: 4px; text-align: right; }
+        .pos-ticket-footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0; }
+        .pos-ticket-btns { display: flex; gap: 8px; margin-top: 20px; }
+        .pos-ticket-btn-print { flex: 1; padding: 11px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .pos-ticket-btn-close { padding: 11px 16px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+      `}</style>
+
+      <div className="pos-ticket-overlay">
+        <div className="pos-ticket-box">
+
+          <div className="pos-ticket-head">
+            <div className="pos-ticket-empresa">{empresa}</div>
+            <div className="pos-ticket-meta">
+              {fecha.toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" })}
+              {" · "}
+              {fecha.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+              {id && ` · #${id}`}
+            </div>
+          </div>
+
+          <div className="pos-ticket-section">
+            <div className="pos-ticket-label">Cliente</div>
+            <div className="pos-ticket-cliente">
+              {cliente.nombre} {cliente.apellido || ""}
+            </div>
+          </div>
+
+          <div className="pos-ticket-section">
+            <div className="pos-ticket-label">Productos</div>
+            {items.map(item => (
+              <div key={item.id} className="pos-ticket-item">
+                <span className="pos-ticket-item-name">{item.nombre}</span>
+                <span className="pos-ticket-item-qty">×{item.cantidad}</span>
+                <span>${fmt(item.precio * item.cantidad)}</span>
+              </div>
+            ))}
+          </div>
+
+          <hr className="pos-ticket-divider" />
+
+          <div className="pos-ticket-total-row">
+            <span className="pos-ticket-total-label">Total</span>
+            <span className="pos-ticket-total-val">${fmt(total)}</span>
+          </div>
+          <div className="pos-ticket-metodo">{METODOS[metodoPago] || "Efectivo"}</div>
+
+          <div className="pos-ticket-footer">¡Gracias por su compra!</div>
+
+          <div className="pos-ticket-btns pos-ticket-no-print">
+            <button className="pos-ticket-btn-print" onClick={handlePrint}>🖨️ Imprimir ticket</button>
+            <button className="pos-ticket-btn-close" onClick={onClose}>Cerrar</button>
+          </div>
+
+        </div>
+      </div>
+    </>
   );
 }

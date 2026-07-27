@@ -4,6 +4,10 @@ import StatCard from "./components/StatCard";
 import OnboardingCard from "./components/OnboardingCard";
 import PedidosRecientes from "./components/PedidosRecientes";
 import StockBajo from "./components/StockBajo";
+import ReordenSugerencias from "./components/ReordenSugerencias";
+import MetaVentas from "./components/MetaVentas";
+import ClientesDormidos from "./components/ClientesDormidos";
+import QRCode from "react-qr-code";
 
 export default function Inicio({ onIrA }) {
   const {
@@ -12,8 +16,8 @@ export default function Inicio({ onIrA }) {
     onboarding, esOnboardingCompleto,
   } = useInicio();
 
-  // Permite al usuario saltar el onboarding cuando al menos un paso está completo
   const [forzarDashboard, setForzarDashboard] = useState(false);
+  const [mostrarQR, setMostrarQR] = useState(false);
 
   const mostrarOnboarding = !esOnboardingCompleto && !forzarDashboard;
 
@@ -36,7 +40,17 @@ export default function Inicio({ onIrA }) {
   }
 
   return (
-    <div style={s.page}>
+    <div style={s.page} className="inicio-page">
+      <style>{`
+        @media (max-width: 768px) {
+          .inicio-page { padding: 16px !important; }
+          .inicio-stats { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+          .inicio-grid  { grid-template-columns: 1fr !important; }
+          .inicio-banner { flex-direction: column !important; }
+          .inicio-banner-ilust { display: none !important; }
+          .inicio-banner-link-row { flex-direction: column !important; align-items: flex-start !important; }
+        }
+      `}</style>
 
       {/* ── HEADER ── */}
       <div style={s.header}>
@@ -66,7 +80,7 @@ export default function Inicio({ onIrA }) {
       ) : (
         <>
           {/* ── STATS ── */}
-          <div style={s.statsGrid}>
+          <div style={s.statsGrid} className="inicio-stats">
             <StatCard
               icon="💵"
               label="Ventas hoy"
@@ -104,7 +118,7 @@ export default function Inicio({ onIrA }) {
           </div>
 
           {/* ── CONTENIDO PRINCIPAL ── */}
-          <div style={s.grid}>
+          <div style={s.grid} className="inicio-grid">
             <PedidosRecientes
               pedidos={resumen?.ultimosPedidos}
               onIrA={onIrA}
@@ -115,6 +129,15 @@ export default function Inicio({ onIrA }) {
             </div>
           </div>
 
+          {/* ── META DE VENTAS + CLIENTES DORMIDOS ── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="inicio-grid">
+            <MetaVentas ventasMes={resumen?.ventasMes || 0} onIrA={onIrA} />
+            <ClientesDormidos clientes={resumen?.clientesDormidos || []} onIrA={onIrA} />
+          </div>
+
+          {/* ── SUGERENCIAS DE REORDEN ── */}
+          <ReordenSugerencias sugerencias={resumen?.sugerenciasReorden} />
+
           {/* ── SUGERENCIA REFERIDOS ── */}
           {!onboarding?.tieneReferidos && (resumen?.totalClientes ?? 0) > 0 && (
             <BannerReferidos onIrA={onIrA} totalClientes={resumen.totalClientes} />
@@ -122,31 +145,82 @@ export default function Inicio({ onIrA }) {
 
           {/* ── BANNER TIENDA ── */}
           {linkTienda && (
-            <div style={s.bannerTienda}>
+            <div style={s.bannerTienda} className="inicio-banner">
               <div style={s.bannerLeft}>
                 <p style={s.bannerTitle}>Tu tienda online está activa 🎉</p>
                 <p style={s.bannerDesc}>Comparte este link con tus clientes para que puedan comprar</p>
-                <div style={s.bannerLinkRow}>
+                <div style={s.bannerLinkRow} className="inicio-banner-link-row">
                   <span style={s.bannerLink}>{linkTienda}</span>
                   <button
                     style={s.bannerCopy}
-                    onClick={() => navigator.clipboard.writeText(linkTienda)}
+                    onClick={() => { navigator.clipboard.writeText(linkTienda); }}
                   >
                     📋 Copiar
+                  </button>
+                  <button style={s.bannerCopy} onClick={() => setMostrarQR(true)}>
+                    📱 Ver QR
                   </button>
                   <a href={linkTienda} target="_blank" rel="noreferrer" style={s.bannerAbrir}>
                     Abrir →
                   </a>
                 </div>
               </div>
-              <div style={s.bannerIlust}>🛒</div>
+              <div style={s.bannerIlust} className="inicio-banner-ilust">🛒</div>
             </div>
           )}
         </>
       )}
+
+      {/* ── MODAL QR ── */}
+      {mostrarQR && linkTienda && (
+        <ModalQR url={linkTienda} onClose={() => setMostrarQR(false)} />
+      )}
     </div>
   );
 }
+
+function ModalQR({ url, onClose }) {
+  const handleDownload = () => {
+    const svg = document.getElementById("qr-tienda");
+    if (!svg) return;
+    const data = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([data], { type: "image/svg+xml" });
+    const a = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: "qr-tienda.svg",
+    });
+    a.click();
+  };
+
+  return (
+    <div style={qr.overlay} onClick={onClose}>
+      <div style={qr.box} onClick={e => e.stopPropagation()}>
+        <h3 style={qr.title}>📱 QR de tu tienda</h3>
+        <p style={qr.sub}>Escanea o descarga para compartir</p>
+        <div style={qr.qrWrap}>
+          <QRCode id="qr-tienda" value={url} size={200} />
+        </div>
+        <p style={qr.urlText}>{url}</p>
+        <div style={qr.btns}>
+          <button style={qr.btnDownload} onClick={handleDownload}>⬇️ Descargar SVG</button>
+          <button style={qr.btnClose} onClick={onClose}>Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const qr = {
+  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 20 },
+  box:     { background: "white", borderRadius: 18, padding: "28px 24px", maxWidth: 320, width: "100%", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: 12 },
+  title:   { fontSize: 18, fontWeight: 800, color: "#0B1628", margin: 0 },
+  sub:     { fontSize: 13, color: "#64748b", margin: 0 },
+  qrWrap:  { display: "flex", justifyContent: "center", padding: "16px 0" },
+  urlText: { fontSize: 11, color: "#94a3b8", wordBreak: "break-all", margin: 0, background: "#f8fafc", borderRadius: 8, padding: "6px 10px" },
+  btns:    { display: "flex", gap: 8 },
+  btnDownload: { flex: 1, padding: "10px", background: "#2563eb", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" },
+  btnClose:    { padding: "10px 16px", background: "#f1f5f9", color: "#64748b", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" },
+};
 
 function BannerReferidos({ onIrA, totalClientes }) {
   return (

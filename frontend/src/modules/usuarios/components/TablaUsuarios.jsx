@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const ROLES = {
   1: { label: "SuperAdmin",    color: "#dc2626", bg: "#fef2f2" },
   2: { label: "Administrador", color: "#1d4ed8", bg: "#eff6ff" },
@@ -6,6 +8,8 @@ const ROLES = {
 };
 
 export default function TablaUsuarios({ usuarios, onEditar, onToggle, onEliminar }) {
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
   if (usuarios.length === 0) {
     return (
       <div style={s.empty}>
@@ -17,7 +21,8 @@ export default function TablaUsuarios({ usuarios, onEditar, onToggle, onEliminar
 
   return (
     <div style={s.wrapper}>
-      <table style={s.table}>
+      <div style={{ overflowX: "auto" }}>
+      <table style={{ ...s.table, minWidth: "640px" }}>
         <thead>
           <tr>
             <th style={s.th}>Usuario</th>
@@ -69,15 +74,25 @@ export default function TablaUsuarios({ usuarios, onEditar, onToggle, onEliminar
                 {/* Acciones */}
                 <td style={{ ...s.td, textAlign: "center" }}>
                   <div style={s.actions}>
-                    <button style={s.btnEdit} onClick={() => onEditar(u)} title="Editar">✏️</button>
-                    <button
-                      style={{ ...s.btnToggle, ...(activo ? s.btnDesactivar : s.btnActivar) }}
-                      onClick={() => onToggle(u.id)}
-                      title={activo ? "Desactivar" : "Activar"}
-                    >
-                      {activo ? "⏸" : "▶"}
-                    </button>
-                    <button style={s.btnDelete} onClick={() => onEliminar(u.id)} title="Eliminar">🗑️</button>
+                    {pendingDeleteId === u.id ? (
+                      <>
+                        <span style={s.confirmText}>¿Eliminar?</span>
+                        <button style={s.btnConfirmYes} onClick={() => { onEliminar(u.id); setPendingDeleteId(null); }}>Sí</button>
+                        <button style={s.btnConfirmNo} onClick={() => setPendingDeleteId(null)}>No</button>
+                      </>
+                    ) : (
+                      <>
+                        <button style={s.btnEdit} onClick={() => onEditar(u)} title="Editar">✏️</button>
+                        <button
+                          style={{ ...s.btnToggle, ...(activo ? s.btnDesactivar : s.btnActivar) }}
+                          onClick={() => onToggle(u.id)}
+                          title={activo ? "Desactivar" : "Activar"}
+                        >
+                          {activo ? "⏸" : "▶"}
+                        </button>
+                        <button style={s.btnDelete} onClick={() => setPendingDeleteId(u.id)} title="Eliminar">🗑️</button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -85,6 +100,7 @@ export default function TablaUsuarios({ usuarios, onEditar, onToggle, onEliminar
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -144,4 +160,16 @@ const s = {
   },
 
   empty: { textAlign: "center", padding: "48px 20px" },
+
+  confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
+  btnConfirmYes: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "5px 10px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#64748b",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
+  },
 };

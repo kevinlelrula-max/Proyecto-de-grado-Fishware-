@@ -324,3 +324,29 @@ export const validarCupon = async (req, res) => {
     res.status(500).json({ error: "Error al validar el cupón" });
   }
 };
+
+// ── GET /api/cupones/activos/:empresa_id ─────────────────────────────────────
+// Público — muestra cupones vigentes en la tienda
+export const getCuponesActivos = async (req, res) => {
+  try {
+    const { empresa_id } = req.params;
+
+    const result = await pool.query(
+      `SELECT codigo, descripcion, tipo, valor, minimo_compra, fecha_fin
+       FROM cupones
+       WHERE empresa_id = $1
+         AND activo = TRUE
+         AND (fecha_inicio IS NULL OR fecha_inicio <= NOW())
+         AND (fecha_fin IS NULL OR fecha_fin >= NOW())
+         AND (usos_totales IS NULL OR usos_actuales < usos_totales)
+       ORDER BY creado_en DESC
+       LIMIT 4`,
+      [empresa_id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error getCuponesActivos:", error);
+    res.status(500).json({ error: "Error al obtener cupones activos" });
+  }
+};

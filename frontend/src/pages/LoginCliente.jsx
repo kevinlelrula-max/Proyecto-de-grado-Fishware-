@@ -59,20 +59,20 @@ export default function LoginCliente() {
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <span style={s.leftLogoText}>WareFish · Tienda</span>
+            <span style={s.leftLogoText}>Merkai · Tienda</span>
           </div>
 
           {/* Hero */}
           <div style={s.leftHero}>
-            <h2 style={s.leftTitle}>Compra pescado fresco desde donde estés</h2>
+            <h2 style={s.leftTitle}>Compra en tus tiendas favoritas desde donde estés</h2>
             <p style={s.leftSubtitle}>
-              Accede a las mejores pesqueras de la región, arma tu pedido y recíbelo en casa.
+              Accede al catálogo, arma tu pedido y recíbelo en casa o retíralo en tienda.
             </p>
           </div>
 
           {/* Pills */}
           <div style={s.pillsWrap}>
-            {["🐟 Producto fresco", "🚚 Envío a domicilio", "🏪 Múltiples tiendas", "📦 Seguimiento de pedido"].map((tag) => (
+            {["🛍️ Catálogo completo", "🚚 Envío a domicilio", "🏪 Múltiples tiendas", "📦 Seguimiento de pedido"].map((tag) => (
               <span key={tag} style={s.pill}>{tag}</span>
             ))}
           </div>

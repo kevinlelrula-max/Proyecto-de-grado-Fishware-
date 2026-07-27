@@ -1,5 +1,17 @@
 import { useRef } from "react";
 
+const UNIDADES = [
+  { value: "unidad",  label: "Unidad / Pieza" },
+  { value: "kg",      label: "Kilogramo (kg)" },
+  { value: "gramo",   label: "Gramo (g)" },
+  { value: "litro",   label: "Litro (L)" },
+  { value: "ml",      label: "Mililitro (ml)" },
+  { value: "metro",   label: "Metro (m)" },
+  { value: "caja",    label: "Caja" },
+  { value: "paquete", label: "Paquete" },
+  { value: "docena",  label: "Docena" },
+];
+
 export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChange }) {
   const fileInputRef = useRef(null);
 
@@ -83,6 +95,25 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
               />
             </div>
           ))}
+
+          {/* Unidad predeterminada */}
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              Unidad predeterminada para productos nuevos
+            </label>
+            <select
+              value={empresa.unidad_predeterminada || "unidad"}
+              onChange={(e) => onChange("unidad_predeterminada", e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition bg-white"
+            >
+              {UNIDADES.map((u) => (
+                <option key={u.value} value={u.value}>{u.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">
+              Se usará como valor por defecto al crear un nuevo producto. Cada producto puede cambiarse individualmente.
+            </p>
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/api/reseñas";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/api/resenas";
 
 // Reseñas públicas de un producto
 export const getReseñasProducto = async (producto_id) => {

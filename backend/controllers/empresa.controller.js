@@ -257,12 +257,12 @@ export const getEmpresaPorSlug = async (req, res) => {
   try {
     const { slug } = req.params;
     const result = await pool.query(
-  `SELECT id, nombre, nit, telefono, email, slug,
-          descripcion, color_primario, banner_url,
+  `SELECT id, nombre, nit, telefono, email, slug, logo_url,
+          descripcion, color_primario, color_secundario, banner_url,
           instagram, whatsapp, facebook, horario,
           hero_titulo, hero_subtitulo, hero_btn_texto,
           nosotros_titulo, nosotros_contenido,
-          layout_json
+          fuente, productos_destacados_cantidad, footer_texto, layout_json
    FROM empresas WHERE slug = $1`,
   [slug]
 );

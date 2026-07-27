@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   getUsuarios,
   crearUsuario,
@@ -43,7 +44,7 @@ export default function useUsuarios() {
       await eliminarUsuario(id, token);
       await cargarUsuarios();
     } catch (error) {
-      alert(error.response?.data?.error || "Error al eliminar usuario");
+      toast.error(error.response?.data?.error || "Error al eliminar usuario");
     }
   };
 
