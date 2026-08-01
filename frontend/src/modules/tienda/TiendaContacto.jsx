@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import TiendaLayout from "./components/TiendaLayout";
 
@@ -7,6 +7,10 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 export default function TiendaContacto() {
   const { empresaSlug } = useParams();
   const location        = useLocation();
+
+  useEffect(() => {
+    if (empresaSlug) localStorage.setItem("ultima_empresa_slug", empresaSlug);
+  }, [empresaSlug]);
 
   const empresa    = location.state?.empresa
     || JSON.parse(localStorage.getItem("ultima_empresa") || "null");

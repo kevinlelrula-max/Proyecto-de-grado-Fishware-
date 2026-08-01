@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   getClientes,
   crearCliente,
@@ -17,18 +18,39 @@ export default function useClientes() {
   };
 
   const agregarCliente = async (cliente) => {
-    await crearCliente(cliente, token);
-    cargarClientes();
+    try {
+      await crearCliente(cliente, token);
+      await cargarClientes();
+      toast.success("Cliente registrado correctamente");
+      return true;
+    } catch {
+      toast.error("Error al registrar el cliente");
+      return false;
+    }
   };
 
   const editarCliente = async (id, cliente) => {
-    await actualizarCliente(id, cliente, token);
-    cargarClientes();
+    try {
+      await actualizarCliente(id, cliente, token);
+      await cargarClientes();
+      toast.success("Cliente actualizado correctamente");
+      return true;
+    } catch {
+      toast.error("Error al actualizar el cliente");
+      return false;
+    }
   };
 
   const borrarCliente = async (id) => {
-    await eliminarCliente(id, token);
-    cargarClientes();
+    try {
+      await eliminarCliente(id, token);
+      await cargarClientes();
+      toast.success("Cliente eliminado");
+      return true;
+    } catch {
+      toast.error("Error al eliminar el cliente");
+      return false;
+    }
   };
 
   useEffect(() => {

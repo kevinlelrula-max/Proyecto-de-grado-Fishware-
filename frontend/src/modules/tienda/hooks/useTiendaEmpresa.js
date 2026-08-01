@@ -125,6 +125,34 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
     }
   }, [carrito, empresaSlug]);
 
+  // ── Sincronizar carrito con backend (carrito abandonado)
+  useEffect(() => {
+    if (!empresaId) return;
+    const clienteToken    = localStorage.getItem("cliente_token");
+    const clienteId       = localStorage.getItem("cliente_id");
+    const clienteNombre   = localStorage.getItem("cliente_nombre")   || "";
+    const clienteEmail    = localStorage.getItem("cliente_email")    || "";
+    const clienteTelefono = localStorage.getItem("cliente_telefono") || "";
+    if (!clienteToken || !clienteId) return;
+
+    const total = carrito.reduce((acc, item) => acc + item.cantidad * item.precio, 0);
+    const timer = setTimeout(() => {
+      fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/carritos/guardar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${clienteToken}` },
+        body: JSON.stringify({
+          empresa_id: empresaId, cliente_id: Number(clienteId),
+          cliente_nombre: clienteNombre, cliente_email: clienteEmail,
+          cliente_telefono: clienteTelefono,
+          items: carrito.map(i => ({ id: i.id, nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })),
+          total,
+        }),
+      }).catch(() => {});
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [carrito, empresaId]);
+
   // ── Filtrar productos por búsqueda
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -225,6 +253,12 @@ export function useTiendaEmpresa(empresaIdProp, empresaSlug) {
         setPedidoExitoso({ id: res.id, total: totalFinal });
         vaciarCarrito();
         setCarritoAbierto(false);
+        // Marcar carrito como convertido
+        fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/carritos/limpiar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${clienteToken}` },
+          body: JSON.stringify({ empresa_id: empresaId, cliente_id: Number(clienteId) }),
+        }).catch(() => {});
       } else {
         setErrorPedido(res.error || "Error al crear el pedido. Intenta de nuevo.");
       }

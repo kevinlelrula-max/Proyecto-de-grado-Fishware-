@@ -1,11 +1,12 @@
 import { useState } from "react";
 
-export default function FormularioLlaves({ pasarela, guardando, exitoGuardado, onGuardar, onCancelar }) {
-  const [llavePublica, setLlavePublica] = useState("");
+export default function FormularioLlaves({ pasarela, guardando, exitoGuardado, onGuardar, onCancelar, llavePublicaActual, esEdicion }) {
+  const [llavePublica, setLlavePublica] = useState(llavePublicaActual || "");
   const [llavePrivada, setLlavePrivada] = useState("");
   const [showPrivada, setShowPrivada]   = useState(false);
 
-  const puedeGuardar = llavePublica.trim() && llavePrivada.trim() && !guardando;
+  // Al editar, la llave privada es opcional (conserva la existente si se deja vacía)
+  const puedeGuardar = llavePublica.trim() && (esEdicion || llavePrivada.trim()) && !guardando;
 
   const handleGuardar = () => {
     if (!puedeGuardar) return;
@@ -41,6 +42,7 @@ export default function FormularioLlaves({ pasarela, guardando, exitoGuardado, o
             onChange={e => setLlavePublica(e.target.value)}
             placeholder={pasarela.camposLlave.publica.placeholder}
             style={s.input}
+            autoComplete="off"
           />
         </div>
         <div>
@@ -53,8 +55,9 @@ export default function FormularioLlaves({ pasarela, guardando, exitoGuardado, o
               type={showPrivada ? "text" : "password"}
               value={llavePrivada}
               onChange={e => setLlavePrivada(e.target.value)}
-              placeholder={pasarela.camposLlave.privada.placeholder}
+              placeholder={esEdicion ? "Dejar vacío para mantener la actual" : pasarela.camposLlave.privada.placeholder}
               style={{ ...s.input, paddingRight: 40 }}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -82,7 +85,7 @@ export default function FormularioLlaves({ pasarela, guardando, exitoGuardado, o
             cursor: !puedeGuardar ? "not-allowed" : "pointer",
           }}
         >
-          {exitoGuardado ? "✓ Conectado" : guardando ? "Guardando..." : `Conectar ${pasarela.nombre}`}
+          {exitoGuardado ? "✓ Guardado" : guardando ? "Guardando..." : esEdicion ? `Actualizar ${pasarela.nombre}` : `Conectar ${pasarela.nombre}`}
         </button>
       </div>
 

@@ -31,7 +31,7 @@ const fmtShort = (n) => {
 
 const fmtDia = (str) => {
   if (!str) return "";
-  const d = new Date(str + "T00:00:00");
+  const d = new Date(String(str).slice(0, 10) + "T00:00:00");
   return d.toLocaleDateString("es-CO", { day: "numeric", month: "short" });
 };
 
@@ -172,6 +172,27 @@ function TabResumen({ periodo }) {
   if (!data)   return <Empty msg="No se pudo cargar el resumen." />;
 
   const { kpis, ventasPorDia, topProductos, topClientes, posVsOnline } = data;
+
+  // Rellena días sin ventas con total:0 para que la línea no se entrecorte
+  const filledVentasPorDia = (() => {
+    const map = {};
+    ventasPorDia.forEach(r => { map[String(r.dia).slice(0, 10)] = parseFloat(r.total || 0); });
+    const hoy   = new Date();
+    const desde = new Date();
+    if (periodo === "semana") desde.setDate(hoy.getDate() - 6);
+    else if (periodo === "mes")  { desde.setDate(1); }
+    else if (periodo === "año")  { desde.setMonth(0); desde.setDate(1); }
+    const result = [];
+    let cur = new Date(desde.toISOString().slice(0, 10) + "T00:00:00");
+    const fin = new Date(hoy.toISOString().slice(0, 10) + "T00:00:00");
+    while (cur <= fin) {
+      const key = cur.toISOString().slice(0, 10);
+      result.push({ dia: key, total: map[key] ?? 0 });
+      cur.setDate(cur.getDate() + 1);
+    }
+    return result;
+  })();
+
   const maxIngreso   = Math.max(...topProductos.map(p => parseFloat(p.ingresos)), 1);
   const totalCanales = parseFloat(posVsOnline.pos) + parseFloat(posVsOnline.online);
   const pieData      = [
@@ -183,7 +204,7 @@ function TabResumen({ periodo }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* Botones exportar */}
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
         <button onClick={exportar} style={sBtn}>📥 CSV</button>
         <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
       </div>
@@ -199,9 +220,9 @@ function TabResumen({ periodo }) {
       {/* Línea de ingresos */}
       <div style={sCard}>
         <div style={sCardHdr}><h3 style={sCardTitle}>Tendencia de ingresos</h3><span style={sCardSub}>POS + Online por día</span></div>
-        {ventasPorDia.length === 0 ? <Empty /> : (
+        {filledVentasPorDia.length === 0 ? <Empty /> : (
           <ResponsiveContainer width="100%" height={210}>
-            <LineChart data={ventasPorDia} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+            <LineChart data={filledVentasPorDia} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="gLine" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor={C.verde} /><stop offset="100%" stopColor={C.azul} />
@@ -338,8 +359,39 @@ function TabRentabilidad({ periodo }) {
   const maxGanancia = Math.max(...sorted.map(p => parseFloat(p.ganancia_bruta)), 1);
   const sinCosto    = productos.filter(p => !p.precio_costo || parseFloat(p.precio_costo) === 0).length;
 
+  const exportarCSV = () => {
+    const rows = [
+      ["Reporte de Rentabilidad", periodo, new Date().toLocaleDateString("es-CO")],
+      [],
+      ["RESUMEN GLOBAL"],
+      ["Ingresos brutos", totales.ingresos],
+      ["Costo total",     totales.costo],
+      ["Ganancia bruta",  totales.ganancia],
+      ["Margen promedio", totales.margen_pct + "%"],
+      [],
+      ["DETALLE POR PRODUCTO"],
+      ["Producto","Unidades vendidas","Precio venta","Precio costo","Ingresos","Costo total","Ganancia","Margen %"],
+      ...sorted.map(p => [
+        p.nombre, parseFloat(p.unidades_vendidas).toFixed(1),
+        p.precio || "", p.precio_costo || "",
+        p.ingresos_brutos, p.costo_total, p.ganancia_bruta, p.margen_pct + "%",
+      ]),
+    ];
+    const csv  = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), { href: url, download: `rentabilidad_${periodo}_${new Date().toISOString().slice(0,10)}.csv` }).click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Botones exportar */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
+        <button onClick={exportarCSV} style={sBtn}>📥 CSV</button>
+        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
+      </div>
 
       {/* Alerta si hay productos sin costo cargado */}
       {sinCosto > 0 && (
@@ -465,6 +517,23 @@ function TabComparativa({ periodo }) {
 
   const { actual, anterior, cambios, label, labelAnterior } = data;
 
+  const exportarCSV = () => {
+    const rows = [
+      ["Reporte Comparativa", periodo, new Date().toLocaleDateString("es-CO")],
+      [],
+      ["Métrica", label, labelAnterior, "Cambio %"],
+      ["Ingresos",         actual.ingresos,         anterior.ingresos,         cambios.ingresos         + "%"],
+      ["Ventas",           actual.total_ventas,     anterior.total_ventas,     cambios.total_ventas     + "%"],
+      ["Ticket promedio",  actual.ticket_promedio,  anterior.ticket_promedio,  cambios.ticket_promedio  + "%"],
+      ["Clientes activos", actual.clientes_activos, anterior.clientes_activos, cambios.clientes_activos + "%"],
+    ];
+    const csv  = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    Object.assign(document.createElement("a"), { href: url, download: `comparativa_${periodo}_${new Date().toISOString().slice(0,10)}.csv` }).click();
+    URL.revokeObjectURL(url);
+  };
+
   // Unir días para gráfica superpuesta
   const todasFechas = [...new Set([
     ...actual.ventasPorDia.map(d => d.dia),
@@ -488,6 +557,12 @@ function TabComparativa({ periodo }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Botones exportar */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
+        <button onClick={exportarCSV} style={sBtn}>📥 CSV</button>
+        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
+      </div>
 
       {/* KPIs comparativos */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
@@ -585,12 +660,272 @@ function TabComparativa({ periodo }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// TAB PRONÓSTICO
+// ══════════════════════════════════════════════════════════════════════════════
+const DOW_LABELS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+function TabPronostico() {
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/reportesEmpresa/pronostico`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => { setError("No se pudo cargar el pronóstico."); setLoading(false); });
+  }, []);
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Calculando pronóstico...</div>;
+  if (error)   return <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>;
+  if (!data)   return null;
+
+  const { historial, predicciones, baseline, trend } = data;
+
+  const sinDatos = historial.length === 0;
+  const trendPct = (trend * 100).toFixed(1);
+  const trendUp  = trend > 0.02;
+  const trendDn  = trend < -0.02;
+
+  // Últimos 14 días de historial para la gráfica
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const histMap = {};
+  historial.forEach(r => { histMap[r.dia] = r.ingresos; });
+
+  const chartData = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    chartData.push({
+      label: `${DOW_LABELS[d.getDay()]} ${d.getDate()}`,
+      actual: histMap[key] || 0,
+      prediccion: null,
+    });
+  }
+  predicciones.forEach(p => {
+    const d = new Date(p.dia + "T00:00:00");
+    chartData.push({
+      label: `${DOW_LABELS[p.dow]} ${d.getDate()}`,
+      actual: null,
+      prediccion: p.prediccion,
+    });
+  });
+
+  const totalSemana = predicciones.reduce((s, p) => s + p.prediccion, 0);
+  const mejorDia    = predicciones.reduce((best, p) => p.prediccion > best.prediccion ? p : best, predicciones[0] || {});
+  const mejorDiaLabel = mejorDia?.dia ? `${DOW_LABELS[mejorDia.dow]} ${new Date(mejorDia.dia + "T00:00:00").getDate()}` : "—";
+
+  // Promedios por día de la semana (historial completo)
+  const dowSum = {}; const dowCnt = {};
+  historial.forEach(r => {
+    dowSum[r.dow] = (dowSum[r.dow] || 0) + r.ingresos;
+    dowCnt[r.dow] = (dowCnt[r.dow] || 0) + 1;
+  });
+  const dowData = DOW_LABELS.map((lbl, i) => ({
+    dow: i, label: lbl,
+    promedio: dowCnt[i] ? Math.round(dowSum[i] / dowCnt[i]) : 0,
+  })).sort((a, b) => b.promedio - a.promedio);
+  const maxDow = dowData[0]?.promedio || 1;
+
+  if (sinDatos) return (
+    <div style={{ ...sCard, textAlign: "center", padding: "48px 24px", color: "#94a3b8" }}>
+      <p style={{ fontSize: 32, margin: "0 0 12px" }}>📈</p>
+      <p style={{ fontSize: 14, fontWeight: 600 }}>Aún no hay suficientes datos para generar un pronóstico.</p>
+      <p style={{ fontSize: 12 }}>Registra ventas durante al menos una semana y vuelve aquí.</p>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* ── KPIs ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }} className="rep-kpi-grid">
+        {/* Tendencia */}
+        <div style={{ ...sCard, textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+            Tendencia actual
+          </p>
+          <p style={{ fontSize: 32, fontWeight: 900, margin: "0 0 4px", color: trendUp ? "#16a34a" : trendDn ? "#dc2626" : "#64748b" }}>
+            {trendUp ? "↑" : trendDn ? "↓" : "→"} {Math.abs(trendPct)}%
+          </p>
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+            {trendUp ? "Creciendo" : trendDn ? "Bajando" : "Estable"} vs semana anterior
+          </p>
+        </div>
+
+        {/* Mejor día previsto */}
+        <div style={{ ...sCard, textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+            Mejor día previsto
+          </p>
+          <p style={{ fontSize: 26, fontWeight: 900, margin: "0 0 4px", color: C.verde }}>
+            {mejorDiaLabel}
+          </p>
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+            ${Number(mejorDia?.prediccion || 0).toLocaleString("es-CO")} estimado
+          </p>
+        </div>
+
+        {/* Total semana */}
+        <div style={{ ...sCard, textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+            Próximos 7 días
+          </p>
+          <p style={{ fontSize: 26, fontWeight: 900, margin: "0 0 4px", color: "#2563eb" }}>
+            ${Number(totalSemana).toLocaleString("es-CO")}
+          </p>
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+            promedio diario: ${Number(baseline).toLocaleString("es-CO")}
+          </p>
+        </div>
+      </div>
+
+      {/* ── GRÁFICA PRINCIPAL ── */}
+      <div style={sCard}>
+        <div style={sCardHdr}>
+          <p style={sCardTitle}>Ventas: últimas 2 semanas + próximos 7 días</p>
+          <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
+            <span style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 12, height: 12, background: "#94a3b8", borderRadius: 3, display: "inline-block" }} />
+              Ventas reales
+            </span>
+            <span style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 12, height: 12, background: C.verde, borderRadius: 3, display: "inline-block" }} />
+              Pronóstico
+            </span>
+          </div>
+        </div>
+        <div style={{ position: "relative" }}>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={chartData} barGap={1} barCategoryGap="25%">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} interval={0} angle={-35} textAnchor="end" height={46} />
+              <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${v}`} />
+              <Tooltip
+                formatter={(val, name) => [`$${Number(val).toLocaleString("es-CO")}`, name === "actual" ? "Venta real" : "Pronóstico"]}
+                contentStyle={{ borderRadius: 10, fontSize: 12 }}
+              />
+              <Bar dataKey="actual"     fill="#cbd5e1" radius={[4,4,0,0]} />
+              <Bar dataKey="prediccion" fill={C.verde}  radius={[4,4,0,0]} fillOpacity={0.85} />
+            </BarChart>
+          </ResponsiveContainer>
+          {/* Línea divisora "HOY" */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: "66.5%",
+            height: "calc(100% - 46px)",
+            width: 2,
+            backgroundColor: "#2563eb",
+            opacity: 0.4,
+            pointerEvents: "none",
+          }} />
+          <span style={{
+            position: "absolute",
+            top: 4,
+            left: "66.5%",
+            transform: "translateX(-50%)",
+            fontSize: 9,
+            fontWeight: 800,
+            color: "#2563eb",
+            backgroundColor: "white",
+            padding: "1px 4px",
+            borderRadius: 4,
+          }}>HOY</span>
+        </div>
+      </div>
+
+      {/* ── MEJOR DÍA DE LA SEMANA (HISTORIAL) ── */}
+      <div style={sCard}>
+        <div style={sCardHdr}>
+          <p style={sCardTitle}>Desempeño histórico por día de la semana</p>
+          <p style={sCardSub}>Promedio de ingresos por día · últimos 28 días</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {dowData.map((d, i) => (
+            <div key={d.dow} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: i === 0 ? C.verde : "#64748b" }}>
+                {d.label}
+              </span>
+              <div style={{ flex: 1, height: 10, backgroundColor: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{
+                  height: "100%",
+                  width: `${maxDow > 0 ? (d.promedio / maxDow) * 100 : 0}%`,
+                  backgroundColor: i === 0 ? C.verde : "#93c5fd",
+                  borderRadius: 99,
+                  transition: "width 0.5s ease",
+                }} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? C.verde : "#334155", minWidth: 90, textAlign: "right" }}>
+                ${Number(d.promedio).toLocaleString("es-CO")}
+              </span>
+              {i === 0 && <span style={{ fontSize: 10, color: C.verde, fontWeight: 800 }}>⭐ mejor</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── TABLA DE PREDICCIONES ── */}
+      <div style={sCard}>
+        <div style={sCardHdr}>
+          <p style={sCardTitle}>Detalle de predicciones — próximos 7 días</p>
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={sTh}>Día</th>
+              <th style={{ ...sTh, textAlign: "right" }}>Pronóstico</th>
+              <th style={{ ...sTh, textAlign: "right" }}>vs promedio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {predicciones.map((p, i) => {
+              const d    = new Date(p.dia + "T00:00:00");
+              const pct  = baseline > 0 ? ((p.prediccion - baseline) / baseline * 100).toFixed(0) : 0;
+              const sube = p.prediccion > baseline;
+              return (
+                <tr key={i} style={{ backgroundColor: i % 2 === 0 ? "#fafafa" : "white" }}>
+                  <td style={sTd}>
+                    <strong>{DOW_LABELS[p.dow]}</strong>{" "}
+                    <span style={{ color: "#94a3b8" }}>{d.toLocaleDateString("es-CO", { day: "numeric", month: "short" })}</span>
+                  </td>
+                  <td style={{ ...sTd, textAlign: "right", fontWeight: 700, color: "#0f172a" }}>
+                    ${Number(p.prediccion).toLocaleString("es-CO")}
+                  </td>
+                  <td style={{ ...sTd, textAlign: "right" }}>
+                    <span style={{
+                      padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                      backgroundColor: sube ? "#dcfce7" : "#fef2f2",
+                      color: sube ? "#16a34a" : "#dc2626",
+                    }}>
+                      {sube ? "+" : ""}{pct}%
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p style={{ fontSize: 10, color: "#94a3b8", fontStyle: "italic", textAlign: "right", marginTop: 10, marginBottom: 0 }}>
+          Metodología: promedio móvil por día de la semana × tendencia reciente (últimos 14 vs 14 anteriores)
+        </p>
+      </div>
+
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // COMPONENTE RAÍZ
 // ══════════════════════════════════════════════════════════════════════════════
 const TABS = [
   { key: "resumen",      label: "Resumen",       icon: "📊" },
   { key: "rentabilidad", label: "Rentabilidad",  icon: "💰" },
   { key: "comparativa",  label: "Comparativa",   icon: "📈" },
+  { key: "pronostico",   label: "Pronóstico",    icon: "🔮" },
 ];
 
 export default function Reportes() {
@@ -607,6 +942,15 @@ export default function Reportes() {
           .rep-kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
           .rep-two-col  { grid-template-columns: 1fr !important; }
           .rep-header   { flex-direction: column !important; align-items: flex-start !important; }
+        }
+        @media print {
+          body * { visibility: hidden; }
+          .rep-page, .rep-page * { visibility: visible; }
+          .rep-page { position: fixed; top: 0; left: 0; width: 100%; padding: 24px !important; }
+          .rep-export-btns { display: none !important; }
+          .rep-tabs         { display: none !important; }
+          .rep-header       { margin-bottom: 16px; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
 
@@ -642,6 +986,7 @@ export default function Reportes() {
       {tab === "resumen"      && <TabResumen      periodo={periodo} />}
       {tab === "rentabilidad" && <TabRentabilidad periodo={periodo} />}
       {tab === "comparativa"  && <TabComparativa  periodo={periodo} />}
+      {tab === "pronostico"   && <TabPronostico />}
 
     </div>
   );

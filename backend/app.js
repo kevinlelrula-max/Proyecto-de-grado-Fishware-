@@ -23,6 +23,8 @@ import cuponesRoutes  from "./routes/cupones.routes.js";
 import reseñasRoutes        from "./routes/reseñas.routes.js";
 import notificacionesRoutes from "./routes/notificaciones.routes.js";
 import referidosRoutes      from "./routes/referidos.routes.js";
+import carritosRoutes       from "./routes/carritos.routes.js";
+import mcpRoutes            from "./routes/mcp.routes.js";
 const app = express();
 
 // =========================
@@ -67,7 +69,9 @@ app.use("/api/notificaciones",  notificacionesRoutes);
 app.use("/api/contacto",        contactoRoutes);
 app.use("/api/integraciones",   integracionesRoutes);
 app.use("/api/pagos",           pagosRoutes);
-app.use("/api/referidos",       referidosRoutes);  // ← ahora va al final, después de express.json()
+app.use("/api/referidos",       referidosRoutes);
+app.use("/api/carritos",        carritosRoutes);
+app.use("/api/mcp",             mcpRoutes);
 
 // =========================
 // 🔹 404 HANDLER

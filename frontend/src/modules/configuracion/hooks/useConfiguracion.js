@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { toast } from "react-toastify";
 import {
   getConfiguracion,
   updateDatosEmpresa,
@@ -186,10 +187,12 @@ export function useConfiguracion() {
       }
 
       setExito(true);
+      toast.success("Configuración guardada correctamente");
     } catch (err) {
       // Guardado local funcionó — avisamos que el servidor falló
       setError("Cambios guardados localmente. No se pudo sincronizar con el servidor.");
       setExito(true); // igual mostramos éxito parcial
+      toast.warn("Cambios guardados localmente. Sin conexión con el servidor.");
     } finally {
       setGuardando(false);
       setTimeout(() => { setExito(false); setError(null); }, 4000);

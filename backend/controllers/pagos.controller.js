@@ -65,7 +65,8 @@ export const crearPaymentIntent = async (req, res) => {
     const stripe = new Stripe(llavePrivada);
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount:   Math.round(monto * 100), // Stripe usa centavos — COP no tiene decimales
+      // COP en Stripe usa centavos igual que USD — se multiplica por 100
+      amount:   Math.round(monto * 100),
       currency: "cop",
       metadata: { pedido_id: String(pedido_id), empresa_id: String(empresa_id) },
     });
@@ -73,7 +74,11 @@ export const crearPaymentIntent = async (req, res) => {
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.error("Error crearPaymentIntent:", error);
-    res.status(500).json({ error: error.message || "Error al crear intención de pago" });
+    // Errores de Stripe (llave inválida, moneda no soportada, etc.) → 400, no 500
+    const esErrorStripe = error.type && error.type.startsWith("Stripe");
+    res.status(esErrorStripe ? 400 : 500).json({
+      error: error.message || "Error al crear intención de pago",
+    });
   }
 };
 

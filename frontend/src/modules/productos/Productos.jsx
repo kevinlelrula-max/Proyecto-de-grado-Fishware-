@@ -90,13 +90,13 @@ export default function Productos() {
   };
 
   const handleGuardar = async (formData) => {
-    if (productoEditar) {
-      await actualizar(productoEditar.id, formData);
-    } else {
-      await agregar(formData);
+    const ok = productoEditar
+      ? await actualizar(productoEditar.id, formData)
+      : await agregar(formData);
+    if (ok) {
+      setMostrarForm(false);
+      setProductoEditar(null);
     }
-    setMostrarForm(false);
-    setProductoEditar(null);
   };
 
   return (

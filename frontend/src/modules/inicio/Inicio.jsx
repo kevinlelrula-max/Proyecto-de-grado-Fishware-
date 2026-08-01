@@ -7,7 +7,8 @@ import StockBajo from "./components/StockBajo";
 import ReordenSugerencias from "./components/ReordenSugerencias";
 import MetaVentas from "./components/MetaVentas";
 import ClientesDormidos from "./components/ClientesDormidos";
-import QRCode from "react-qr-code";
+import PredictorStock from "./components/PredictorStock";
+import ResumenDiario from "./components/ResumenDiario";
 
 export default function Inicio({ onIrA }) {
   const {
@@ -79,6 +80,9 @@ export default function Inicio({ onIrA }) {
         />
       ) : (
         <>
+          {/* ── RESUMEN DIARIO ── */}
+          <ResumenDiario />
+
           {/* ── STATS ── */}
           <div style={s.statsGrid} className="inicio-stats">
             <StatCard
@@ -134,6 +138,9 @@ export default function Inicio({ onIrA }) {
             <MetaVentas ventasMes={resumen?.ventasMes || 0} onIrA={onIrA} />
             <ClientesDormidos clientes={resumen?.clientesDormidos || []} onIrA={onIrA} />
           </div>
+
+          {/* ── PREDICTOR DE QUIEBRE ── */}
+          <PredictorStock productos={resumen?.predictorStock} />
 
           {/* ── SUGERENCIAS DE REORDEN ── */}
           <ReordenSugerencias sugerencias={resumen?.sugerenciasReorden} />
@@ -198,7 +205,10 @@ function ModalQR({ url, onClose }) {
         <h3 style={qr.title}>📱 QR de tu tienda</h3>
         <p style={qr.sub}>Escanea o descarga para compartir</p>
         <div style={qr.qrWrap}>
-          <QRCode id="qr-tienda" value={url} size={200} />
+          <div style={{ width: 200, height: 200, background: "#f1f5f9", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, border: "2px dashed #cbd5e1" }}>
+            <span style={{ fontSize: 36 }}>📱</span>
+            <span style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", padding: "0 12px" }}>QR disponible próximamente</span>
+          </div>
         </div>
         <p style={qr.urlText}>{url}</p>
         <div style={qr.btns}>

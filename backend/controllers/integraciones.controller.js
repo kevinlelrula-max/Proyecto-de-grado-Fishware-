@@ -67,26 +67,48 @@ export const guardarIntegracion = async (req, res) => {
       return res.status(400).json({ error: "Proveedor no válido" });
     }
 
-    if (!llave_publica || !llave_privada) {
-      return res.status(400).json({ error: "Las llaves pública y privada son requeridas" });
+    if (!llave_publica) {
+      return res.status(400).json({ error: "La llave pública es requerida" });
     }
 
-    // Encriptar llave privada antes de guardar
-    const llavePrivadaEncriptada = encriptar(llave_privada);
-
-    // UPSERT — si ya existe la actualiza, si no la crea
-    const result = await pool.query(
-      `INSERT INTO empresa_integraciones (empresa_id, proveedor, llave_publica, llave_privada, activo, fecha_conexion)
-       VALUES ($1, $2, $3, $4, true, NOW())
-       ON CONFLICT (empresa_id, proveedor)
-       DO UPDATE SET
-         llave_publica  = EXCLUDED.llave_publica,
-         llave_privada  = EXCLUDED.llave_privada,
-         activo         = true,
-         fecha_conexion = NOW()
-       RETURNING id, proveedor, llave_publica, activo, fecha_conexion`,
-      [empresa_id, proveedor, llave_publica, llavePrivadaEncriptada]
+    // Verificar si ya existe una integración para este proveedor
+    const existente = await pool.query(
+      `SELECT id FROM empresa_integraciones WHERE empresa_id = $1 AND proveedor = $2`,
+      [empresa_id, proveedor]
     );
+    const yaExiste = existente.rows.length > 0;
+
+    // En nueva conexión, la llave privada es obligatoria
+    if (!yaExiste && !llave_privada) {
+      return res.status(400).json({ error: "La llave privada es requerida para conectar" });
+    }
+
+    let result;
+    if (llave_privada) {
+      // Actualizar ambas llaves
+      const llavePrivadaEncriptada = encriptar(llave_privada);
+      result = await pool.query(
+        `INSERT INTO empresa_integraciones (empresa_id, proveedor, llave_publica, llave_privada, activo, fecha_conexion)
+         VALUES ($1, $2, $3, $4, true, NOW())
+         ON CONFLICT (empresa_id, proveedor)
+         DO UPDATE SET
+           llave_publica  = EXCLUDED.llave_publica,
+           llave_privada  = EXCLUDED.llave_privada,
+           activo         = true,
+           fecha_conexion = NOW()
+         RETURNING id, proveedor, llave_publica, activo, fecha_conexion`,
+        [empresa_id, proveedor, llave_publica, llavePrivadaEncriptada]
+      );
+    } else {
+      // Solo actualizar llave pública, conservar la privada existente
+      result = await pool.query(
+        `UPDATE empresa_integraciones
+         SET llave_publica = $3, activo = true, fecha_conexion = NOW()
+         WHERE empresa_id = $1 AND proveedor = $2
+         RETURNING id, proveedor, llave_publica, activo, fecha_conexion`,
+        [empresa_id, proveedor, llave_publica]
+      );
+    }
 
     res.json(result.rows[0]);
   } catch (error) {

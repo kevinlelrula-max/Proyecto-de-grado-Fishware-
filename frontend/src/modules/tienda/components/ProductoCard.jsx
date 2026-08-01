@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Estrellas from "../../reseñas/components/Estrellas";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -27,6 +28,15 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
   const [hovered, setHovered]   = useState(false);
   const [añadido, setAñadido]   = useState(false);
   const [imgIdx, setImgIdx]     = useState(0);
+
+  const navigate      = useNavigate();
+  const { empresaSlug } = useParams();
+
+  const irAlDetalle = () => {
+    if (!empresaSlug) return;
+    const empresa = JSON.parse(localStorage.getItem("ultima_empresa") || "null");
+    navigate(`/tienda/${empresaSlug}/producto/${producto.id}`, { state: { empresa, producto } });
+  };
 
   // Unificar fuentes de imágenes: array nuevo o imagen_url legacy
   const imagenes = producto.imagenes?.length > 0
@@ -73,11 +83,15 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Imagen / carrusel */}
-      <div style={{
-        ...s.imgWrap,
-        backgroundColor: sinStock ? "#f1f5f9" : hovered ? "#E1F5EE" : "#f8fafc",
-      }}>
+      {/* Imagen / carrusel — click navega al detalle */}
+      <div
+        onClick={irAlDetalle}
+        style={{
+          ...s.imgWrap,
+          backgroundColor: sinStock ? "#f1f5f9" : hovered ? "#E1F5EE" : "#f8fafc",
+          cursor: "pointer",
+        }}
+      >
         {imagenes.length > 0 ? (
           <img
             src={`${API_BASE}${imagenes[imgIdx].url}`}
@@ -98,6 +112,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
             <button
               style={{ ...s.carruselBtn, right: 4 }}
               onClick={e => { e.stopPropagation(); setImgIdx(i => (i + 1) % imagenes.length); }}
+
             >›</button>
             {/* Dots */}
             <div style={s.dots}>
@@ -121,7 +136,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
 
       {/* Info */}
       <div style={s.body}>
-        <h3 style={s.nombre}>{producto.nombre}</h3>
+        <h3 style={{ ...s.nombre, cursor: "pointer" }} onClick={irAlDetalle}>{producto.nombre}</h3>
 
         {/* Reseñas */}
         {statsReseña && Number(statsReseña.total) > 0 ? (

@@ -24,9 +24,10 @@ import RecuperarContrasena   from "./pages/RecuperarContrasena";
 import ResetearContrasena    from "./pages/ResetearContrasena";
 import MisPedidos from "./pages/MisPedidos";
 import PerfilCliente from "./modules/perfilCliente/PerfilCliente";
-import TiendaInicio   from "./modules/tienda/TiendaInicio";
-import TiendaCatalogo from "./modules/tienda/TiendaCatalogo";
-import TiendaContacto from "./modules/tienda/TiendaContacto";
+import TiendaInicio         from "./modules/tienda/TiendaInicio";
+import TiendaCatalogo       from "./modules/tienda/TiendaCatalogo";
+import TiendaContacto       from "./modules/tienda/TiendaContacto";
+import TiendaProductoDetalle from "./modules/tienda/TiendaProductoDetalle";
 function App() {
   return (
     <BrowserRouter>
@@ -54,8 +55,9 @@ function App() {
         <Route path="/tienda/perfil" element={<PerfilCliente />} />
         <Route path="/tienda/:empresaSlug"          element={<TiendaInicio />} />
         <Route path="/tienda/:empresaSlug/catalogo" element={<TiendaCatalogo />} />
-        <Route path="/tienda/:empresaSlug/contacto" element={<TiendaContacto />} />
-        <Route path="/tienda/:empresaSlug/pedidos"  element={<MisPedidos />} />
+        <Route path="/tienda/:empresaSlug/contacto"           element={<TiendaContacto />} />
+        <Route path="/tienda/:empresaSlug/pedidos"            element={<MisPedidos />} />
+        <Route path="/tienda/:empresaSlug/producto/:productoId" element={<TiendaProductoDetalle />} />
 
         {/* 🚫 Fallback global */}
         <Route path="*" element={<NotFound />} />

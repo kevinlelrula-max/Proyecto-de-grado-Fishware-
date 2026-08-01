@@ -114,6 +114,8 @@ export default function PasarelaCard({
             exitoGuardado={exitoGuardado}
             onGuardar={handleGuardar}
             onCancelar={() => setExpandida(false)}
+            llavePublicaActual={conectada?.llave_publica}
+            esEdicion={estaConectada}
           />
         )}
       </div>
@@ -197,6 +199,8 @@ export default function PasarelaCard({
           exitoGuardado={exitoGuardado}
           onGuardar={handleGuardar}
           onCancelar={() => setExpandida(false)}
+          llavePublicaActual={conectada?.llave_publica}
+          esEdicion={estaConectada}
         />
       )}
     </div>

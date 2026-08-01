@@ -7,7 +7,8 @@ export default function LoginCliente() {
   const location = useLocation();
 
   // Si el cliente intentó entrar a una tienda específica, lo devolvemos ahí después del login
-  const from = location.state?.from || "/tienda";
+  const slug = localStorage.getItem("ultima_empresa_slug");
+  const from = location.state?.from || (slug ? `/tienda/${slug}` : "/");
 
   const [form, setForm]       = useState({ usuario: "", contrasena: "" });
   const [loading, setLoading] = useState(false);

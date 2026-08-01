@@ -1,6 +1,7 @@
 import pool from "../config/db.js";
 import { crearNotificacion } from "../utils/notificaciones.js";
 import { procesarReferidoPrimeraCompra } from "./referidos.controller.js";
+import { enviarEmailEstadoPedido } from "../utils/email.js";
 
 // =========================
 // 🛒 CREAR PEDIDO ONLINE
@@ -252,7 +253,7 @@ export const actualizarEstadoPedido = async (req, res) => {
       [id, estado, req.body.nota || null]
     );
 
-    // 🔔 Notificación para estados relevantes
+    // 🔔 Notificación interna para estados relevantes
     if (estado === "entregado") {
       await crearNotificacion({
         empresa_id,
@@ -271,6 +272,33 @@ export const actualizarEstadoPedido = async (req, res) => {
         seccion: "pedidos",
         referencia_id: Number(id),
       });
+    }
+
+    // 📧 Email al cliente cuando el estado es relevante
+    const ESTADOS_CON_EMAIL = ["confirmado", "en_preparacion", "enviado", "entregado", "cancelado"];
+    if (ESTADOS_CON_EMAIL.includes(estado)) {
+      try {
+        const clienteRes = await pool.query(
+          `SELECT p.nombre, p.usuario AS email, e.nombre AS empresa_nombre
+           FROM pedidos_online po
+           JOIN personas p ON p.id = po.cliente_id
+           JOIN empresas e ON e.id = po.empresa_id
+           WHERE po.id = $1`,
+          [id]
+        );
+        if (clienteRes.rows.length > 0) {
+          const { nombre, email, empresa_nombre } = clienteRes.rows[0];
+          enviarEmailEstadoPedido({
+            destinatario: email,
+            nombre,
+            numeroPedido: id,
+            estado,
+            empresaNombre: empresa_nombre,
+          }).catch(err => console.error("Error enviando email de estado:", err));
+        }
+      } catch (emailErr) {
+        console.error("Error preparando email de estado:", emailErr);
+      }
     }
 
     res.json(result.rows[0]);

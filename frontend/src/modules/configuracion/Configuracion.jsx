@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import EmpresaForm from "./components/EmpresaForm";
 import MetodosPago from "./components/MetodosPago";
 import Integraciones from "../../modules/integraciones/Integraciones";
+import ConectorIA from "./components/ConectorIA";
 import { useConfiguracion } from "./hooks/useConfiguracion";
 
 const TABS = [
   { key: "empresa",       label: "Empresa" },
   { key: "pagos",         label: "Métodos de pago" },
   { key: "integraciones", label: "🚀 Integraciones" },
+  { key: "ia",            label: "🤖 Claude AI" },
 ];
 
 export default function Configuracion() {
@@ -32,8 +34,8 @@ export default function Configuracion() {
     );
   }
 
-  // La tab de integraciones maneja su propio guardado
-  const mostrarBtnGuardar = tabActiva !== "integraciones";
+  // La tab de integraciones y claude AI manejan su propio guardado
+  const mostrarBtnGuardar = tabActiva !== "integraciones" && tabActiva !== "ia";
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -100,9 +102,12 @@ export default function Configuracion() {
         />
       )}
 
-      {/* ✅ NUEVO */}
       {tabActiva === "integraciones" && (
         <Integraciones />
+      )}
+
+      {tabActiva === "ia" && (
+        <ConectorIA />
       )}
 
     </div>

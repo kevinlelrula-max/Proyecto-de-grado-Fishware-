@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -69,8 +70,10 @@ export function useEnvioConfig() {
       setCostosDepts(costosLimpios);
       setExito(true);
       setTimeout(() => setExito(false), 3000);
+      toast.success("Configuración de envío guardada");
     } catch {
       setError("Error al guardar la configuración");
+      toast.error("Error al guardar la configuración de envío");
     } finally {
       setGuardando(false);
     }

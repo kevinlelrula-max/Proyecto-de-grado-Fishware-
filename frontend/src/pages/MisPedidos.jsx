@@ -1,9 +1,12 @@
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, useParams } from "react-router-dom";
 import { useMisPedidos, ESTADOS } from "../modules/tienda/hooks/useMisPedidos";
 import PedidoCard from "../modules/tienda/components/PedidoCard";
 
 export default function MisPedidos() {
   const navigate = useNavigate();
+  const { empresaSlug: slugParam } = useParams();
+  const slug = slugParam || localStorage.getItem("ultima_empresa_slug");
+  const rutaTienda = slug ? `/tienda/${slug}` : "/";
   const { pedidos, loading, error, estaLogueado, clienteNombre, refetch, notifPermiso, pedirPermiso } = useMisPedidos();
 
   if (!estaLogueado) {
@@ -20,7 +23,7 @@ export default function MisPedidos() {
       {/* ── NAVBAR ── */}
       <nav style={s.nav}>
         <div style={s.navInner}>
-          <div style={s.navBrand} onClick={() => navigate("/tienda")}>
+          <div style={s.navBrand} onClick={() => navigate(rutaTienda)}>
             <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
               <rect width="36" height="36" rx="9" fill="#0F6E56"/>
               <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
@@ -43,7 +46,7 @@ export default function MisPedidos() {
               localStorage.removeItem("cliente_token");
               localStorage.removeItem("cliente_id");
               localStorage.removeItem("cliente_nombre");
-              navigate("/tienda");
+              navigate(rutaTienda);
             }}>
               Salir
             </button>
@@ -102,7 +105,7 @@ export default function MisPedidos() {
             <span style={s.emptyIcon}>📦</span>
             <p style={s.emptyTitle}>Aún no tienes pedidos</p>
             <p style={s.emptyDesc}>Visita el marketplace y haz tu primer pedido</p>
-            <button style={s.emptyBtn} onClick={() => navigate("/tienda")}>
+            <button style={s.emptyBtn} onClick={() => navigate(rutaTienda)}>
               Ir al marketplace →
             </button>
           </div>
@@ -145,7 +148,7 @@ export default function MisPedidos() {
       {/* ── FOOTER ── */}
       <footer style={s.footer}>
         <span style={s.footerText}>© 2026 Merkai · Marketplace</span>
-        <button style={s.footerBack} onClick={() => navigate("/tienda")}>
+        <button style={s.footerBack} onClick={() => navigate(rutaTienda)}>
           ← Volver al marketplace
         </button>
       </footer>

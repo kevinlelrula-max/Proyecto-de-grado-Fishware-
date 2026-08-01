@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -104,8 +105,11 @@ export function useIntegraciones() {
       });
       setExito(proveedor);
       setTimeout(() => setExito(""), 3000);
+      toast.success(`${proveedor} conectado correctamente`);
     } catch (e) {
-      setError(e.response?.data?.error || "Error al guardar integración.");
+      const msg = e.response?.data?.error || "Error al guardar integración.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setGuardando(null);
     }
@@ -122,8 +126,10 @@ export function useIntegraciones() {
       setIntegraciones(prev =>
         prev.map(i => i.proveedor === proveedor ? { ...i, activo: res.data.activo } : i)
       );
+      toast.success(res.data.activo ? `${proveedor} activado` : `${proveedor} pausado`);
     } catch {
       setError("Error al cambiar estado.");
+      toast.error("Error al cambiar estado de la integración");
     }
   }, []);
 
@@ -132,8 +138,10 @@ export function useIntegraciones() {
     try {
       await axios.delete(`${API_URL}/api/integraciones/${proveedor}`, { headers });
       setIntegraciones(prev => prev.filter(i => i.proveedor !== proveedor));
+      toast.success(`${proveedor} desconectado`);
     } catch {
       setError("Error al desconectar.");
+      toast.error("Error al desconectar la integración");
     }
   }, []);
 

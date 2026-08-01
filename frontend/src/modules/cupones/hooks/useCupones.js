@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 import {
   getCupones,
   crearCupon,
@@ -116,16 +117,20 @@ export function useCupones() {
       if (editandoId) {
         await actualizarCupon(editandoId, payload, token);
         setExito("Cupón actualizado correctamente");
+        toast.success("Cupón actualizado correctamente");
       } else {
         await crearCupon(payload, token);
         setExito("Cupón creado correctamente");
+        toast.success("Cupón creado correctamente");
       }
 
       cerrarForm();
       fetchCupones();
       setTimeout(() => setExito(""), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || "Error al guardar el cupón");
+      const msg = err.response?.data?.error || "Error al guardar el cupón";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setGuardando(false);
     }
@@ -136,8 +141,10 @@ export function useCupones() {
     try {
       const { activo } = await toggleCupon(id, token);
       setCupones((prev) => prev.map((c) => (c.id === id ? { ...c, activo } : c)));
+      toast.success(activo ? "Cupón activado" : "Cupón desactivado");
     } catch {
       setError("Error al cambiar el estado del cupón");
+      toast.error("Error al cambiar el estado del cupón");
     }
   };
 
@@ -149,8 +156,10 @@ export function useCupones() {
       setCupones((prev) => prev.filter((c) => c.id !== id));
       setExito("Cupón eliminado");
       setTimeout(() => setExito(""), 3000);
+      toast.success("Cupón eliminado");
     } catch {
       setError("Error al eliminar el cupón");
+      toast.error("Error al eliminar el cupón");
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -104,12 +105,15 @@ export function useLealtad() {
         throw new Error(data.error || "Error al guardar");
       }
 
-      setExito(editandoId ? "Nivel actualizado" : "Nivel creado");
+      const msg = editandoId ? "Nivel actualizado" : "Nivel creado";
+      setExito(msg);
+      toast.success(msg);
       setTimeout(() => setExito(""), 2500);
       cerrarForm();
       await fetchNiveles();
     } catch (err) {
       setError(err.message);
+      toast.error(err.message || "Error al guardar el nivel");
     } finally {
       setGuardando(false);
     }
@@ -126,8 +130,10 @@ export function useLealtad() {
       });
       if (!res.ok) throw new Error();
       await fetchNiveles();
+      toast.success("Nivel eliminado");
     } catch {
       setError("No se pudo eliminar el nivel.");
+      toast.error("No se pudo eliminar el nivel");
     }
   }, [fetchNiveles]);
 
@@ -143,8 +149,10 @@ export function useLealtad() {
         body: JSON.stringify({ ...nivel, activo: !nivel.activo }),
       });
       await fetchNiveles();
+      toast.success(nivel.activo ? "Nivel desactivado" : "Nivel activado");
     } catch {
       setError("No se pudo actualizar el nivel.");
+      toast.error("No se pudo actualizar el nivel");
     }
   }, [fetchNiveles]);
 

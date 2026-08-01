@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import BuscadorGlobal from "./BuscadorGlobal";
 
 import Inicio from "../modules/inicio/Inicio";
 import Productos from "../modules/productos/Productos";
@@ -18,12 +19,13 @@ import PedidosOnline from "../modules/pedidos/PedidosOnline";
 import Cupones       from "../modules/cupones/Cupones";
 import Reseñas       from "../modules/reseñas/Reseñas";
 import Referidos     from "../modules/referidos/Referidos";
+import ConectorIA    from "../modules/configuracion/components/ConectorIA";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const PERMISOS_BASE = {
-  1: ["inicio","productos","clientes","ventas","reportes","usuarios","pos","configuracion","lealtad","cupones","reseñas","referidos","editor","mensajes","integraciones","pedidos"],
-  2: ["inicio","productos","clientes","ventas","reportes","usuarios","pos","configuracion","lealtad","cupones","reseñas","referidos","editor","mensajes","integraciones","pedidos"],
+  1: ["inicio","productos","clientes","ventas","reportes","usuarios","pos","configuracion","lealtad","cupones","reseñas","referidos","editor","mensajes","integraciones","pedidos","claude-ia"],
+  2: ["inicio","productos","clientes","ventas","reportes","usuarios","pos","configuracion","lealtad","cupones","reseñas","referidos","editor","mensajes","integraciones","pedidos","claude-ia"],
   3: ["inicio","pos","clientes"],
   4: [],
 };
@@ -40,10 +42,11 @@ const TODO_EL_MENU = [
   { key: "lealtad",       label: "Lealtad",          icon: LealtadIcon },
   { key: "cupones",       label: "Cupones",          icon: CuponesIcon },
   { key: "reseñas",       label: "Reseñas",          icon: ReseñasIcon },
-  { key: "referidos",    label: "Referidos",        icon: ReferidosIcon },
+  { key: "referidos",     label: "Referidos",        icon: ReferidosIcon },
   { key: "mensajes",      label: "Mensajes",         icon: MensajesIcon },
   { key: "integraciones", label: "Integraciones",    icon: IntegracionesIcon },
-  { key: "pedidos",       label: "Pedidos online",   icon: PedidosIcon }, // ✅ NUEVO
+  { key: "pedidos",       label: "Pedidos online",   icon: PedidosIcon },
+  { key: "claude-ia",     label: "Claude AI",        icon: ClaudeIaIcon },
 ];
 
 function decodeToken(token) {
@@ -169,6 +172,15 @@ function PedidosIcon({ active }) {
       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
       <line x1="3" y1="6" x2="21" y2="6"/>
       <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+  );
+}
+function ClaudeIaIcon({ active }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={active ? "#fff" : "#7A8BA0"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
+      <path d="M12 8v4l3 3"/>
+      <circle cx="12" cy="12" r="1" fill={active ? "#fff" : "#7A8BA0"}/>
     </svg>
   );
 }
@@ -480,6 +492,7 @@ export default function DashboardEmpresa() {
   const [seccion, setSeccion]             = useState(null);
   const [open, setOpen]                   = useState(false);
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
+  const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [logoUrl, setLogoUrl]             = useState(null);
   const [nombreEmpresa, setNombreEmpresa] = useState("Merkai");
 
@@ -531,11 +544,22 @@ export default function DashboardEmpresa() {
       setSeccion(key);
       setSidebarAbierto(false);
       if (key === "mensajes") setMensajesNoLeidos(0);
-      // Auto-abrir el grupo que contiene la sección
       const gid = grupoDeSeccion(key);
       if (gid) setGruposAbiertos(prev => ({ ...prev, [gid]: true }));
     }
   };
+
+  // Atajo Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setBuscadorAbierto(v => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const rolLabel = rolId === 1 ? "SuperAdmin" : rolId === 2 ? "Administrador" : rolId === 3 ? "Empleado" : "Usuario";
   const inicial  = nombreUsuario.charAt(0).toUpperCase();
@@ -767,6 +791,13 @@ export default function DashboardEmpresa() {
             </div>
 
             <div className="fw-topbar-right">
+              {/* Buscador Ctrl+K */}
+              <button onClick={() => setBuscadorAbierto(true)} title="Buscar (Ctrl+K)" style={{ display:"flex",alignItems:"center",gap:7,padding:"6px 12px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:9,cursor:"pointer",fontSize:13,color:"#64748b",fontWeight:500 }}>
+                <span>🔍</span>
+                <span style={{ fontSize:12 }}>Buscar</span>
+                <kbd style={{ fontSize:10,background:"#e2e8f0",borderRadius:4,padding:"1px 5px",color:"#94a3b8",fontFamily:"inherit" }}>Ctrl K</kbd>
+              </button>
+
               <NotificacionesBell token={token} irA={irA} />
 
               <div className="fw-user-btn" onClick={e => { e.stopPropagation(); setOpen(!open); }}>
@@ -819,7 +850,12 @@ export default function DashboardEmpresa() {
               {seccion === "referidos"     && <Referidos />}
               {seccion === "mensajes"      && <Mensajes />}
               {seccion === "integraciones" && <Integraciones />}
-              {seccion === "pedidos"       && <PedidosOnline />} {/* ✅ NUEVO */}
+              {seccion === "pedidos"       && <PedidosOnline />}
+              {seccion === "claude-ia"    && (
+                <div style={{ maxWidth: 640, margin: "0 auto" }}>
+                  <ConectorIA />
+                </div>
+              )}
             </div>
           </div>
         </main>
@@ -828,6 +864,14 @@ export default function DashboardEmpresa() {
         <BtnSoporte />
 
       </div>
+
+      {/* ── BUSCADOR GLOBAL ── */}
+      <BuscadorGlobal
+        abierto={buscadorAbierto}
+        onCerrar={() => setBuscadorAbierto(false)}
+        onIrA={irA}
+        permisosRol={permisosRol || []}
+      />
     </>
   );
 }

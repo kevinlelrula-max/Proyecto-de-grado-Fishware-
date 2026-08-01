@@ -1,6 +1,5 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import pool from "../config/db.js";
@@ -10,7 +9,28 @@ import { registerInventarioTools } from "./tools/inventario.tool.js";
 import { registerVentasTools } from "./tools/ventas.tool.js";
 import { registerClientesTools } from "./tools/clientes.tool.js";
 
+const CLAUDE_ORIGINS = [
+  "https://claude.ai",
+  "https://api.anthropic.com",
+  /^https:\/\/.*\.claude\.ai$/,
+];
+
 const app = express();
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowed =
+    !origin ||
+    CLAUDE_ORIGINS.some((o) =>
+      o instanceof RegExp ? o.test(origin) : o === origin
+    );
+  if (allowed && origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,29 +41,19 @@ app.get("/", (req, res) => {
   const mcpUrl = `http://localhost:${process.env.MCP_PORT || 4001}/sse`;
   const error = req.query.error ? `<div class="form-error">⚠ ${req.query.error}</div>` : "";
 
-  const tokenResult = req.query.token ? `
-    <div class="token-result">
-      <p class="res-label"># tu token MCP · válido 30 días</p>
-      <div class="token-val">${req.query.token}</div>
-      <p class="res-label"># comando · claude code</p>
-      <div class="cmd-block">
-        <span class="cmd-text">claude mcp add --transport sse merkai ${mcpUrl} --header "Authorization: Bearer ${req.query.token}"</span>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent.trim());this.textContent='✓ copiado'">copiar</button>
-      </div>
-      <p class="res-note">Guarda este token en un lugar seguro. Expira en 30 días.</p>
-    </div>` : `
-    ${error}
-    <form method="POST" action="/token#install">
-      <div class="field">
-        <label>usuario</label>
-        <input type="text" name="usuario" placeholder="tu_usuario" required autocomplete="off" />
-      </div>
-      <div class="field">
-        <label>contraseña</label>
-        <input type="password" name="contrasena" placeholder="••••••••" required />
-      </div>
-      <button type="submit" class="form-btn">obtener_token →</button>
-    </form>`;
+  const tokenResult = `
+    <div style="display:flex;flex-direction:column;gap:16px;text-align:center">
+      <p style="font-size:13px;color:var(--muted);line-height:1.7">
+        Para generar tu token de conexión,<br/>
+        ingresa a tu panel de Merkai.
+      </p>
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/configuracion" class="form-btn" style="display:block;text-decoration:none;text-align:center">
+        Ir a Configuración → Claude AI →
+      </a>
+      <p style="font-size:11px;color:#1e3050">
+        Panel de Merkai · Configuración · Claude AI
+      </p>
+    </div>`;
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
@@ -338,48 +348,6 @@ app.get("/", (req, res) => {
 </html>`);
 });
 
-// ── POST /token — Valida credenciales y devuelve token MCP ───────────────
-app.post("/token", async (req, res) => {
-  const { usuario, contrasena } = req.body;
-
-  if (!usuario || !contrasena) {
-    return res.redirect("/#install?error=Ingresa usuario y contraseña");
-  }
-
-  try {
-    const result = await pool.query(
-      `SELECT p.id, p.empresa_id, p.rol_id, p.contrasena
-       FROM persona p WHERE p.usuario = $1`,
-      [usuario]
-    );
-
-    if (result.rows.length === 0) {
-      return res.redirect("/?error=Credenciales incorrectas#install");
-    }
-
-    const user = result.rows[0];
-
-    if (user.rol_id === 4) {
-      return res.redirect("/?error=Este usuario no tiene acceso al MCP#install");
-    }
-
-    const match = await bcrypt.compare(contrasena, user.contrasena);
-    if (!match) {
-      return res.redirect("/?error=Credenciales incorrectas#install");
-    }
-
-    const token = jwt.sign(
-      { id: user.id, empresa_id: user.empresa_id, rol_id: user.rol_id },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-
-    return res.redirect(`/?token=${encodeURIComponent(token)}#install`);
-  } catch (err) {
-    console.error(err);
-    return res.redirect("/?error=Error interno, intenta de nuevo#install");
-  }
-});
 
 // ── GET /sse — Claude se conecta aquí ────────────────────────────────────
 app.get("/sse", async (req, res) => {

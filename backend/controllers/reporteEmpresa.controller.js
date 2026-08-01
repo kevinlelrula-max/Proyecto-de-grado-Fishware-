@@ -504,6 +504,40 @@ export const getResumenInicio = async (req, res) => {
       [empresa_id]
     );
 
+    // Predictor de quiebre: productos con ventas en 30 días que se agotarán pronto
+    const predictorStock = await pool.query(
+      `SELECT
+         p.id,
+         p.nombre,
+         ROUND(p.stock::numeric, 2)                                           AS stock,
+         p.unidad,
+         ROUND((v30.total_vendido / 30.0)::numeric, 2)                        AS promedio_diario,
+         ROUND((p.stock / NULLIF(v30.total_vendido / 30.0, 0))::numeric, 1)   AS dias_hasta_agotarse
+       FROM productos p
+       JOIN (
+         SELECT producto_id, SUM(cantidad) AS total_vendido
+         FROM (
+           SELECT dv.producto_id, dv.cantidad
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1 AND v.fecha >= NOW() - INTERVAL '30 days'
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.fecha_pedido >= NOW() - INTERVAL '30 days'
+             AND po.estado != 'cancelado'
+         ) t
+         GROUP BY producto_id
+       ) v30 ON v30.producto_id = p.id
+       WHERE p.empresa_id = $1
+         AND ROUND((p.stock / NULLIF(v30.total_vendido / 30.0, 0))::numeric, 1) < 30
+       ORDER BY ROUND((p.stock / NULLIF(v30.total_vendido / 30.0, 0))::numeric, 1) ASC
+       LIMIT 10`,
+      [empresa_id]
+    );
+
     // Ventas del mes actual (POS + pedidos online)
     const ventasMes = await pool.query(
       `SELECT
@@ -548,38 +582,40 @@ export const getResumenInicio = async (req, res) => {
     // ── ONBOARDING: verificar qué pasos están completos ──
     const [empresaInfo, lealtadCount, equipoCount, referidosCount] = await Promise.all([
       pool.query(
-        `SELECT logo_url, descripcion, whatsapp, color_primario, banner_url
+        `SELECT logo_url, descripcion, whatsapp, color_primario, banner_url,
+                telefono, email, nit, direccion
          FROM empresas WHERE id = $1`,
         [empresa_id]
-      ),
+      ).catch(() => ({ rows: [{}] })),
       pool.query(
         `SELECT COUNT(*) AS total FROM niveles_lealtad WHERE empresa_id = $1`,
         [empresa_id]
-      ),
+      ).catch(() => ({ rows: [{ total: 0 }] })),
       pool.query(
         `SELECT COUNT(*) AS total FROM persona
          WHERE empresa_id = $1 AND rol_id != 1`,
         [empresa_id]
-      ),
+      ).catch(() => ({ rows: [{ total: 0 }] })),
       pool.query(
         `SELECT COUNT(*) AS total FROM referidos_config_referidor
          WHERE empresa_id = $1 AND activo = true`,
         [empresa_id]
-      ).catch(() => ({ rows: [{ total: 0 }] })), // tabla puede no existir aún
+      ).catch(() => ({ rows: [{ total: 0 }] })),
     ]);
 
     const emp = empresaInfo.rows[0] || {};
     const onboarding = {
       tieneProductos: parseInt(productos.rows[0].total) > 0,
       tieneLogo:      !!emp.logo_url,
-      tienePerfil:    !!(emp.descripcion || emp.whatsapp),
+      tienePerfil:    !!(emp.descripcion || emp.whatsapp || emp.telefono || emp.email || emp.nit || emp.direccion),
       tieneLealtad:   parseInt(lealtadCount.rows[0].total) > 0,
       tieneEquipo:    parseInt(equipoCount.rows[0].total) > 0,
       tieneTienda:    !!(emp.color_primario || emp.banner_url),
       tieneReferidos: parseInt(referidosCount.rows[0].total) > 0,
     };
-    onboarding.total       = 7; // 7 pasos fijos
-    onboarding.completados = Object.values(onboarding).filter(Boolean).length;
+    const pasos = ["tieneProductos","tieneLogo","tienePerfil","tieneLealtad","tieneEquipo","tieneTienda","tieneReferidos"];
+    onboarding.total       = pasos.length;
+    onboarding.completados = pasos.filter(k => onboarding[k]).length;
     onboarding.completo    = onboarding.completados === onboarding.total;
 
     res.json({
@@ -592,6 +628,7 @@ export const getResumenInicio = async (req, res) => {
       ultimosPedidos:     ultimosPedidos.rows,
       productosStockBajo: productosStockBajo.rows,
       sugerenciasReorden: sugerenciasReorden.rows,
+      predictorStock:     predictorStock.rows,
       clientesDormidos:   clientesDormidos.rows,
       onboarding,
     });
@@ -599,5 +636,215 @@ export const getResumenInicio = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener resumen" });
+  }
+};
+
+// GET /api/reportesEmpresa/resumen-diario
+export const getResumenDiario = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+
+    // Ingresos y transacciones: hoy y ayer
+    const comparacion = await pool.query(
+      `SELECT
+         COALESCE(SUM(CASE WHEN DATE(fecha) = CURRENT_DATE THEN total ELSE 0 END), 0)          AS ingresos_hoy,
+         COALESCE(SUM(CASE WHEN DATE(fecha) = CURRENT_DATE - 1 THEN total ELSE 0 END), 0)      AS ingresos_ayer,
+         COUNT(CASE WHEN DATE(fecha) = CURRENT_DATE THEN 1 END)                                AS tx_hoy,
+         COUNT(CASE WHEN DATE(fecha) = CURRENT_DATE - 1 THEN 1 END)                            AS tx_ayer
+       FROM (
+         SELECT fecha, total FROM ventas
+         WHERE empresa_id = $1 AND DATE(fecha) >= CURRENT_DATE - 1
+         UNION ALL
+         SELECT fecha_pedido AS fecha, total FROM pedidos_online
+         WHERE empresa_id = $1 AND DATE(fecha_pedido) >= CURRENT_DATE - 1
+           AND estado != 'cancelado'
+       ) t`,
+      [empresa_id]
+    );
+
+    // Top 3 productos más vendidos hoy (por ingresos)
+    const topProductos = await pool.query(
+      `SELECT p.nombre,
+              SUM(d.cantidad)::int                       AS unidades,
+              SUM(d.cantidad * d.precio_unitario)::float AS ingresos
+       FROM (
+         SELECT dv.producto_id, dv.cantidad, dv.precio_unitario
+         FROM detalle_venta dv
+         JOIN ventas v ON v.id = dv.venta_id
+         WHERE v.empresa_id = $1 AND DATE(v.fecha) = CURRENT_DATE
+         UNION ALL
+         SELECT dp.producto_id, dp.cantidad, dp.precio_unitario
+         FROM detalle_pedido_online dp
+         JOIN pedidos_online po ON po.id = dp.pedido_id
+         WHERE po.empresa_id = $1 AND DATE(po.fecha_pedido) = CURRENT_DATE
+           AND po.estado != 'cancelado'
+       ) d
+       JOIN productos p ON p.id = d.producto_id
+       GROUP BY p.nombre
+       ORDER BY ingresos DESC
+       LIMIT 3`,
+      [empresa_id]
+    );
+
+    // Distribución de ventas por hora hoy (POS - ventas tienen timestamp exacto)
+    const porHora = await pool.query(
+      `SELECT EXTRACT(HOUR FROM fecha)::int AS hora,
+              ROUND(SUM(total)::numeric, 0) AS total
+       FROM ventas
+       WHERE empresa_id = $1 AND DATE(fecha) = CURRENT_DATE
+       GROUP BY hora
+       ORDER BY hora`,
+      [empresa_id]
+    );
+
+    // Pedidos entregados hoy
+    const entregados = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM pedidos_online
+       WHERE empresa_id = $1 AND DATE(fecha_pedido) = CURRENT_DATE AND estado = 'entregado'`,
+      [empresa_id]
+    );
+
+    const c = comparacion.rows[0];
+    res.json({
+      hoy:               { ingresos: parseFloat(c.ingresos_hoy), transacciones: parseInt(c.tx_hoy) },
+      ayer:              { ingresos: parseFloat(c.ingresos_ayer), transacciones: parseInt(c.tx_ayer) },
+      topProductos:      topProductos.rows,
+      porHora:           porHora.rows,
+      pedidosEntregados: parseInt(entregados.rows[0].total),
+    });
+  } catch (error) {
+    console.error("getResumenDiario:", error.message);
+    res.status(500).json({ error: "Error al obtener resumen diario" });
+  }
+};
+
+// GET /api/reportesEmpresa/segmentacion-clientes
+export const getSegmentacionClientes = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+
+    const { rows } = await pool.query(
+      `WITH stats AS (
+         SELECT
+           p.id,
+           p.nombre,
+           p.apellido,
+           p.usuario  AS email,
+           p.telefono,
+           COUNT(po.id)                          AS total_pedidos,
+           COALESCE(SUM(po.total), 0)            AS total_gastado,
+           MAX(po.fecha_pedido)                  AS ultima_compra,
+           CASE WHEN MAX(po.fecha_pedido) IS NULL THEN NULL
+                ELSE EXTRACT(DAY FROM NOW() - MAX(po.fecha_pedido))
+           END AS dias_inactivo
+         FROM persona p
+         LEFT JOIN pedidos_online po
+           ON po.cliente_id = p.id
+          AND po.empresa_id = $1
+          AND po.estado != 'cancelado'
+         WHERE p.empresa_id = $1 AND p.rol_id = 4
+         GROUP BY p.id, p.nombre, p.apellido, p.usuario, p.telefono
+       )
+       SELECT *,
+         CASE
+           WHEN total_pedidos = 0                               THEN 'sin_compra'
+           WHEN dias_inactivo > 60                              THEN 'inactivo'
+           WHEN dias_inactivo > 30 AND dias_inactivo <= 60      THEN 'en_riesgo'
+           WHEN total_pedidos >= 3                              THEN 'embajador'
+           WHEN total_pedidos >= 2                              THEN 'frecuente'
+           ELSE                                                      'nuevo'
+         END AS segmento
+       FROM stats
+       ORDER BY total_gastado DESC`,
+      [empresa_id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("getSegmentacionClientes:", error.message);
+    res.status(500).json({ error: "Error al segmentar clientes" });
+  }
+};
+
+// GET /api/reportesEmpresa/pronostico
+export const getPronosticoVentas = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+
+    // Ventas diarias de los últimos 28 días (POS + pedidos online)
+    const { rows } = await pool.query(
+      `SELECT
+         DATE(t.fecha)::text                      AS dia,
+         EXTRACT(DOW FROM t.fecha)::int           AS dow,
+         COALESCE(SUM(t.total), 0)::float         AS ingresos
+       FROM (
+         SELECT fecha::timestamp, total FROM ventas
+         WHERE empresa_id = $1 AND fecha >= CURRENT_DATE - INTERVAL '28 days'
+         UNION ALL
+         SELECT fecha_pedido::timestamp AS fecha, total FROM pedidos_online
+         WHERE empresa_id = $1
+           AND fecha_pedido >= CURRENT_DATE - INTERVAL '28 days'
+           AND estado != 'cancelado'
+       ) t
+       GROUP BY DATE(t.fecha), EXTRACT(DOW FROM t.fecha)
+       ORDER BY dia`,
+      [empresa_id]
+    );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const toMs = d => new Date(d + "T00:00:00").getTime();
+
+    const last14 = rows.filter(r => toMs(r.dia) >= today.getTime() - 14 * 86400000);
+    const prev14 = rows.filter(r => {
+      const t = toMs(r.dia);
+      return t >= today.getTime() - 28 * 86400000 && t < today.getTime() - 14 * 86400000;
+    });
+
+    const avg = (arr) => arr.length > 0
+      ? arr.reduce((s, r) => s + r.ingresos, 0) / 14
+      : 0;
+
+    const baseline = avg(last14);
+    const prevBase = avg(prev14);
+    const trend    = prevBase > 0 ? (baseline - prevBase) / prevBase : 0;
+
+    // Promedio por día de la semana en los últimos 28 días
+    const dowSum   = {};
+    const dowCount = {};
+    rows.forEach(r => {
+      const d = r.dow;
+      dowSum[d]   = (dowSum[d]   || 0) + r.ingresos;
+      dowCount[d] = (dowCount[d] || 0) + 1;
+    });
+
+    // Próximos 7 días
+    const predicciones = [];
+    for (let i = 1; i <= 7; i++) {
+      const fecha = new Date(today);
+      fecha.setDate(fecha.getDate() + i);
+      const dow    = fecha.getDay();
+      const dowAvg = dowCount[dow] ? dowSum[dow] / dowCount[dow] : baseline;
+      const factor = baseline > 0 ? dowAvg / baseline : 1;
+      const pred   = Math.round(Math.max(0, baseline * (1 + trend) * factor));
+      predicciones.push({
+        dia:       fecha.toISOString().slice(0, 10),
+        dow,
+        prediccion: pred,
+      });
+    }
+
+    res.json({
+      historial:    rows,
+      predicciones,
+      baseline:     Math.round(baseline),
+      prevBase:     Math.round(prevBase),
+      trend:        parseFloat(trend.toFixed(4)),
+    });
+  } catch (error) {
+    console.error("getPronosticoVentas:", error.message);
+    res.status(500).json({ error: "Error al generar pronóstico" });
   }
 };

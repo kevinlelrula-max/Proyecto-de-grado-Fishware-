@@ -3,10 +3,12 @@ import useClientes from "./hooks/useClientes";
 import TablaClientes from "./components/TablaClientes";
 import FormCliente from "./components/FormCliente";
 import Vista360 from "./components/Vista360";
+import SegmentacionClientes from "./components/SegmentacionClientes";
 
 export default function Clientes() {
   const { clientes, agregarCliente, editarCliente, borrarCliente } = useClientes();
 
+  const [tab, setTab] = useState("lista");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [vista360Id, setVista360Id] = useState(null);
@@ -59,6 +61,25 @@ export default function Clientes() {
         </button>
       </div>
 
+      {/* ── TABS ── */}
+      <div style={s.tabs}>
+        {[
+          { key: "lista",      label: "Lista de clientes", emoji: "👥" },
+          { key: "segmentos",  label: "Segmentación CRM",  emoji: "📊" },
+        ].map(t => (
+          <button
+            key={t.key}
+            style={{ ...s.tab, ...(tab === t.key ? s.tabActivo : {}) }}
+            onClick={() => setTab(t.key)}
+          >
+            {t.emoji} {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "segmentos" && <SegmentacionClientes />}
+
+      {tab === "lista" && <>
       {/* STAT CARDS */}
       <div style={s.statsRow}>
         <div style={s.statCard}>
@@ -131,6 +152,8 @@ export default function Clientes() {
         </button>
       </div>
 
+      </>}
+
       {/* VISTA 360 */}
       {vista360Id && (
         <Vista360
@@ -163,6 +186,23 @@ export default function Clientes() {
 
 const s = {
   page: { padding: "24px" },
+
+  tabs: { display: "flex", gap: 8, marginBottom: 20 },
+  tab: {
+    padding: "9px 18px",
+    borderRadius: 10,
+    border: "1.5px solid #e2e8f0",
+    backgroundColor: "white",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#64748b",
+    cursor: "pointer",
+  },
+  tabActivo: {
+    backgroundColor: "#2563eb",
+    borderColor: "#2563eb",
+    color: "white",
+  },
 
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
   headerLeft: { display: "flex", alignItems: "center", gap: "10px" },

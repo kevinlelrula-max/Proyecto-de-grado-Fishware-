@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import {
   getProductos,
   crearProducto,
@@ -16,28 +17,44 @@ export default function useProductos() {
   };
 
   const agregar = async (producto) => {
-    await crearProducto(producto, token);
-    cargarProductos();
+    try {
+      await crearProducto(producto, token);
+      await cargarProductos();
+      toast.success("Producto creado correctamente");
+      return true;
+    } catch {
+      toast.error("Error al crear el producto");
+      return false;
+    }
   };
 
-  const actualizar  = async (id, data) => {
-    await actualizarProducto(id, data, token);
-    cargarProductos();
+  const actualizar = async (id, data) => {
+    try {
+      await actualizarProducto(id, data, token);
+      await cargarProductos();
+      toast.success("Producto actualizado correctamente");
+      return true;
+    } catch {
+      toast.error("Error al actualizar el producto");
+      return false;
+    }
   };
 
   const eliminar = async (id) => {
-    await eliminarProducto(id, token);
-    cargarProductos();
+    try {
+      await eliminarProducto(id, token);
+      await cargarProductos();
+      toast.success("Producto eliminado");
+      return true;
+    } catch {
+      toast.error("Error al eliminar el producto");
+      return false;
+    }
   };
 
   useEffect(() => {
     cargarProductos();
   }, []);
 
-  return {
-    productos,
-    agregar,
-    actualizar ,
-    eliminar
-  };
+  return { productos, agregar, actualizar, eliminar };
 }
