@@ -337,12 +337,16 @@ router.get("/sse", async (req, res) => {
     req.query.token ||
     null;
 
-  if (!token) return res.status(401).json({ error: "Token requerido" });
+  if (!token) {
+    res.setHeader("WWW-Authenticate", 'Bearer realm="Merkai MCP"');
+    return res.status(401).json({ error: "Token requerido" });
+  }
 
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch {
+    res.setHeader("WWW-Authenticate", 'Bearer realm="Merkai MCP", error="invalid_token"');
     return res.status(401).json({ error: "Token inválido o expirado" });
   }
 

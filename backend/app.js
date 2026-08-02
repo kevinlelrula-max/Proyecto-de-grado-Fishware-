@@ -25,6 +25,7 @@ import notificacionesRoutes from "./routes/notificaciones.routes.js";
 import referidosRoutes      from "./routes/referidos.routes.js";
 import carritosRoutes       from "./routes/carritos.routes.js";
 import mcpRoutes            from "./routes/mcp.routes.js";
+import oauthRoutes          from "./routes/oauth.routes.js";
 const app = express();
 
 // =========================
@@ -56,12 +57,27 @@ app.use("/api/pagos/webhook/stripe", express.raw({ type: "application/json" }));
 
 // JSON parser para todas las demás rutas
 app.use(express.json());
+// Form-encoded para el token endpoint de OAuth
+app.use(express.urlencoded({ extended: false }));
 
 // =========================
 // 🔹 TEST API
 // =========================
 app.get("/", (req, res) => {
   res.send("API Fishware funcionando 🚀");
+});
+
+// OAuth 2.0 metadata — requerido por Claude.ai para descubrir los endpoints
+app.get("/.well-known/oauth-authorization-server", (req, res) => {
+  const base = process.env.BACKEND_URL || "https://merkai-backend.onrender.com";
+  res.json({
+    issuer: base,
+    authorization_endpoint: `${base}/oauth/authorize`,
+    token_endpoint: `${base}/oauth/token`,
+    response_types_supported: ["code"],
+    grant_types_supported: ["authorization_code"],
+    code_challenge_methods_supported: ["S256"],
+  });
 });
 
 // =========================
@@ -91,6 +107,7 @@ app.use("/api/pagos",           pagosRoutes);
 app.use("/api/referidos",       referidosRoutes);
 app.use("/api/carritos",        carritosRoutes);
 app.use("/api/mcp",             mcpRoutes);
+app.use("/oauth",               oauthRoutes);
 
 // =========================
 // 🔹 404 HANDLER
