@@ -332,7 +332,10 @@ function copyCmd() {
 // ── GET /sse — Claude se conecta aquí ────────────────────────────────────
 router.get("/sse", async (req, res) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const token =
+    (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null) ||
+    req.query.token ||
+    null;
 
   if (!token) return res.status(401).json({ error: "Token requerido" });
 

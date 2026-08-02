@@ -22,7 +22,7 @@ export default function ConectorIA() {
       const data = await res.json();
       setToken(data.token);
       setComando(data.comandoClaude);
-      setMcpUrl(data.mcpUrl);
+      setMcpUrl(`${data.mcpUrl}?token=${data.token}`);
     } catch {
       setError("No se pudo generar el token. Intenta de nuevo.");
     } finally {
@@ -189,7 +189,7 @@ export default function ConectorIA() {
               </button>
             </div>
             <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
-              En claude.ai → Settings → Integrations → pega esta URL + el token de arriba
+              En claude.ai → Settings → Conectores → Agregar → pega esta URL directamente (ya incluye el token)
             </div>
           </div>
 
