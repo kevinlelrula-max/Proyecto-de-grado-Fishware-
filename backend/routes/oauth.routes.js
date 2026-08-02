@@ -110,13 +110,13 @@ router.get("/authorize", (req, res) => {
 
 // POST /oauth/authorize — procesa login y redirige con code
 router.post("/authorize", async (req, res) => {
-  const { usuario, contrasena, redirect_uri, state, code_challenge, code_challenge_method, client_id } = req.body;
-
-  if (!redirect_uri) return res.status(400).send("redirect_uri requerido");
-
-  const params = { redirect_uri, state, code_challenge, code_challenge_method, client_id };
-
   try {
+    const { usuario, contrasena, redirect_uri, state, code_challenge, code_challenge_method, client_id } = req.body || {};
+
+    if (!redirect_uri) return res.status(400).send("redirect_uri requerido");
+
+    const params = { redirect_uri, state, code_challenge, code_challenge_method, client_id };
+
     const result = await pool.query(
       `SELECT p.id, p.empresa_id, p.rol_id, p.contrasena
        FROM persona p
@@ -151,7 +151,7 @@ router.post("/authorize", async (req, res) => {
 
     res.redirect(url.toString());
   } catch (err) {
-    console.error("[OAuth] Error en /authorize:", err);
+    console.error("[OAuth] Error en /authorize:", err.message);
     res.status(500).send("Error interno del servidor");
   }
 });
