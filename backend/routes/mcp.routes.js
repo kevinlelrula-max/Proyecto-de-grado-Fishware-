@@ -358,7 +358,23 @@ router.get("/sse", async (req, res) => {
 
   const transport = new SSEServerTransport("/api/mcp/messages", res);
   transports.set(transport.sessionId, transport);
-  transport.onclose = () => transports.delete(transport.sessionId);
+
+  const heartbeat = setInterval(() => {
+    try {
+      if (!res.writableEnded) {
+        res.write(": ping\n\n");
+      } else {
+        clearInterval(heartbeat);
+      }
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 25000);
+
+  transport.onclose = () => {
+    clearInterval(heartbeat);
+    transports.delete(transport.sessionId);
+  };
 
   await mcpServer.connect(transport);
 });
