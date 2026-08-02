@@ -387,6 +387,7 @@ router.get("/sse", async (req, res) => {
 router.post("/messages", async (req, res) => {
   const sessionId = req.query.sessionId;
   const transport = transports.get(sessionId);
+  console.log("[MCP] POST /messages sessionId:", sessionId, "found:", !!transport);
 
   if (!transport) return res.status(404).json({ error: "Sesión no encontrada" });
 
