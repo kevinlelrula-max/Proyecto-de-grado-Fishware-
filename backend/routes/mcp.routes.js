@@ -333,7 +333,7 @@ function copyCmd() {
 router.get("/sse", async (req, res) => {
   const authHeader = req.headers["authorization"];
   const token =
-    (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null) ||
+    authHeader?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ||
     req.query.token ||
     null;
 
