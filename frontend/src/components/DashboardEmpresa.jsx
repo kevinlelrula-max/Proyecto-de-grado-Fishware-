@@ -757,6 +757,37 @@ export default function DashboardEmpresa() {
               );
             })}
 
+            {/* ── CLAUDE AI (standalone, destacado) ── */}
+            {menu.filter(i => i.key === "claude-ia").map(item => {
+              const Icon = item.icon;
+              const active = seccion === item.key;
+              return (
+                <button
+                  key={item.key}
+                  className={`fw-sb-item ${active ? "fw-active" : ""}`}
+                  onClick={() => irA(item.key)}
+                  style={{
+                    marginTop: 10,
+                    background: active
+                      ? undefined
+                      : "linear-gradient(135deg, rgba(0,201,167,0.08), rgba(0,153,255,0.05))",
+                    borderColor: active ? undefined : "rgba(0,201,167,0.2)",
+                    color: active ? undefined : "#00C9A7",
+                  }}
+                >
+                  <div className="fw-sb-icon"><Icon active={active} /></div>
+                  {item.label}
+                  <span style={{
+                    marginLeft: "auto", fontSize: 9, fontWeight: 700,
+                    color: active ? "#fff" : "#00C9A7",
+                    background: "rgba(0,201,167,0.12)",
+                    border: "1px solid rgba(0,201,167,0.3)",
+                    padding: "1px 6px", borderRadius: 4,
+                  }}>AI</span>
+                </button>
+              );
+            })}
+
           </nav>
 
           <div className="fw-sb-bottom">

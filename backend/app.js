@@ -30,7 +30,26 @@ const app = express();
 // =========================
 // 🔹 MIDDLEWARES
 // =========================
-app.use(cors({ origin: process.env.FRONTEND_URL }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  /^https:\/\/proyecto-de-grado-fishware-kjsv.*\.vercel\.app$/,
+  "http://localhost:5173",
+  // Claude MCP connections
+  "https://claude.ai",
+  "https://api.anthropic.com",
+  /^https:\/\/.*\.claude\.ai$/,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowed = allowedOrigins.some(o =>
+      o instanceof RegExp ? o.test(origin) : o === origin
+    );
+    callback(allowed ? null : new Error("CORS not allowed"), allowed);
+  },
+  credentials: true,
+}));
 
 // ⚠️ El webhook de Stripe necesita raw body — va ANTES de express.json()
 app.use("/api/pagos/webhook/stripe", express.raw({ type: "application/json" }));
