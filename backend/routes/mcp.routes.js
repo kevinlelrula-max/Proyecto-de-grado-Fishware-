@@ -342,8 +342,7 @@ router.get("/sse", async (req, res) => {
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    console.error("[MCP] JWT verify failed:", err.message, "| secret len:", (process.env.JWT_SECRET || "").length, "| token len:", token?.length, "| token start:", token?.substring(0, 40));
+  } catch {
     return res.status(401).json({ error: "Token inválido o expirado" });
   }
 
