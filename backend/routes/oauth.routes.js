@@ -76,6 +76,24 @@ function loginPage(params, error = null) {
 </html>`;
 }
 
+// POST /oauth/register — registro dinámico de clientes (RFC 7591)
+// Claude.ai llama esto automáticamente para obtener un client_id
+router.post("/register", (req, res) => {
+  const { redirect_uris, client_name } = req.body;
+
+  // Generamos un client_id único por sesión de registro
+  const clientId = `claude-${crypto.randomBytes(8).toString("hex")}`;
+
+  res.status(201).json({
+    client_id: clientId,
+    client_name: client_name || "Claude AI",
+    redirect_uris: redirect_uris || [],
+    grant_types: ["authorization_code"],
+    response_types: ["code"],
+    token_endpoint_auth_method: "none",
+  });
+});
+
 // GET /oauth/authorize — muestra formulario de login
 router.get("/authorize", (req, res) => {
   const { response_type, redirect_uri } = req.query;
