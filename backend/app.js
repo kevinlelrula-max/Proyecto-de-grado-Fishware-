@@ -39,6 +39,8 @@ const allowedOrigins = [
   "https://claude.ai",
   "https://api.anthropic.com",
   /^https:\/\/.*\.claude\.ai$/,
+  // Propio servidor (OAuth authorize form submit)
+  "https://merkai-backend.onrender.com",
 ];
 
 app.use(cors({
