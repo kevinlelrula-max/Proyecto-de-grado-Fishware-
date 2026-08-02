@@ -356,6 +356,10 @@ router.get("/sse", async (req, res) => {
   registerVentasTools(mcpServer, pool, empresa_id);
   registerClientesTools(mcpServer, pool, empresa_id);
 
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+
   const transport = new SSEServerTransport("/api/mcp/messages", res);
   transports.set(transport.sessionId, transport);
 
@@ -369,7 +373,7 @@ router.get("/sse", async (req, res) => {
     } catch {
       clearInterval(heartbeat);
     }
-  }, 25000);
+  }, 10000);
 
   transport.onclose = () => {
     clearInterval(heartbeat);
