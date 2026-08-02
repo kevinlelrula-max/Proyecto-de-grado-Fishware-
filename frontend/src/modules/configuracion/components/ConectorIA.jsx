@@ -64,6 +64,18 @@ export default function ConectorIA() {
         El token generado es de solo lectura — nunca puede modificar tus datos.
       </div>
 
+      {/* Link documentación */}
+      <div style={{ textAlign: "right", marginTop: -12 }}>
+        <a
+          href={`${BASE_URL}/api/mcp`}
+          target="_blank"
+          rel="noreferrer"
+          style={{ fontSize: 12, color: "#00C9A7", textDecoration: "none", fontWeight: 500 }}
+        >
+          Ver documentación MCP →
+        </a>
+      </div>
+
       {/* Opciones de conexión */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16 }}>
