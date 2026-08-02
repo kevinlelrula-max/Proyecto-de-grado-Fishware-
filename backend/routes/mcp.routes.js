@@ -220,37 +220,56 @@ router.get("/", (req, res) => {
 
 <div class="section" id="install">
   <div class="section-tag">> instalación</div>
-  <div class="section-title">Tres pasos. Cinco minutos.</div>
-  <div class="section-sub">Sin conocimientos técnicos requeridos.</div>
-  <div class="install-wrap">
-    <div class="install-steps">
-      <div class="step">
-        <span class="step-num">[01]</span>
-        <div class="step-content">
-          <h4>get_token</h4>
-          <p>Inicia sesión con tus credenciales de Merkai. Token de solo lectura, válido 30 días.</p>
-        </div>
+  <div class="section-title">Elige tu cliente</div>
+  <div class="section-sub">Dos formas de conectar. Ninguna requiere conocimientos técnicos.</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:48px">
+
+    <!-- Claude.ai -->
+    <div class="form-card">
+      <div class="form-head" style="justify-content:space-between">
+        <span>./claude.ai &nbsp;<span style="color:#86efac;font-size:10px">recomendado</span></span>
+        <span style="font-size:10px;color:var(--muted)">web · sin instalación</span>
       </div>
-      <div class="step">
-        <span class="step-num">[02]</span>
-        <div class="step-content">
-          <h4>connect_claude</h4>
-          <p>Copia el comando generado y pégalo en tu terminal con Claude Code instalado.</p>
+      <div class="form-body" style="display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          Funciona directamente en <b style="color:#cbd5e1">claude.ai</b>. Sin pegar tokens — OAuth maneja la autorización automáticamente.
         </div>
-      </div>
-      <div class="step">
-        <span class="step-num">[03]</span>
-        <div class="step-content">
-          <h4>ask_anything</h4>
-          <p>Abre Claude y pregunta en lenguaje natural sobre las ventas, stock o clientes de tu negocio.</p>
+        <div>
+          <div class="res-label" style="margin-bottom:8px">URL DEL SERVIDOR MCP</div>
+          <div class="cmd-block">
+            <div class="cmd-text" id="mcp-url">${mcpUrl}</div>
+            <button class="copy-btn" onclick="copyUrl()">copy</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[01]</span>
+            Abre <b style="color:#cbd5e1">claude.ai</b> → Settings → Conectores → Agregar
+          </div>
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[02]</span>
+            Pegá la URL de arriba y hacé clic en <b style="color:#cbd5e1">Agregar</b>
+          </div>
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[03]</span>
+            Iniciá sesión con tus credenciales de Merkai → <b style="color:#86efac">Conectado</b>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Claude Code terminal -->
     <div class="form-card">
-      <div class="form-head">./get_token</div>
+      <div class="form-head" style="justify-content:space-between">
+        <span>./claude_code</span>
+        <span style="font-size:10px;color:var(--muted)">terminal · Claude Code</span>
+      </div>
       <div class="form-body">
         <form id="lf" onsubmit="return false" style="display:flex;flex-direction:column;gap:0">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7">
+            Genera un token para usar Merkai MCP desde el terminal de <b style="color:#cbd5e1">Claude Code</b>.
+          </div>
           <div class="field"><label>Email</label><input type="email" id="em" placeholder="tu@email.com" autocomplete="email" required/></div>
           <div class="field" style="margin-bottom:20px"><label>Contrase&ntilde;a</label><input type="password" id="pw" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" required/></div>
           <button onclick="doLogin()" class="form-btn" id="sb">Generar token</button>
@@ -258,6 +277,7 @@ router.get("/", (req, res) => {
         <div id="tr" class="token-result" style="display:none"></div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -319,9 +339,16 @@ async function doLogin() {
 function copyCmd() {
   var txt = document.getElementById('cd').textContent;
   navigator.clipboard.writeText(txt).then(function() {
-    var btn = document.querySelector('.copy-btn');
+    var btn = document.querySelector('#tr .copy-btn');
     btn.textContent = '✓';
     setTimeout(function() { btn.textContent = 'copy'; }, 1500);
+  });
+}
+function copyUrl() {
+  var txt = document.getElementById('mcp-url').textContent;
+  navigator.clipboard.writeText(txt).then(function() {
+    var btn = document.querySelector('#mcp-url + .copy-btn, .cmd-block .copy-btn');
+    if (btn) { btn.textContent = '✓'; setTimeout(function() { btn.textContent = 'copy'; }, 1500); }
   });
 }
 </script>
