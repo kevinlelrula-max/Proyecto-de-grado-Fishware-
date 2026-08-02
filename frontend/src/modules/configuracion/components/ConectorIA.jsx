@@ -76,25 +76,27 @@ export default function ConectorIA() {
         </a>
       </div>
 
-      {/* Opciones de conexión */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>
-            🖥️ Claude Code (desktop)
+      {/* Opciones de conexión — solo antes de generar */}
+      {!token && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>
+              🖥️ Claude Code (desktop)
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6 }}>
+              Copia el comando y pégalo en tu terminal con Claude Code instalado.
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6 }}>
-            Copia el comando y pégalo en tu terminal con Claude Code instalado.
+          <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>
+              🌐 Claude.ai (navegador)
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6 }}>
+              Ve a <strong>claude.ai → Settings → Conectores</strong>, pega la URL con el token incluido.
+            </div>
           </div>
         </div>
-        <div style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>
-            🌐 Claude.ai (navegador)
-          </div>
-          <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6 }}>
-            Ve a <strong>claude.ai → Settings → Integrations</strong>, pega la URL del MCP y el token.
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Botón generar */}
       {!token && (
@@ -176,14 +178,15 @@ export default function ConectorIA() {
             </div>
             <div style={{
               background: "#f9fafb", border: "1px solid #e5e7eb",
-              borderRadius: 8, padding: "12px 100px 12px 14px",
-              fontFamily: "monospace", fontSize: 13,
+              borderRadius: 8, padding: "12px 14px 36px 14px",
+              fontFamily: "monospace", fontSize: 10,
               color: "#374151", position: "relative",
+              wordBreak: "break-all", lineHeight: 1.6,
             }}>
               {mcpUrl}
               <button
                 onClick={() => copiar(mcpUrl, "url")}
-                style={btnCopiarStyle}
+                style={{ ...btnCopiarStyle, top: "auto", bottom: 8, right: 8 }}
               >
                 {copiado === "url" ? "✓ copiado" : "copiar"}
               </button>
