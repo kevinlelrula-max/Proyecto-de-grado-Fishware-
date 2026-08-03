@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import ModalPlantillas from "./ModalPlantillas";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { imgUrl } from "../../../utils/imgUrl";
 
 const TIPOS_INFO = {
   hero:        { label: "Portada",          emoji: "🖼️", fija: true,  desc: "Banner y título principal" },
@@ -46,8 +45,9 @@ export default function PanelEditor({
   const [showAgregar, setShowAgregar]     = useState(false);
   const [showPlantillas, setShowPlantillas] = useState(false);
 
-  const bannerSrc = bannerPreview?.startsWith("data:") ? bannerPreview
-    : bannerPreview ? (bannerPreview.startsWith("http") ? bannerPreview : `${API_BASE}${bannerPreview}`) : null;
+  const bannerSrc = bannerPreview?.startsWith("data:")
+    ? bannerPreview
+    : imgUrl(bannerPreview) || null;
 
   function onDragStart(e, idx) { setDraggingIdx(idx); e.dataTransfer.effectAllowed = "move"; }
   function onDragOver(e, idx)  { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverIdx(idx); }
@@ -246,9 +246,12 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
     <div style={f.wrap}>
       <Field label="Variante de diseño">
         <select value={seccion.config?.variante || "oscuro"} onChange={e => cfg("variante", e.target.value)} style={f.input}>
-          <option value="oscuro">Oscuro (fondo de color)</option>
-          <option value="lateral">Lateral (panel dividido)</option>
-          <option value="minimalista">Minimalista (fondo blanco)</option>
+          <option value="oscuro">Oscuro — fondo oscuro con banner</option>
+          <option value="lateral">Lateral — panel dividido en dos</option>
+          <option value="minimalista">Minimalista — limpio y centrado</option>
+          <option value="revista">Revista — imagen full con texto abajo</option>
+          <option value="negrita">Negrita — tipografía XXL impactante</option>
+          <option value="gradiente">Gradiente — fondo degradado moderno</option>
         </select>
       </Field>
       <Field label="Color principal">

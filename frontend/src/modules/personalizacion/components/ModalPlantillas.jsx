@@ -81,7 +81,11 @@ export default function ModalPlantillas({ onCerrar, onAplicar }) {
                 {/* Info */}
                 <div style={s.info}>
                   <div style={s.nombre}>{plantilla.nombre}</div>
-                  <div style={s.fuente}>{plantilla.fuente}</div>
+                  {plantilla.descripcion && <div style={s.desc}>{plantilla.descripcion}</div>}
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={s.varianteBadge}>{plantilla.secciones.find(sec => sec.tipo === "hero")?.config?.variante || "oscuro"}</span>
+                    <span style={s.fuente}>{plantilla.fuente}</span>
+                  </div>
                   <div style={s.coloresFila}>
                     <div style={{ ...s.colorChip, backgroundColor: plantilla.color_primario }} title={plantilla.color_primario} />
                     <div style={{ ...s.colorChip, backgroundColor: plantilla.color_secundario }} title={plantilla.color_secundario} />
@@ -124,7 +128,7 @@ const s = {
     borderRadius: 16,
     border: "1px solid rgba(255,255,255,0.1)",
     width: "100%",
-    maxWidth: 720,
+    maxWidth: 820,
     maxHeight: "85vh",
     overflowY: "auto",
     display: "flex",
@@ -182,6 +186,8 @@ const s = {
   previewSeccion: { flex: 1, height: 14, borderRadius: 3, opacity: 0.3 },
   info: { padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 6 },
   nombre: { fontSize: 13, fontWeight: 700, color: "#e2e8f0" },
+  desc:   { fontSize: 11, color: "#64748b", lineHeight: 1.4 },
+  varianteBadge: { fontSize: 10, padding: "2px 7px", borderRadius: 6, backgroundColor: "rgba(0,201,167,0.1)", color: "#00C9A7", border: "1px solid rgba(0,201,167,0.2)", fontWeight: 600 },
   fuente: { fontSize: 11, color: "#4A6080" },
   coloresFila: { display: "flex", gap: 6 },
   colorChip: { width: 18, height: 18, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)" },
