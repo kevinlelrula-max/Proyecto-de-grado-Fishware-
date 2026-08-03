@@ -16,7 +16,7 @@ function calcularDescuento(cupon, subtotal, costoEnvio = 0) {
   }
   return 0;
 }
-
+   
 // ── GET /api/cupones ──────────────────────────────────────────────────────────
 export const getCupones = async (req, res) => {
   try {
