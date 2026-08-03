@@ -13,8 +13,8 @@ export default function AnalisisIA() {
     try {
       const token = localStorage.getItem("token");
       const url = forzar
-        ? `${BASE_URL}/api/insight/reseñas?refresh=1`
-        : `${BASE_URL}/api/insight/reseñas`;
+        ? `${BASE_URL}/api/insight/resenas?refresh=1`
+        : `${BASE_URL}/api/insight/resenas`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });

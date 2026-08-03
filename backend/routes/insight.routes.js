@@ -6,6 +6,6 @@ const router = Router();
 
 router.get("/", verificarToken, getInsight);
 router.post("/generar-descripcion", verificarToken, generarDescripcion);
-router.get("/reseñas", verificarToken, analizarReseñas);
+router.get("/resenas", verificarToken, analizarReseñas);
 
 export default router;
