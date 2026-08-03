@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import ModalPlantillas from "./ModalPlantillas";
+import ModalDisenoIA from "./ModalDisenoIA";
 import { imgUrl } from "../../../utils/imgUrl";
 
 const TIPOS_INFO = {
@@ -44,6 +45,7 @@ export default function PanelEditor({
   const [dragOverIdx, setDragOverIdx]     = useState(null);
   const [showAgregar, setShowAgregar]     = useState(false);
   const [showPlantillas, setShowPlantillas] = useState(false);
+  const [showDisenoIA, setShowDisenoIA]   = useState(false);
 
   const bannerSrc = bannerPreview?.startsWith("data:")
     ? bannerPreview
@@ -90,13 +92,29 @@ export default function PanelEditor({
 
       {error && <div style={s.errorMsg}>{error}</div>}
 
-      {/* Plantillas */}
-      <div style={s.plantillasRow}>
-        <span style={s.seccionesLabel2}>Secciones</span>
-        <button style={s.plantillasBtn} onClick={() => setShowPlantillas(true)}>
-          Plantillas
+      {/* IA + Plantillas */}
+      <div style={{ padding: "10px 14px 6px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <button style={s.btnDisenoIA} onClick={() => setShowDisenoIA(true)}>
+          <span style={{ fontSize: 15 }}>✦</span>
+          Diseñar con IA
         </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={s.seccionesLabel2}>Secciones</span>
+          <button style={s.plantillasBtn} onClick={() => setShowPlantillas(true)}>
+            Plantillas
+          </button>
+        </div>
       </div>
+
+      {showDisenoIA && (
+        <ModalDisenoIA
+          onCerrar={() => setShowDisenoIA(false)}
+          onAplicar={(plantilla) => {
+            onAplicarPlantilla(plantilla);
+            setSeccionActiva(null);
+          }}
+        />
+      )}
 
       {showPlantillas && (
         <ModalPlantillas
@@ -531,6 +549,7 @@ const s = {
   plantillasRow:  { padding: "12px 14px 6px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   seccionesLabel2: { fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.1em" },
   plantillasBtn:  { fontSize: 11, fontWeight: 600, color: "#00C9A7", background: "rgba(0,201,167,0.08)", border: "1px solid rgba(0,201,167,0.2)", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
+  btnDisenoIA:    { width: "100%", padding: "10px 0", background: "linear-gradient(135deg,#00C9A7,#0099FF)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, letterSpacing: "0.01em" },
   lista: { padding: "0 10px", display: "flex", flexDirection: "column", gap: 3 },
   seccionItem: { display: "flex", alignItems: "center", gap: 6, padding: "8px 8px", borderRadius: 10, border: "1px solid", cursor: "default", transition: "all 0.15s", userSelect: "none" },
   dragHandle: { color: "#2D4060", fontSize: 14, cursor: "grab", flexShrink: 0, lineHeight: 1, letterSpacing: "-2px" },

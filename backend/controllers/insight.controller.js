@@ -85,6 +85,49 @@ export const generarDescripcion = async (req, res) => {
   }
 };
 
+export const generarDiseno = async (req, res) => {
+  const { descripcion } = req.body;
+  if (!descripcion?.trim()) return res.status(400).json({ error: "Descripción requerida" });
+
+  const prompt = `Eres un diseñador web experto en tiendas online. Un empresario describe su negocio y tú generas una configuración de diseño completa y personalizada.
+
+Descripción: "${descripcion}"
+
+Responde ÚNICAMENTE con un JSON válido sin texto adicional:
+{
+  "color_primario": "#hexcolor (color de marca vibrante, contrasta con blanco)",
+  "color_secundario": "#hexcolor (oscuro para navbar/footer, complementa el primario)",
+  "fuente": "Inter|Poppins|Montserrat|Playfair Display",
+  "hero_variante": "oscuro|lateral|minimalista|revista|negrita|gradiente",
+  "estilo_tarjeta": "estandar|minimalista|oscuro|boutique|horizontal",
+  "hero_titulo": "título impactante máximo 6 palabras",
+  "hero_subtitulo": "subtítulo complementario máximo 12 palabras",
+  "hero_btn_texto": "texto del botón de acción",
+  "nosotros_titulo": "título para sección sobre nosotros",
+  "nosotros_contenido": "2-3 oraciones que describan el negocio con calidez",
+  "horario": "horario típico del negocio o cadena vacía",
+  "secciones_extra": []
+}
+
+Reglas de diseño:
+- hero_variante: revista=negocios visuales/gastronomía/moda, negrita=deportivo/juvenil/energético, gradiente=tecnología/premium/servicios, lateral=formal/profesional, minimalista=natural/artesanal/orgánico, oscuro=pesca/carnes/industria
+- estilo_tarjeta: boutique=moda/artesanías/flores, oscuro=tecnología/premium/licores, horizontal=servicios/descripción larga/farmacia, minimalista=productos simples/ropa básica, estandar=todo lo demás
+- fuente: Playfair Display=lujo/clásico/joyería, Poppins=amigable/infantil/dulces, Montserrat=corporativo/finanzas, Inter=tecnología/minimalista/moderno
+- secciones_extra: incluye solo las que apliquen del array ["nosotros","faq","galeria","testimonios"] según el tipo de negocio`;
+
+  try {
+    const result = await gemini.generateContent(prompt);
+    const text = result.response.text().trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: "La IA no devolvió un diseño válido" });
+    const diseno = JSON.parse(jsonMatch[0]);
+    res.json(diseno);
+  } catch (err) {
+    console.error("[Insight] generarDiseno:", err.message);
+    res.status(500).json({ error: "No se pudo generar el diseño" });
+  }
+};
+
 export const getInsight = async (req, res) => {
   const empresa_id = req.user.empresa_id;
 
