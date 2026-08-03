@@ -15,7 +15,7 @@ export const PLANTILLAS = [
     footer_texto: "Todos los derechos reservados",
     secciones: [
       { tipo: "hero",     config: { variante: "oscuro" } },
-      { tipo: "catalogo", config: {} },
+      { tipo: "catalogo", config: { estilo_tarjeta: "estandar" } },
       { tipo: "nosotros", config: {} },
       { tipo: "contacto", config: {} },
     ],
@@ -36,7 +36,7 @@ export const PLANTILLAS = [
     footer_texto: "",
     secciones: [
       { tipo: "hero",     config: { variante: "revista" } },
-      { tipo: "catalogo", config: {} },
+      { tipo: "catalogo", config: { estilo_tarjeta: "estandar" } },
       {
         tipo: "faq",
         config: {
@@ -66,7 +66,7 @@ export const PLANTILLAS = [
     footer_texto: "",
     secciones: [
       { tipo: "hero",       config: { variante: "negrita" } },
-      { tipo: "catalogo",   config: {} },
+      { tipo: "catalogo",   config: { estilo_tarjeta: "boutique" } },
       { tipo: "nosotros",   config: {} },
       { tipo: "testimonios",config: {} },
       { tipo: "contacto",   config: {} },
@@ -88,7 +88,7 @@ export const PLANTILLAS = [
     footer_texto: "",
     secciones: [
       { tipo: "hero",        config: { variante: "gradiente" } },
-      { tipo: "catalogo",    config: {} },
+      { tipo: "catalogo",    config: { estilo_tarjeta: "oscuro" } },
       { tipo: "testimonios", config: {} },
       {
         tipo: "galeria",
@@ -119,7 +119,7 @@ export const PLANTILLAS = [
     footer_texto: "",
     secciones: [
       { tipo: "hero",     config: { variante: "minimalista" } },
-      { tipo: "catalogo", config: {} },
+      { tipo: "catalogo", config: { estilo_tarjeta: "estandar" } },
       { tipo: "nosotros", config: {} },
       {
         tipo: "faq",
@@ -149,7 +149,7 @@ export const PLANTILLAS = [
     footer_texto: "",
     secciones: [
       { tipo: "hero",        config: { variante: "lateral" } },
-      { tipo: "catalogo",    config: {} },
+      { tipo: "catalogo",    config: { estilo_tarjeta: "horizontal" } },
       { tipo: "testimonios", config: {} },
       { tipo: "contacto",    config: {} },
     ],

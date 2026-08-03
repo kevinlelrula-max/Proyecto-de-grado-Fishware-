@@ -1,40 +1,44 @@
-import ProductoCard from "./ProductoCard";
+import ProductoCardEstilo from "./ProductoCardEstilos";
 
-export default function CatalogoGrid({ productos, loading, busqueda, onAgregar, statsReseñas = {}, onVerReseñas, colorMarca }) {
+const GRID_CONFIG = {
+  estandar:    { cols: "repeat(auto-fill, minmax(210px, 1fr))", gap: 20 },
+  minimalista: { cols: "repeat(auto-fill, minmax(160px, 1fr))", gap: 24 },
+  oscuro:      { cols: "repeat(auto-fill, minmax(210px, 1fr))", gap: 20 },
+  boutique:    { cols: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 },
+  horizontal:  { cols: "1fr",                                    gap: 12 },
+};
 
-  // ── Skeleton mientras carga
+export default function CatalogoGrid({ productos, loading, busqueda, onAgregar, statsReseñas = {}, onVerReseñas, colorMarca, estiloTarjeta = "estandar" }) {
+  const gridCfg = GRID_CONFIG[estiloTarjeta] || GRID_CONFIG.estandar;
+
   if (loading) {
     return (
-      <div style={s.grid}>
+      <div style={{ display: "grid", gridTemplateColumns: gridCfg.cols, gap: gridCfg.gap }}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} style={s.skeleton} />
+          <div key={i} style={{ height: estiloTarjeta === "boutique" ? 280 : 300, borderRadius: 16, backgroundColor: "#e2e8f0", animation: "pulse 1.5s ease-in-out infinite" }} />
         ))}
       </div>
     );
   }
 
-  // ── Sin resultados
   if (productos.length === 0) {
     return (
-      <div style={s.empty}>
-        <span style={s.emptyIcon}>🔍</span>
-        <p style={s.emptyTitle}>
-          {busqueda
-            ? `No encontramos productos para "${busqueda}"`
-            : "Esta empresa no tiene productos disponibles aún"}
+      <div style={{ textAlign: "center", padding: "80px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 48 }}>🔍</span>
+        <p style={{ fontSize: 16, fontWeight: 600, color: "#64748b", maxWidth: 320, lineHeight: 1.5 }}>
+          {busqueda ? `No encontramos productos para "${busqueda}"` : "Esta empresa no tiene productos disponibles aún"}
         </p>
-        {busqueda && (
-          <p style={s.emptyDesc}>Intenta con otro nombre</p>
-        )}
+        {busqueda && <p style={{ fontSize: 13, color: "#94a3b8" }}>Intenta con otro nombre</p>}
       </div>
     );
   }
 
   return (
-    <div style={s.grid}>
+    <div style={{ display: "grid", gridTemplateColumns: gridCfg.cols, gap: gridCfg.gap }}>
       {productos.map((producto) => (
-        <ProductoCard
+        <ProductoCardEstilo
           key={producto.id}
+          estilo={estiloTarjeta}
           producto={producto}
           onAgregar={onAgregar}
           statsReseña={statsReseñas[producto.id]}
@@ -45,37 +49,3 @@ export default function CatalogoGrid({ productos, loading, busqueda, onAgregar, 
     </div>
   );
 }
-
-const s = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
-    gap: "20px",
-  },
-  skeleton: {
-    height: "300px",
-    borderRadius: "16px",
-    backgroundColor: "#e2e8f0",
-    animation: "pulse 1.5s ease-in-out infinite",
-  },
-  empty: {
-    textAlign: "center",
-    padding: "80px 24px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "10px",
-  },
-  emptyIcon: { fontSize: "48px" },
-  emptyTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#64748b",
-    maxWidth: "320px",
-    lineHeight: "1.5",
-  },
-  emptyDesc: {
-    fontSize: "13px",
-    color: "#94a3b8",
-  },
-};

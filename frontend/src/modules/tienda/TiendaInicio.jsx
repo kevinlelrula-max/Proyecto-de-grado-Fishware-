@@ -6,6 +6,7 @@ import Carrito from "./components/Carrito";
 import HeroSection from "./components/HeroSection";
 
 import { imgUrl } from "../../utils/imgUrl";
+import ProductoCardEstilo from "./components/ProductoCardEstilos";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 function calcularPrecioInteligente(producto, descuentoLealtad) {
@@ -49,6 +50,7 @@ export default function TiendaInicio() {
   const cantidadDestacados = empresa?.productos_destacados_cantidad || 4;
   const nosotrosTitulo = empresa?.nosotros_titulo || `Conoce ${empresaNombre}`;
   const heroVariante   = (empresa?.layout || []).find(s => s.tipo === "hero")?.config?.variante || "oscuro";
+  const estiloTarjeta  = (empresa?.layout || []).find(s => s.tipo === "catalogo")?.config?.estilo_tarjeta || "estandar";
 
   const [descuento,    setDescuento]    = useState(0);
   const [nivelLealtad, setNivelLealtad] = useState(null);
@@ -133,47 +135,15 @@ export default function TiendaInicio() {
               Ver todos →
             </button>
           </div>
-          <div style={s.productosGrid}>
+          <div style={{ ...s.productosGrid, gridTemplateColumns: estiloTarjeta === "horizontal" ? "1fr" : estiloTarjeta === "boutique" ? "repeat(auto-fill, minmax(200px, 1fr))" : estiloTarjeta === "minimalista" ? "repeat(auto-fill, minmax(160px, 1fr))" : "repeat(auto-fill, minmax(240px, 1fr))" }}>
             {productosConPrecio.slice(0, cantidadDestacados).map((producto) => (
-              <div key={producto.id} style={s.productoCard}>
-                <div style={s.productoImgWrap}>
-                  {producto.imagen_url ? (
-                    <img src={imgUrl(producto.imagen_url)} alt={producto.nombre} style={s.img} />
-                  ) : (
-                    <span style={s.productoEmoji}>📦</span>
-                  )}
-                  {producto.stock <= 0 && <div style={s.sinStockBadge}>Sin stock</div>}
-                  {producto.tiene_descuento && producto.stock > 0 && (
-                    <div style={{ ...s.descuentoBadge, backgroundColor: `${colorMarca}20`, color: colorMarca }}>
-                      🏆 Precio especial
-                    </div>
-                  )}
-                </div>
-                <div style={s.productoInfo}>
-                  <p style={s.productoNombre}>{producto.nombre}</p>
-                  {producto.descripcion && <p style={s.productoDesc}>{producto.descripcion}</p>}
-                  <div style={s.productoPrecioRow}>
-                    {producto.tiene_descuento && (
-                      <span style={s.precioTachado}>${producto.precio_original.toLocaleString("es-CO")}</span>
-                    )}
-                    <p style={{ ...s.productoPrecio, color: colorMarca }}>
-                      ${(producto.precio_final || producto.precio_original).toLocaleString("es-CO")}
-                    </p>
-                    <span style={s.productoUnidad}>/ {producto.unidad || "unidad"}</span>
-                  </div>
-                  <button
-                    style={{
-                      ...s.productoBtn,
-                      backgroundColor: producto.stock <= 0 ? "#e2e8f0" : colorMarca,
-                      cursor: producto.stock <= 0 ? "not-allowed" : "pointer",
-                    }}
-                    onClick={() => producto.stock > 0 && agregarAlCarrito(producto, 1)}
-                    disabled={producto.stock <= 0}
-                  >
-                    {producto.stock <= 0 ? "Sin stock" : "Agregar al carrito"}
-                  </button>
-                </div>
-              </div>
+              <ProductoCardEstilo
+                key={producto.id}
+                estilo={estiloTarjeta}
+                producto={producto}
+                onAgregar={agregarAlCarrito}
+                colorMarca={colorMarca}
+              />
             ))}
           </div>
           {productos.length > cantidadDestacados && (

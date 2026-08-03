@@ -313,6 +313,16 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
       <div style={f.infoBox}>
         Los productos se gestionan desde la sección <strong style={{ color: "#00C9A7" }}>Productos</strong> del dashboard.
       </div>
+      <Field label="Estilo de tarjetas">
+        <select value={seccion.config?.estilo_tarjeta || "estandar"} onChange={e => cfg("estilo_tarjeta", e.target.value)} style={f.input}>
+          <option value="estandar">Estándar — imagen arriba, botón abajo</option>
+          <option value="minimalista">Minimalista — limpia, sin bordes</option>
+          <option value="oscuro">Oscuro — fondo oscuro, precio destacado</option>
+          <option value="boutique">Boutique — imagen full con overlay</option>
+          <option value="horizontal">Horizontal — imagen + info en fila</option>
+        </select>
+        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se aplica en el inicio y en el catálogo completo</div>
+      </Field>
       <Field label="Productos destacados en inicio">
         <select value={datos.productos_destacados_cantidad || 4} onChange={e => onChange("productos_destacados_cantidad", Number(e.target.value))} style={f.input}>
           <option value={4}>4 productos</option>
@@ -542,8 +552,8 @@ const s = {
 
 const f = {
   wrap: { display: "flex", flexDirection: "column" },
-  input: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
-  textarea: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: 1.5 },
+  input: { width: "100%", background: "#0d1e35", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
+  textarea: { width: "100%", background: "#0d1e35", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: 1.5 },
   colorInput: { width: 36, height: 32, borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", padding: 2, cursor: "pointer", background: "none", flexShrink: 0 },
   bannerUpload: { border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 9, padding: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer" },
   alineBtn: { flex: 1, padding: "6px 0", border: "none", borderRadius: 7, fontSize: 16, cursor: "pointer", transition: "all 0.15s", fontFamily: "inherit" },

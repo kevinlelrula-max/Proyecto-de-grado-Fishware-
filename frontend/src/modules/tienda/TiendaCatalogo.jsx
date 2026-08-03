@@ -28,9 +28,10 @@ export default function TiendaCatalogo() {
 
   const empresa       = location.state?.empresa
     || JSON.parse(localStorage.getItem("ultima_empresa") || "null");
-  const empresaId     = empresa?.id;
-  const empresaNombre = empresa?.nombre || "";
-  const colorMarca    = empresa?.color_primario || "#0F6E56";
+  const empresaId      = empresa?.id;
+  const empresaNombre  = empresa?.nombre || "";
+  const colorMarca     = empresa?.color_primario || "#0F6E56";
+  const estiloTarjeta  = (empresa?.layout || []).find(s => s.tipo === "catalogo")?.config?.estilo_tarjeta || "estandar";
 
   // 1️⃣ Guardar slug para que TiendaLayout lo tenga aunque esté en /mis-pedidos
 useEffect(() => {
@@ -198,6 +199,7 @@ useEffect(() => {
           statsReseñas={statsReseñas}
           onVerReseñas={setProductoReseña}
           colorMarca={colorMarca}
+          estiloTarjeta={estiloTarjeta}
         />
       </div>
 
