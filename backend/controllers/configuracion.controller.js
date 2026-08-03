@@ -1,58 +1,16 @@
 import pool from "../config/db.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
-
-// =========================
-// CONFIGURACIÓN DE MULTER (logo)
-// =========================
-const storageLogo = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = "uploads/logos";
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `logo_empresa_${req.user.empresa_id}${ext}`);
-  },
-});
-
-// =========================
-// CONFIGURACIÓN DE MULTER (banner)
-// =========================
-const storageBanner = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = "uploads/banners";
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `banner_empresa_${req.user.empresa_id}${ext}`);
-  },
-});
+import { subirImagen } from "../config/cloudinary.js";
 
 const fileFilter = (req, file, cb) => {
   const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
-  if (tiposPermitidos.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Solo se permiten imágenes JPG, PNG o WEBP"), false);
-  }
+  tiposPermitidos.includes(file.mimetype)
+    ? cb(null, true)
+    : cb(new Error("Solo se permiten imágenes JPG, PNG o WEBP"), false);
 };
 
-export const uploadLogo = multer({
-  storage: storageLogo,
-  fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 },
-});
-
-export const uploadBanner = multer({
-  storage: storageBanner,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
+export const uploadLogo   = multer({ storage: multer.memoryStorage(), fileFilter, limits: { fileSize: 2 * 1024 * 1024 } });
+export const uploadBanner = multer({ storage: multer.memoryStorage(), fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // =========================
 // GET CONFIGURACIÓN COMPLETA
@@ -243,7 +201,9 @@ export const subirLogo = async (req, res) => {
       return res.status(400).json({ error: "No se recibió ningún archivo" });
     }
 
-    const logo_url = `/uploads/logos/${req.file.filename}`;
+    const { secure_url: logo_url } = await subirImagen(
+      req.file.buffer, "merkai/logos", `logo_empresa_${empresa_id}`
+    );
 
     const result = await pool.query(
       `UPDATE empresas SET logo_url=$1 WHERE id=$2 RETURNING logo_url`,
@@ -268,7 +228,9 @@ export const subirBanner = async (req, res) => {
       return res.status(400).json({ error: "No se recibió ningún archivo" });
     }
 
-    const banner_url = `/uploads/banners/${req.file.filename}`;
+    const { secure_url: banner_url } = await subirImagen(
+      req.file.buffer, "merkai/banners", `banner_empresa_${empresa_id}`
+    );
 
     const result = await pool.query(
       `UPDATE empresas SET banner_url=$1 WHERE id=$2 RETURNING banner_url`,

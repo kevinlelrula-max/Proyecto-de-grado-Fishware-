@@ -1,29 +1,16 @@
 import pool from "../config/db.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { subirImagen } from "../config/cloudinary.js";
 
 // =========================
 // CONFIGURACIÓN DE MULTER
 // =========================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = "uploads/productos";
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `producto_${Date.now()}${ext}`);
-  }
-});
-
 const fileFilter = (req, file, cb) => {
   const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
   tiposPermitidos.includes(file.mimetype) ? cb(null, true) : cb(new Error("Solo JPG, PNG o WEBP"), false);
 };
 
-export const upload = multer({ storage, fileFilter, limits: { fileSize: 3 * 1024 * 1024 } });
+export const upload = multer({ storage: multer.memoryStorage(), fileFilter, limits: { fileSize: 3 * 1024 * 1024 } });
 
 // =========================
 // GET PRODUCTOS (dashboard)
@@ -66,7 +53,11 @@ export const crearProducto = async (req, res) => {
 
     const empresa_id = req.user.empresa_id;
     const files      = req.files || [];
-    const imagen_url = files.length > 0 ? `/uploads/productos/${files[0].filename}` : null;
+
+    const urls = await Promise.all(
+      files.map(f => subirImagen(f.buffer, "merkai/productos").then(r => r.secure_url))
+    );
+    const imagen_url = urls[0] || null;
 
     const result = await pool.query(
       `INSERT INTO productos (
@@ -95,10 +86,10 @@ export const crearProducto = async (req, res) => {
     );
 
     const productoId = result.rows[0].id;
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < urls.length; i++) {
       await pool.query(
         "INSERT INTO producto_imagenes (producto_id, url, orden) VALUES ($1, $2, $3)",
-        [productoId, `/uploads/productos/${files[i].filename}`, i]
+        [productoId, urls[i], i]
       );
     }
 
@@ -123,8 +114,11 @@ export const actualizarProducto = async (req, res) => {
       unidad, codigo_barras, categoria_id
     } = req.body;
 
-    const files      = req.files || [];
-    const imagen_url = files.length > 0 ? `/uploads/productos/${files[0].filename}` : null;
+    const files = req.files || [];
+    const newUrls = await Promise.all(
+      files.map(f => subirImagen(f.buffer, "merkai/productos").then(r => r.secure_url))
+    );
+    const imagen_url = newUrls[0] || null;
 
     const query = imagen_url
       ? `UPDATE productos
@@ -155,15 +149,15 @@ export const actualizarProducto = async (req, res) => {
     const result = await pool.query(query, params);
 
     // Insertar nuevas imágenes al final del orden existente
-    if (files.length > 0) {
+    if (newUrls.length > 0) {
       const { rows: existing } = await pool.query(
         "SELECT COUNT(*) AS c FROM producto_imagenes WHERE producto_id = $1", [id]
       );
       const offset = parseInt(existing[0].c);
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < newUrls.length; i++) {
         await pool.query(
           "INSERT INTO producto_imagenes (producto_id, url, orden) VALUES ($1, $2, $3)",
-          [id, `/uploads/productos/${files[i].filename}`, offset + i]
+          [id, newUrls[i], offset + i]
         );
       }
     }
@@ -188,21 +182,6 @@ export const eliminarProducto = async (req, res) => {
       [id, empresa_id]
     );
     if (!prod.rows.length) return res.status(404).json({ error: "Producto no encontrado" });
-
-    // Eliminar archivos de producto_imagenes
-    const imgs = await pool.query(
-      "SELECT url FROM producto_imagenes WHERE producto_id = $1", [id]
-    );
-    imgs.rows.forEach(img => {
-      const f = `.${img.url}`;
-      if (fs.existsSync(f)) fs.unlinkSync(f);
-    });
-
-    // Eliminar imagen_url legacy si no estaba en producto_imagenes
-    if (prod.rows[0]?.imagen_url) {
-      const f = `.${prod.rows[0].imagen_url}`;
-      if (fs.existsSync(f)) fs.unlinkSync(f);
-    }
 
     await pool.query("DELETE FROM productos WHERE id = $1 AND empresa_id = $2", [id, empresa_id]);
     res.json({ message: "Producto eliminado correctamente" });
@@ -258,9 +237,6 @@ export const eliminarImagenProducto = async (req, res) => {
       "SELECT url FROM producto_imagenes WHERE id = $1 AND producto_id = $2", [imgId, id]
     );
     if (!img.rows.length) return res.status(404).json({ error: "Imagen no encontrada" });
-
-    const f = `.${img.rows[0].url}`;
-    if (fs.existsSync(f)) fs.unlinkSync(f);
 
     await pool.query("DELETE FROM producto_imagenes WHERE id = $1", [imgId]);
 
