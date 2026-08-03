@@ -1,12 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { getReseñasEmpresa, toggleReseña, eliminarReseña } from "./services/reseñasService";
 import Estrellas from "./components/Estrellas";
+import AnalisisIA from "./components/AnalisisIA";
 import { SkeletonTable } from "../../components/SkeletonLoader";
+
+const sentimientoBadge = (cal) => {
+  if (cal >= 4) return { label: "Positiva", color: "#0F6E56", bg: "#f0fdf4" };
+  if (cal === 3) return { label: "Neutral",  color: "#d97706", bg: "#fffbeb" };
+  return            { label: "Negativa", color: "#dc2626", bg: "#fef2f2" };
+};
 
 export default function Reseñas() {
   const [reseñas,  setReseñas]  = useState([]);
   const [loading,  setLoading]  = useState(true);
-  const [filtro,   setFiltro]   = useState("todas"); // todas | visibles | ocultas
+  const [filtro,   setFiltro]   = useState("todas");
+  const [tab,      setTab]      = useState("resenas"); // resenas | analisis
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const token = localStorage.getItem("token");
 
@@ -54,7 +62,27 @@ export default function Reseñas() {
           <span style={{ fontSize: "22px" }}>⭐</span>
           <h2 style={s.title}>Reseñas de clientes</h2>
         </div>
+        <div style={s.tabsWrap}>
+          {[
+            { key: "resenas",  label: "Reseñas" },
+            { key: "analisis", label: "✦ Análisis IA" },
+          ].map(t => (
+            <button
+              key={t.key}
+              style={{ ...s.tabBtn, backgroundColor: tab === t.key ? "#0B1628" : "transparent", color: tab === t.key ? "white" : "#64748b" }}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Pestaña Análisis IA */}
+      {tab === "analisis" && <AnalisisIA />}
+
+      {/* Pestaña Reseñas */}
+      {tab === "resenas" && <>
 
       {/* Stats */}
       <div style={s.statsRow}>
@@ -129,6 +157,9 @@ export default function Reseñas() {
               )}
 
               <div style={s.acciones}>
+                {(() => { const b = sentimientoBadge(r.calificacion); return (
+                  <span style={{ ...s.estadoBadge, backgroundColor: b.bg, color: b.color }}>{b.label}</span>
+                ); })()}
                 <span style={{
                   ...s.estadoBadge,
                   backgroundColor: r.activo ? "#f0fdf4" : "#f1f5f9",
@@ -161,6 +192,8 @@ export default function Reseñas() {
           ))}
         </div>
       )}
+
+      </>}
     </div>
   );
 }
@@ -168,8 +201,10 @@ export default function Reseñas() {
 const s = {
   page:       { padding: "24px" },
   loading:    { padding: "24px", color: "#64748b", fontSize: "14px" },
-  header:     { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
+  header:     { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" },
   headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
+  tabsWrap:   { display: "flex", gap: 4, background: "#f1f5f9", borderRadius: 10, padding: 4 },
+  tabBtn:     { padding: "7px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" },
   title:      { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
   statsRow:   { display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" },
   statCard:   { flex: 1, minWidth: "120px", backgroundColor: "#f8fafc", borderRadius: "12px", padding: "12px 16px", display: "flex", flexDirection: "column", gap: "4px", border: "1px solid #e2e8f0" },

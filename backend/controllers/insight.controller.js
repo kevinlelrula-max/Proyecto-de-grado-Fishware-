@@ -8,6 +8,63 @@ const gemini = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 const cache = new Map();
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
+export const analizarReseñas = async (req, res) => {
+  const empresa_id = req.user.empresa_id;
+  const cacheKey = `reseñas_${empresa_id}`;
+
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.generatedAt < CACHE_TTL) {
+    return res.json({ ...cached.content, cached: true, generatedAt: cached.generatedAt });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT r.calificacion, r.comentario, p.nombre AS producto
+       FROM reseñas r
+       JOIN productos p ON p.id = r.producto_id
+       WHERE r.empresa_id = $1 AND r.activo = true
+       ORDER BY r.creado_en DESC LIMIT 100`,
+      [empresa_id]
+    );
+
+    if (rows.length === 0) return res.json({ sinDatos: true });
+
+    const positivas = rows.filter(r => r.calificacion >= 4).length;
+    const neutras   = rows.filter(r => r.calificacion === 3).length;
+    const negativas = rows.filter(r => r.calificacion <= 2).length;
+
+    const comentarios = rows
+      .filter(r => r.comentario?.trim())
+      .slice(0, 30)
+      .map(r => `${r.calificacion}⭐ "${r.comentario}"`)
+      .join("\n");
+
+    const prompt = `Analiza estas ${rows.length} reseñas de una tienda (${positivas} positivas ≥4⭐, ${neutras} neutras 3⭐, ${negativas} negativas ≤2⭐) y responde SOLO con un JSON válido sin texto adicional:
+{
+  "resumen": "2-3 oraciones sobre la percepción general de los clientes",
+  "temas_positivos": ["hasta 3 aspectos que los clientes valoran"],
+  "temas_negativos": ["hasta 3 puntos de mejora, array vacío si no hay"],
+  "recomendacion": "una acción concreta y específica para el negocio"
+}
+${comentarios ? `\nComentarios:\n${comentarios}` : ""}`;
+
+    const result = await gemini.generateContent(prompt);
+    const text = result.response.text().trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const analysis = jsonMatch
+      ? JSON.parse(jsonMatch[0])
+      : { resumen: text, temas_positivos: [], temas_negativos: [], recomendacion: "" };
+
+    const content = { positivas, neutras, negativas, total: rows.length, ...analysis };
+    cache.set(cacheKey, { generatedAt: Date.now(), content });
+
+    res.json({ ...content, cached: false, generatedAt: Date.now() });
+  } catch (err) {
+    console.error("[Insight] analizarReseñas:", err.message);
+    res.status(500).json({ error: "No se pudo analizar las reseñas" });
+  }
+};
+
 export const generarDescripcion = async (req, res) => {
   const { nombre, precio, unidad } = req.body;
   if (!nombre) return res.status(400).json({ error: "El nombre es requerido" });
