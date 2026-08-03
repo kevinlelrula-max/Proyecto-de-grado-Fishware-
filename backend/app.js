@@ -22,4 +22,4 @@ app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/ventas", ventasRoutes);
 
-export default app;
+export default app;   
