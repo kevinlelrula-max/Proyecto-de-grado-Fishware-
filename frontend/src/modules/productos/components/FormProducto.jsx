@@ -34,7 +34,26 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
   const [imagenesExistentes, setImagenesExistentes] = useState([]); // [{id, url}]
   const [imagenesNuevas, setImagenesNuevas]         = useState([]); // [{file, preview}]
   const [tab, setTab]                               = useState("basico");
+  const [loadingDesc, setLoadingDesc]               = useState(false);
   const fileInputRef = useRef(null);
+
+  const handleGenerarDescripcion = async () => {
+    if (!form.nombre) return;
+    setLoadingDesc(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/api/insight/generar-descripcion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ nombre: form.nombre, precio: form.precio, unidad: form.unidad }),
+      });
+      const data = await res.json();
+      if (data.descripcion) {
+        setForm((prev) => ({ ...prev, descripcion: data.descripcion }));
+      }
+    } catch {}
+    setLoadingDesc(false);
+  };
 
   useEffect(() => {
     if (producto) {
@@ -213,9 +232,29 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
                 <input style={s.input} name="nombre" placeholder="Ej: Camiseta manga corta" value={form.nombre} onChange={handleChange} required />
               </Field>
 
-              <Field label="Descripción">
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#374151" }}>Descripción</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerarDescripcion}
+                    disabled={!form.nombre || loadingDesc}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      padding: "4px 10px", borderRadius: 7,
+                      border: "1px solid rgba(15,110,86,0.3)",
+                      backgroundColor: !form.nombre || loadingDesc ? "#f8fafc" : "#f0fdf4",
+                      color: !form.nombre || loadingDesc ? "#94a3b8" : "#0F6E56",
+                      fontSize: 11, fontWeight: 600, cursor: !form.nombre || loadingDesc ? "default" : "pointer",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>✦</span>
+                    {loadingDesc ? "Generando..." : "Generar con IA"}
+                  </button>
+                </div>
                 <textarea style={{ ...s.input, resize: "none", height: "70px" }} name="descripcion" placeholder="Descripción breve del producto..." value={form.descripcion} onChange={handleChange} rows={3} />
-              </Field>
+              </div>
 
               <div style={s.row}>
                 <Field label="Unidad de venta">

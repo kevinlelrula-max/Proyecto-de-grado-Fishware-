@@ -8,6 +8,26 @@ const gemini = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 const cache = new Map();
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
+export const generarDescripcion = async (req, res) => {
+  const { nombre, precio, unidad } = req.body;
+  if (!nombre) return res.status(400).json({ error: "El nombre es requerido" });
+
+  try {
+    const detalles = [
+      precio ? `Precio: $${Number(precio).toLocaleString("es-CO")} COP` : null,
+      unidad && unidad !== "unidad" ? `Se vende por ${unidad}` : null,
+    ].filter(Boolean).join(". ");
+
+    const prompt = `Escribe una descripción de producto corta y atractiva (2 oraciones máximo) en español para una tienda.\nProducto: ${nombre}${detalles ? `\n${detalles}` : ""}\n\nSolo la descripción, sin saludos ni introducciones.`;
+
+    const result = await gemini.generateContent(prompt);
+    res.json({ descripcion: result.response.text().trim() });
+  } catch (err) {
+    console.error("[Insight] generarDescripcion:", err.message);
+    res.status(500).json({ error: "No se pudo generar la descripción" });
+  }
+};
+
 export const getInsight = async (req, res) => {
   const empresa_id = req.user.empresa_id;
 
