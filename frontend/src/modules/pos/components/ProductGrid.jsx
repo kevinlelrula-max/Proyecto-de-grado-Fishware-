@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { imgUrl } from "../../../utils/imgUrl";
 const IMG_PLACEHOLDER = "https://placehold.co/300x200/E1F5EE/0F6E56?text=🐟";
 
 export default function ProductGrid({ productos, agregarProducto, busqueda, setBusqueda }) {
@@ -33,7 +33,7 @@ export default function ProductGrid({ productos, agregarProducto, busqueda, setB
           >
             {/* 🖼️ IMAGEN */}
             <img
-              src={p.imagen_url ? `${API_BASE}${p.imagen_url}` : IMG_PLACEHOLDER}
+              src={imgUrl(p.imagen_url) || IMG_PLACEHOLDER}
               alt={p.nombre}
               className="prod-card-img"
               onError={(e) => e.target.src = IMG_PLACEHOLDER}

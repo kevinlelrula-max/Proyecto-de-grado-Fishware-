@@ -47,7 +47,7 @@ export default function PanelEditor({
   const [showPlantillas, setShowPlantillas] = useState(false);
 
   const bannerSrc = bannerPreview?.startsWith("data:") ? bannerPreview
-    : bannerPreview ? `${API_BASE}${bannerPreview}` : null;
+    : bannerPreview ? (bannerPreview.startsWith("http") ? bannerPreview : `${API_BASE}${bannerPreview}`) : null;
 
   function onDragStart(e, idx) { setDraggingIdx(idx); e.dataTransfer.effectAllowed = "move"; }
   function onDragOver(e, idx)  { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverIdx(idx); }

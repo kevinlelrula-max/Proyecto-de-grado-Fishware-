@@ -6,7 +6,7 @@ import { useTiendaEmpresa } from "./hooks/useTiendaEmpresa";
 import Estrellas from "../reseñas/components/Estrellas";
 import { getReseñasProducto } from "../reseñas/services/reseñasService";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { imgUrl } from "../../utils/imgUrl";
 
 function getEmoji(nombre) {
   const n = nombre?.toLowerCase() || "";
@@ -176,7 +176,7 @@ export default function TiendaProductoDetalle() {
                 boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
               }}>
                 {imagenes.length > 0
-                  ? <img src={`${API_BASE}${imagenes[imgIdx].url}`} alt={producto.nombre}
+                  ? <img src={imgUrl(imagenes[imgIdx].url)} alt={producto.nombre}
                       style={{ width: "100%", height: "100%", objectFit: "contain", padding: 24 }} />
                   : <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: 110 }}>{getEmoji(producto.nombre)}</div>
@@ -207,7 +207,7 @@ export default function TiendaProductoDetalle() {
                   {imagenes.map((img, i) => (
                     <button key={i} className="thumb-btn" onClick={() => setImgIdx(i)}
                       style={{ width:64,height:64,padding:0,border:`2.5px solid ${i===imgIdx?colorMarca:"#e2e8f0"}`,borderRadius:12,overflow:"hidden",cursor:"pointer",background:"#fff" }}>
-                      <img src={`${API_BASE}${img.url}`} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
+                      <img src={imgUrl(img.url)} alt="" style={{ width:"100%",height:"100%",objectFit:"cover" }} />
                     </button>
                   ))}
                 </div>
@@ -365,7 +365,7 @@ export default function TiendaProductoDetalle() {
                     <div key={rel.id} className="det-rel-card" onClick={() => irAProducto(rel)}>
                       <div style={{ width:"100%",aspectRatio:"1/1",background:"linear-gradient(145deg,#f8fafc,#f1f5f9)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden" }}>
                         {ri.length > 0
-                          ? <img src={`${API_BASE}${ri[0].url}`} alt={rel.nombre} style={{ width:"100%",height:"100%",objectFit:"cover" }} />
+                          ? <img src={imgUrl(ri[0].url)} alt={rel.nombre} style={{ width:"100%",height:"100%",objectFit:"cover" }} />
                           : <span style={{ fontSize:52 }}>{getEmoji(rel.nombre)}</span>
                         }
                         {(rel.stock??0)<=0 && (

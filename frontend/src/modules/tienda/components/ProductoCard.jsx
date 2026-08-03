@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Estrellas from "../../reseñas/components/Estrellas";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { imgUrl } from "../../../utils/imgUrl";
 
 // Emoji genérico por categoría o nombre
 function getEmojiProducto(nombre) {
@@ -94,7 +94,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
       >
         {imagenes.length > 0 ? (
           <img
-            src={`${API_BASE}${imagenes[imgIdx].url}`}
+            src={imgUrl(imagenes[imgIdx].url)}
             alt={producto.nombre}
             style={s.img}
           />

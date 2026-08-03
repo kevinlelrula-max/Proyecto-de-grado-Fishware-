@@ -5,6 +5,7 @@ import TiendaLayout from "./components/TiendaLayout";
 import Carrito from "./components/Carrito";
 import HeroSection from "./components/HeroSection";
 
+import { imgUrl } from "../../utils/imgUrl";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 function calcularPrecioInteligente(producto, descuentoLealtad) {
@@ -137,7 +138,7 @@ export default function TiendaInicio() {
               <div key={producto.id} style={s.productoCard}>
                 <div style={s.productoImgWrap}>
                   {producto.imagen_url ? (
-                    <img src={`${API_BASE}${producto.imagen_url}`} alt={producto.nombre} style={s.img} />
+                    <img src={imgUrl(producto.imagen_url)} alt={producto.nombre} style={s.img} />
                   ) : (
                     <span style={s.productoEmoji}>📦</span>
                   )}

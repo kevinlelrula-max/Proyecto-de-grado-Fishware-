@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { eliminarImagenProducto } from "../services/productos.api";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import { imgUrl } from "../../../utils/imgUrl";
 
 const UNIDADES = [
   { value: "unidad",  label: "Unidad / Pieza" },
@@ -190,7 +189,7 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
                   {/* Imágenes existentes */}
                   {imagenesExistentes.map((img, i) => (
                     <div key={`ex-${i}`} style={s.thumbWrap}>
-                      <img src={`${API_BASE}${img.url}`} alt="" style={s.thumb} />
+                      <img src={imgUrl(img.url)} alt="" style={s.thumb} />
                       {i === 0 && (
                         <span style={s.portadaBadge}>Portada</span>
                       )}

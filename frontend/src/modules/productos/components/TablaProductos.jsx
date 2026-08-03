@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatearPrecio } from "../helpers/formatearPrecio";
+import { imgUrl } from "../../../utils/imgUrl";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const IMG_PLACEHOLDER = "https://placehold.co/300x200/E1F5EE/0F6E56?text=🐟";
 
 export default function TablaProductos({ productos, onEliminar, onEditar, onAgregar, vista = "grid" }) {
@@ -38,7 +38,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, onAgre
           return (
             <div key={p.id} style={styles.listRow}>
               <img
-                src={p.imagen_url ? `${API_BASE}${p.imagen_url}` : IMG_PLACEHOLDER}
+                src={imgUrl(p.imagen_url) || IMG_PLACEHOLDER}
                 alt={p.nombre}
                 style={styles.listThumb}
                 onError={(e) => { e.target.src = IMG_PLACEHOLDER; }}
@@ -84,7 +84,7 @@ export default function TablaProductos({ productos, onEliminar, onEditar, onAgre
           <div key={p.id} style={styles.card}>
             <div style={styles.imgWrap}>
               <img
-                src={p.imagen_url ? `${API_BASE}${p.imagen_url}` : IMG_PLACEHOLDER}
+                src={imgUrl(p.imagen_url) || IMG_PLACEHOLDER}
                 alt={p.nombre}
                 style={styles.cardImg}
                 onError={(e) => { e.target.src = IMG_PLACEHOLDER; }}
