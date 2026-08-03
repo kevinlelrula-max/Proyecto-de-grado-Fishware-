@@ -262,14 +262,33 @@ router.get("/", (req, res) => {
     <!-- Claude Code terminal -->
     <div class="form-card">
       <div class="form-head" style="justify-content:space-between">
-        <span>./claude_code</span>
-        <span style="font-size:10px;color:var(--muted)">terminal · Claude Code</span>
+        <span>./terminal</span>
+        <span style="font-size:10px;color:var(--muted)">CMD · claude interactivo</span>
       </div>
-      <div class="form-body">
-        <form id="lf" onsubmit="return false" style="display:flex;flex-direction:column;gap:0">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7">
-            Genera un token para usar Merkai MCP desde el terminal de <b style="color:#cbd5e1">Claude Code</b>.
+      <div class="form-body" style="display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          Requiere <b style="color:#cbd5e1">Claude Code</b> instalado en tu computadora.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[01]</span>
+            Iniciá sesión con tus credenciales de Merkai en el formulario de abajo
           </div>
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[02]</span>
+            Copiá el comando generado
+          </div>
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[03]</span>
+            Abrí <b style="color:#cbd5e1">CMD</b> → ejecutá <code style="color:var(--teal);background:rgba(0,201,167,0.08);padding:1px 6px;border-radius:4px">claude</code> → pegá el comando en el prompt interactivo
+          </div>
+          <div style="font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0">[04]</span>
+            Preguntá en lenguaje natural → <b style="color:#86efac">Conectado</b>
+          </div>
+        </div>
+        <form id="lf" onsubmit="return false" style="display:flex;flex-direction:column;gap:0;border-top:1px solid rgba(255,255,255,0.07);padding-top:16px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">./get_token</div>
           <div class="field"><label>Email</label><input type="email" id="em" placeholder="tu@email.com" autocomplete="email" required/></div>
           <div class="field" style="margin-bottom:20px"><label>Contrase&ntilde;a</label><input type="password" id="pw" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" required/></div>
           <button onclick="doLogin()" class="form-btn" id="sb">Generar token</button>

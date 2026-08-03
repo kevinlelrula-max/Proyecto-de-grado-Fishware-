@@ -9,6 +9,7 @@ import MetaVentas from "./components/MetaVentas";
 import ClientesDormidos from "./components/ClientesDormidos";
 import PredictorStock from "./components/PredictorStock";
 import ResumenDiario from "./components/ResumenDiario";
+import InsightWidget from "./components/InsightWidget";
 
 export default function Inicio({ onIrA }) {
   const {
@@ -80,6 +81,9 @@ export default function Inicio({ onIrA }) {
         />
       ) : (
         <>
+          {/* ── ANÁLISIS IA ── */}
+          <InsightWidget />
+
           {/* ── RESUMEN DIARIO ── */}
           <ResumenDiario />
 

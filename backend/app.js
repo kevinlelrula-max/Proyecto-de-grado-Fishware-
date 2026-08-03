@@ -26,6 +26,7 @@ import referidosRoutes      from "./routes/referidos.routes.js";
 import carritosRoutes       from "./routes/carritos.routes.js";
 import mcpRoutes            from "./routes/mcp.routes.js";
 import oauthRoutes          from "./routes/oauth.routes.js";
+import insightRoutes        from "./routes/insight.routes.js";
 const app = express();
 
 // =========================
@@ -112,6 +113,7 @@ app.use("/api/referidos",       referidosRoutes);
 app.use("/api/carritos",        carritosRoutes);
 app.use("/api/mcp",             mcpRoutes);
 app.use("/oauth",               oauthRoutes);
+app.use("/api/insight",         insightRoutes);
 
 // =========================
 // 🔹 404 HANDLER
