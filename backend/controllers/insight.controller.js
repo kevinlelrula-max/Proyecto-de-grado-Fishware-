@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../config/db.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const gemini = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
 // Cache por empresa: empresa_id -> { generatedAt, content }
 const cache = new Map();
