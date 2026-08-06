@@ -1,18 +1,30 @@
+import { AlertTriangle, CheckCircle, User } from "lucide-react";
+
 export default function DatosPersonales({ perfil, form, guardando, exito, error, onChange, onGuardar }) {
   return (
     <div style={s.card}>
       <div style={s.header}>
+        <div style={s.iconWrap}>
+          <User size={18} color="#2563eb" />
+        </div>
         <div>
           <h3 style={s.title}>Datos personales</h3>
           <p style={s.subtitle}>Actualiza tu información de contacto</p>
         </div>
-        <div style={s.avatar}>
-          {perfil?.nombre?.charAt(0).toUpperCase()}
-        </div>
       </div>
 
-      {error && <div style={s.errorBox}>⚠️ {error}</div>}
-      {exito && <div style={s.exitoBox}>✓ Datos actualizados correctamente</div>}
+      {error && (
+        <div style={s.errorBox}>
+          <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          {error}
+        </div>
+      )}
+      {exito && (
+        <div style={s.exitoBox}>
+          <CheckCircle size={14} style={{ flexShrink: 0 }} />
+          Datos actualizados correctamente
+        </div>
+      )}
 
       <div style={s.grid}>
         <Field label="Nombre">
@@ -68,28 +80,28 @@ const s = {
   header: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: "12px",
   },
-  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
-  subtitle: { fontSize: "13px", color: "#64748b", marginTop: "2px" },
-  avatar: {
-    width: "52px", height: "52px",
-    borderRadius: "14px",
-    background: "linear-gradient(135deg, #00C9A7, #0099FF)",
-    color: "white",
-    fontSize: "20px", fontWeight: "700",
+  iconWrap: {
+    width: "38px", height: "38px",
+    borderRadius: "10px",
+    backgroundColor: "#eff6ff",
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
   },
+  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
+  subtitle: { fontSize: "13px", color: "#64748b", margin: 0 },
   errorBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", backgroundColor: "#fef2f2",
     border: "1px solid #fecaca", borderRadius: "10px",
     fontSize: "13px", color: "#b91c1c",
   },
   exitoBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", backgroundColor: "#f0fdf4",
     border: "1px solid #bbf7d0", borderRadius: "10px",
-    fontSize: "13px", fontWeight: "600", color: "#0F6E56",
+    fontSize: "13px", fontWeight: "600", color: "#15803d",
   },
   grid: {
     display: "grid",
@@ -107,7 +119,7 @@ const s = {
   btnGuardar: {
     alignSelf: "flex-start",
     padding: "10px 24px",
-    backgroundColor: "#0B1628",
+    backgroundColor: "#2563eb",
     color: "white", border: "none",
     borderRadius: "10px", fontSize: "14px",
     fontWeight: "600", cursor: "pointer",

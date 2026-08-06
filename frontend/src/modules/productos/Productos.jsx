@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
 import TablaProductos from "./components/TablaProductos";
 import FormProducto from "./components/FormProducto";
-import Categorias from "./components/Categorias"; // ✅ nuevo
+import Categorias from "./components/Categorias";
 import useProductos from "./hooks/useProductos";
+import { useInventarioAnalytics } from "./hooks/useInventarioAnalytics";
+import StockBajo from "./components/StockBajo";
+import PredictorStock from "./components/PredictorStock";
+import ReordenSugerencias from "./components/ReordenSugerencias";
 
 function getUnidadPredeterminada() {
   try {
@@ -17,9 +21,9 @@ function getUnidadPredeterminada() {
 
 export default function Productos() {
   const { productos, agregar, eliminar, actualizar } = useProductos();
+  const { stockBajo: stockBajoLista, predictorStock, sugerenciasReorden } = useInventarioAnalytics();
 
-  // ✅ Pestaña activa
-  const [pestana, setPestana] = useState("productos"); // "productos" | "categorias"
+  const [pestana, setPestana] = useState("productos");
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [productoEditar, setProductoEditar] = useState(null);
@@ -133,7 +137,16 @@ export default function Productos() {
           style={{ ...s.tab, ...(pestana === "categorias" ? s.tabActive : {}) }}
           onClick={() => setPestana("categorias")}
         >
-          🏷️ Categorías
+          Categorías
+        </button>
+        <button
+          style={{ ...s.tab, ...(pestana === "alertas" ? s.tabActive : {}) }}
+          onClick={() => setPestana("alertas")}
+        >
+          Alertas de inventario
+          {stockBajoLista.length > 0 && (
+            <span style={s.alertBadge}>{stockBajoLista.length}</span>
+          )}
         </button>
       </div>
 
@@ -229,6 +242,15 @@ export default function Productos() {
       {/* ════ PESTAÑA CATEGORÍAS ════ */}
       {pestana === "categorias" && <Categorias />}
 
+      {/* ════ PESTAÑA ALERTAS ════ */}
+      {pestana === "alertas" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <StockBajo productos={stockBajoLista} />
+          <PredictorStock productos={predictorStock} />
+          <ReordenSugerencias sugerencias={sugerenciasReorden} />
+        </div>
+      )}
+
       {/* MODAL */}
       {mostrarForm && (
         <FormProducto
@@ -315,6 +337,10 @@ const s = {
     cursor: "pointer", fontSize: "16px", color: "#94a3b8", lineHeight: 1,
   },
   viewBtnActive: { backgroundColor: "#eff6ff", color: "#2563eb" },
+  alertBadge: {
+    marginLeft: 6, padding: "1px 6px", fontSize: 10, fontWeight: 700,
+    backgroundColor: "#fecaca", color: "#b91c1c", borderRadius: 999,
+  },
 
   // Paginación
   pagination: { display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginTop: "20px" },

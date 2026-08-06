@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlertTriangle, CheckCircle, Eye, EyeOff, Lock } from "lucide-react";
 
 export default function CambiarContrasena({ formPass, guardando, exito, error, onChange, onGuardar }) {
   const [showActual, setShowActual] = useState(false);
@@ -7,12 +8,27 @@ export default function CambiarContrasena({ formPass, guardando, exito, error, o
   return (
     <div style={s.card}>
       <div style={s.header}>
-        <h3 style={s.title}>Cambiar contraseña</h3>
-        <p style={s.subtitle}>Por seguridad usa una contraseña de al menos 6 caracteres</p>
+        <div style={s.iconWrap}>
+          <Lock size={17} color="#2563eb" />
+        </div>
+        <div>
+          <h3 style={s.title}>Cambiar contraseña</h3>
+          <p style={s.subtitle}>Mínimo 6 caracteres</p>
+        </div>
       </div>
 
-      {error && <div style={s.errorBox}>⚠️ {error}</div>}
-      {exito && <div style={s.exitoBox}>✓ Contraseña actualizada correctamente</div>}
+      {error && (
+        <div style={s.errorBox}>
+          <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          {error}
+        </div>
+      )}
+      {exito && (
+        <div style={s.exitoBox}>
+          <CheckCircle size={14} style={{ flexShrink: 0 }} />
+          Contraseña actualizada correctamente
+        </div>
+      )}
 
       <div style={s.fields}>
         <Field label="Contraseña actual">
@@ -25,7 +41,7 @@ export default function CambiarContrasena({ formPass, guardando, exito, error, o
               onChange={e => onChange("contrasena_actual", e.target.value)}
             />
             <button style={s.eyeBtn} type="button" onClick={() => setShowActual(!showActual)}>
-              {showActual ? "🙈" : "👁️"}
+              {showActual ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
             </button>
           </div>
         </Field>
@@ -40,7 +56,7 @@ export default function CambiarContrasena({ formPass, guardando, exito, error, o
               onChange={e => onChange("contrasena_nueva", e.target.value)}
             />
             <button style={s.eyeBtn} type="button" onClick={() => setShowNueva(!showNueva)}>
-              {showNueva ? "🙈" : "👁️"}
+              {showNueva ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
             </button>
           </div>
         </Field>
@@ -95,18 +111,31 @@ const s = {
     flexDirection: "column",
     gap: "16px",
   },
-  header: {},
-  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
-  subtitle: { fontSize: "13px", color: "#64748b", marginTop: "2px" },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  iconWrap: {
+    width: "38px", height: "38px",
+    borderRadius: "10px",
+    backgroundColor: "#eff6ff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    flexShrink: 0,
+  },
+  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
+  subtitle: { fontSize: "13px", color: "#64748b", margin: 0 },
   errorBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", backgroundColor: "#fef2f2",
     border: "1px solid #fecaca", borderRadius: "10px",
     fontSize: "13px", color: "#b91c1c",
   },
   exitoBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", backgroundColor: "#f0fdf4",
     border: "1px solid #bbf7d0", borderRadius: "10px",
-    fontSize: "13px", fontWeight: "600", color: "#0F6E56",
+    fontSize: "13px", fontWeight: "600", color: "#15803d",
   },
   fields: { display: "flex", flexDirection: "column", gap: "14px" },
   inputWrap: { position: "relative", display: "flex", alignItems: "center" },
@@ -120,13 +149,15 @@ const s = {
   eyeBtn: {
     position: "absolute", right: "12px",
     background: "none", border: "none",
-    cursor: "pointer", fontSize: "14px",
+    cursor: "pointer",
+    display: "flex", alignItems: "center",
+    padding: "2px",
   },
   errorHint: { fontSize: "11px", color: "#ef4444", marginTop: "4px" },
   btnGuardar: {
     alignSelf: "flex-start",
     padding: "10px 24px",
-    backgroundColor: "#0B1628",
+    backgroundColor: "#2563eb",
     color: "white", border: "none",
     borderRadius: "10px", fontSize: "14px",
     fontWeight: "600", cursor: "pointer",

@@ -5,12 +5,12 @@ const POLL_INTERVAL = 30000; // 30 segundos
 
 // Estados con color y label visual
 export const ESTADOS = {
-  pendiente:       { label: "Pendiente",       color: "#f59e0b", bg: "#fffbeb", icon: "⏳" },
-  confirmado:      { label: "Confirmado",      color: "#3b82f6", bg: "#eff6ff", icon: "✅" },
-  en_preparacion:  { label: "En preparación",  color: "#8b5cf6", bg: "#f5f3ff", icon: "🔄" },
-  enviado:         { label: "Enviado",          color: "#0e7490", bg: "#ecfeff", icon: "🚚" },
-  entregado:       { label: "Entregado",        color: "#0F6E56", bg: "#E1F5EE", icon: "🎉" },
-  cancelado:       { label: "Cancelado",        color: "#ef4444", bg: "#fef2f2", icon: "❌" },
+  pendiente:      { label: "Pendiente",      color: "#f59e0b", bg: "#fffbeb" },
+  confirmado:     { label: "Confirmado",     color: "#3b82f6", bg: "#eff6ff" },
+  en_preparacion: { label: "En preparación", color: "#8b5cf6", bg: "#f5f3ff" },
+  enviado:        { label: "Enviado",         color: "#0e7490", bg: "#ecfeff" },
+  entregado:      { label: "Entregado",       color: "#15803d", bg: "#f0fdf4" },
+  cancelado:      { label: "Cancelado",       color: "#ef4444", bg: "#fef2f2" },
 };
 
 export function useMisPedidos() {
@@ -82,7 +82,7 @@ export function useMisPedidos() {
         ) {
           const estadoInfo = ESTADOS[actualizado.estado];
           new Notification(`Tu pedido #${actualizado.id} fue actualizado`, {
-            body: `Estado: ${estadoInfo?.icon ?? ""} ${estadoInfo?.label ?? actualizado.estado}`,
+            body: `Estado: ${estadoInfo?.label ?? actualizado.estado}`,
             icon: "/favicon.ico",
           });
         }

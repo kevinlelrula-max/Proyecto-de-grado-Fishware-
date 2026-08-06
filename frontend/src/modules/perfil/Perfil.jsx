@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
+import { User, Lock, Eye, EyeOff, Shield, CheckCircle, AlertTriangle } from "lucide-react";
 import usePerfil from "./hooks/usePerfil";
 import { cambiarContrasena } from "./services/perfil.api";
 
 export default function Perfil() {
   const { perfil, guardarPerfil } = usePerfil();
 
-  const [form, setForm] = useState({});
+  const [form, setForm]         = useState({});
   const [passwords, setPasswords] = useState({ actual: "", nueva: "" });
   const [showActual, setShowActual] = useState(false);
-  const [showNueva, setShowNueva] = useState(false);
-  const [savedMsg, setSavedMsg] = useState("");
+  const [showNueva, setShowNueva]   = useState(false);
+  const [savedMsg, setSavedMsg]   = useState("");
   const [passError, setPassError] = useState("");
 
   useEffect(() => { setForm(perfil); }, [perfil]);
@@ -48,19 +49,20 @@ export default function Perfil() {
     <div style={s.page}>
       <div style={s.inner}>
 
-        {/* HEADER — avatar + nombre */}
+        {/* HEADER */}
         <div style={s.profileCard}>
           <div style={s.avatarWrap}>
             <div style={s.avatar}>{iniciales}</div>
             <div style={s.avatarRing} />
           </div>
           <div style={s.profileInfo}>
-            <h2 style={s.profileName}>
-              {form.nombre} {form.apellido}
-            </h2>
+            <h2 style={s.profileName}>{form.nombre} {form.apellido}</h2>
             <p style={s.profileUser}>{form.usuario}</p>
           </div>
-          <div style={s.profileBadge}>Usuario activo</div>
+          <div style={s.profileBadge}>
+            <User size={12} color="#2563eb" />
+            Usuario activo
+          </div>
         </div>
 
         <div style={s.grid}>
@@ -69,7 +71,7 @@ export default function Perfil() {
           <div style={s.card}>
             <div style={s.cardHeader}>
               <div style={s.cardIconWrap}>
-                <span style={{ fontSize: "16px" }}></span>
+                <User size={16} color="#2563eb" />
               </div>
               <div>
                 <h3 style={s.cardTitle}>Información personal</h3>
@@ -78,7 +80,10 @@ export default function Perfil() {
             </div>
 
             {savedMsg === "perfil" && (
-              <div style={s.successBox}>✅ Perfil actualizado correctamente</div>
+              <div style={s.successBox}>
+                <CheckCircle size={14} style={{ flexShrink: 0 }} />
+                Perfil actualizado correctamente
+              </div>
             )}
 
             <div style={s.fieldsGrid}>
@@ -147,8 +152,8 @@ export default function Perfil() {
           {/* SEGURIDAD */}
           <div style={s.card}>
             <div style={s.cardHeader}>
-              <div style={{ ...s.cardIconWrap, backgroundColor: "#fef2f2" }}>
-                <span style={{ fontSize: "16px" }}>🔒</span>
+              <div style={s.cardIconWrap}>
+                <Lock size={16} color="#2563eb" />
               </div>
               <div>
                 <h3 style={s.cardTitle}>Seguridad</h3>
@@ -157,10 +162,16 @@ export default function Perfil() {
             </div>
 
             {savedMsg === "password" && (
-              <div style={s.successBox}>✅ Contraseña actualizada correctamente</div>
+              <div style={s.successBox}>
+                <CheckCircle size={14} style={{ flexShrink: 0 }} />
+                Contraseña actualizada correctamente
+              </div>
             )}
             {passError && (
-              <div style={s.errorBox}>⚠️ {passError}</div>
+              <div style={s.errorBox}>
+                <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                {passError}
+              </div>
             )}
 
             <div style={s.secFields}>
@@ -175,7 +186,7 @@ export default function Perfil() {
                     onChange={(e) => setPasswords({ ...passwords, actual: e.target.value })}
                   />
                   <button style={s.eyeBtn} onClick={() => setShowActual(!showActual)} type="button">
-                    {showActual ? "🙈" : "👁️"}
+                    {showActual ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
                   </button>
                 </div>
               </div>
@@ -190,12 +201,11 @@ export default function Perfil() {
                     onChange={(e) => setPasswords({ ...passwords, nueva: e.target.value })}
                   />
                   <button style={s.eyeBtn} onClick={() => setShowNueva(!showNueva)} type="button">
-                    {showNueva ? "🙈" : "👁️"}
+                    {showNueva ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
                   </button>
                 </div>
               </div>
 
-              {/* Indicador de fortaleza */}
               {passwords.nueva.length > 0 && (
                 <div style={s.strengthWrap}>
                   <div style={s.strengthBar}>
@@ -216,16 +226,13 @@ export default function Perfil() {
               )}
             </div>
 
-            <button style={s.btnDanger} onClick={handlePassword}>
+            <button style={s.btnPrimary} onClick={handlePassword}>
               Actualizar contraseña
             </button>
 
-            {/* Info de sesión */}
             <div style={s.sessionInfo}>
-              <span style={s.sessionIcon}>🛡️</span>
-              <span style={s.sessionText}>
-                Tu sesión está protegida con token seguro
-              </span>
+              <Shield size={14} color="#2563eb" style={{ flexShrink: 0 }} />
+              <span style={s.sessionText}>Tu sesión está protegida con token seguro</span>
             </div>
           </div>
 
@@ -235,7 +242,6 @@ export default function Perfil() {
   );
 }
 
-// Helpers fortaleza contraseña
 function getStrength(pwd) {
   let score = 0;
   if (pwd.length >= 8) score++;
@@ -251,7 +257,7 @@ function getStrengthColor(pwd, segment) {
   if (score === 1) return "#ef4444";
   if (score === 2) return "#f59e0b";
   if (score === 3) return "#3b82f6";
-  return "#0F6E56";
+  return "#15803d";
 }
 
 function getStrengthLabel(pwd) {
@@ -266,27 +272,27 @@ const s = {
     backgroundColor: "#f8fafc",
   },
   inner: {
-    maxWidth: "860px",
+    maxWidth: "960px",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
     gap: "20px",
+    fontFamily: "'Inter', 'Segoe UI', sans-serif",
   },
 
-  // Header card
   profileCard: {
     backgroundColor: "white",
     borderRadius: "16px",
     border: "1px solid #e2e8f0",
+    borderLeft: "4px solid #2563eb",
     padding: "20px 24px",
     display: "flex",
     alignItems: "center",
     gap: "16px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
   },
   avatarWrap: { position: "relative", flexShrink: 0 },
   avatar: {
-    width: "56px", height: "56px", borderRadius: "50%",
+    width: "58px", height: "58px", borderRadius: "50%",
     backgroundColor: "#2563eb", color: "white",
     fontSize: "18px", fontWeight: "800",
     display: "flex", alignItems: "center", justifyContent: "center",
@@ -300,12 +306,13 @@ const s = {
   profileName: { fontSize: "17px", fontWeight: "700", color: "#0f172a", margin: "0 0 3px" },
   profileUser: { fontSize: "13px", color: "#64748b", margin: 0 },
   profileBadge: {
-    padding: "4px 12px", borderRadius: "999px",
-    backgroundColor: "#E1F5EE", color: "#0F6E56",
+    display: "flex", alignItems: "center", gap: "5px",
+    padding: "5px 12px", borderRadius: "999px",
+    backgroundColor: "#eff6ff", color: "#2563eb",
     fontSize: "12px", fontWeight: "600",
+    flexShrink: 0,
   },
 
-  // Grid 2 columnas
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -313,35 +320,34 @@ const s = {
     alignItems: "start",
   },
 
-  // Cards
   card: {
     backgroundColor: "white", borderRadius: "16px",
     border: "1px solid #e2e8f0", padding: "24px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
     display: "flex", flexDirection: "column", gap: "20px",
   },
-  cardHeader: { display: "flex", alignItems: "flex-start", gap: "12px" },
+  cardHeader: { display: "flex", alignItems: "center", gap: "12px" },
   cardIconWrap: {
-    width: "36px", height: "36px", borderRadius: "10px",
+    width: "38px", height: "38px", borderRadius: "10px",
     backgroundColor: "#eff6ff",
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
   },
-  cardTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: "0 0 3px" },
+  cardTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
   cardSubtitle: { fontSize: "12px", color: "#94a3b8", margin: 0 },
 
   successBox: {
-    backgroundColor: "#E1F5EE", border: "1px solid #9FE1CB",
+    display: "flex", alignItems: "center", gap: "8px",
+    backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
     borderRadius: "10px", padding: "10px 14px",
-    fontSize: "13px", color: "#0F6E56", fontWeight: "500",
+    fontSize: "13px", color: "#15803d", fontWeight: "500",
   },
   errorBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     backgroundColor: "#fef2f2", border: "1px solid #fecaca",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#b91c1c", fontWeight: "500",
   },
 
-  // Campos
   fieldsGrid: {
     display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px",
   },
@@ -360,16 +366,15 @@ const s = {
     backgroundColor: "#f8fafc", color: "#94a3b8", cursor: "not-allowed",
   },
 
-  // Password
   passWrap: { position: "relative" },
   eyeBtn: {
     position: "absolute", right: "10px", top: "50%",
     transform: "translateY(-50%)",
     background: "none", border: "none",
-    cursor: "pointer", fontSize: "14px", padding: 0,
+    cursor: "pointer", padding: 0,
+    display: "flex", alignItems: "center",
   },
 
-  // Fortaleza
   strengthWrap: { display: "flex", alignItems: "center", gap: "8px" },
   strengthBar: { display: "flex", gap: "4px", flex: 1 },
   strengthSegment: {
@@ -377,26 +382,17 @@ const s = {
     transition: "background-color 0.2s",
   },
 
-  // Botones
   btnPrimary: {
     width: "100%", padding: "12px",
     backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "14px", fontWeight: "700", cursor: "pointer",
   },
-  btnDanger: {
-    width: "100%", padding: "12px",
-    backgroundColor: "transparent", color: "#dc2626",
-    border: "1.5px solid #ef4444", borderRadius: "10px",
-    fontSize: "14px", fontWeight: "700", cursor: "pointer",
-  },
 
-  // Info sesión
   sessionInfo: {
     display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", borderRadius: "10px",
-    backgroundColor: "#f8fafc", border: "1px solid #e2e8f0",
+    backgroundColor: "#eff6ff", border: "1px solid #bfdbfe",
   },
-  sessionIcon: { fontSize: "14px" },
-  sessionText: { fontSize: "12px", color: "#64748b" },
+  sessionText: { fontSize: "12px", color: "#2563eb" },
 };

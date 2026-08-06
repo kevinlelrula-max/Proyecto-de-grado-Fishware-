@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Users, CheckCircle, Clock, TrendingUp, BarChart2, Settings, Zap, Tag, Star, Gift, Truck, CreditCard, Pen } from "lucide-react";
 import { getEstadisticasReferidos, getConfigReferidos, guardarConfigReferidos } from "./services/referidosService";
 import { SkeletonTable } from "../../components/SkeletonLoader";
 
@@ -48,15 +49,15 @@ function TabEstadisticas() {
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[
-          { label: "Registros totales", value: general.total_registrados, icon: "👥", color: C.azul },
-          { label: "Completados",       value: general.completados,        icon: "✅", color: C.verde },
-          { label: "Pendientes",        value: general.pendientes,         icon: "⏳", color: C.naranja },
-          { label: "Tasa conversión",   value: `${general.tasa_conversion ?? 0}%`, icon: "📈", color: C.violeta },
+          { label: "Registros totales", value: general.total_registrados, Icon: Users },
+          { label: "Completados",       value: general.completados,        Icon: CheckCircle },
+          { label: "Pendientes",        value: general.pendientes,         Icon: Clock },
+          { label: "Tasa conversión",   value: `${general.tasa_conversion ?? 0}%`, Icon: TrendingUp },
         ].map(k => (
           <div key={k.label} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: "16px 18px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{k.label}</span>
-              <span style={{ fontSize: 16, background: `${k.color}18`, borderRadius: 7, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center" }}>{k.icon}</span>
+              <span style={{ background: "#eff6ff", borderRadius: 7, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", color: "#2563eb", flexShrink: 0 }}><k.Icon size={15} /></span>
             </div>
             <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a" }}>{k.value}</div>
           </div>
@@ -83,7 +84,7 @@ function TabEstadisticas() {
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.verde }}>{r.completados} ✓</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: C.verde, display: "flex", alignItems: "center", gap: 4 }}>{r.completados} <CheckCircle size={13} /></div>
                     <div style={{ fontSize: 11, color: "#94a3b8" }}>{r.total} total</div>
                   </div>
                 </div>
@@ -120,12 +121,12 @@ function TabEstadisticas() {
 // tipo_premio: clave interna para lógica automática
 // Los que tienen valor=true requieren número; los demás solo descripción
 const PRESETS_PREMIO = [
-  { tipo: "descuento_pct",   emoji: "🏷️",  label: "% Descuento",     needsValor: true,  placeholder: "ej: 5" },
-  { tipo: "puntos",          emoji: "⭐",  label: "Puntos lealtad",  needsValor: true,  placeholder: "ej: 100" },
-  { tipo: "producto_gratis", emoji: "🎁",  label: "Producto gratis", needsValor: false, placeholder: "" },
-  { tipo: "envio_gratis",    emoji: "🚚",  label: "Envío gratis",    needsValor: false, placeholder: "" },
-  { tipo: "credito",         emoji: "💳",  label: "Crédito en cuenta", needsValor: true, placeholder: "ej: 10000" },
-  { tipo: "personalizado",   emoji: "✏️",  label: "Personalizado",   needsValor: false, placeholder: "" },
+  { tipo: "descuento_pct",   Icon: Tag,         label: "% Descuento",       needsValor: true,  placeholder: "ej: 5" },
+  { tipo: "puntos",          Icon: Star,        label: "Puntos lealtad",    needsValor: true,  placeholder: "ej: 100" },
+  { tipo: "producto_gratis", Icon: Gift,        label: "Producto gratis",   needsValor: false, placeholder: "" },
+  { tipo: "envio_gratis",    Icon: Truck,       label: "Envío gratis",      needsValor: false, placeholder: "" },
+  { tipo: "credito",         Icon: CreditCard,  label: "Crédito en cuenta", needsValor: true,  placeholder: "ej: 10000" },
+  { tipo: "personalizado",   Icon: Pen,         label: "Personalizado",     needsValor: false, placeholder: "" },
 ];
 
 const needsValor = (tipo) => PRESETS_PREMIO.find(p => p.tipo === tipo)?.needsValor ?? false;
@@ -144,14 +145,15 @@ function EditorPremio({ entry, onChange }) {
           const activo = entry.tipo_premio === p.tipo;
           return (
             <button key={p.tipo} onClick={() => onChange("tipo_premio", p.tipo)} style={{
-              padding: "4px 10px", borderRadius: 20, border: "1.5px solid",
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "5px 11px", borderRadius: 20, border: "1.5px solid",
               fontSize: 11, fontWeight: 600, cursor: "pointer",
               borderColor: activo ? C.azul : "#e2e8f0",
               background:  activo ? `${C.azul}12` : "#fff",
               color:       activo ? C.azul : "#94a3b8",
               transition:  "all 0.12s",
             }}>
-              {p.emoji} {p.label}
+              <p.Icon size={11} /> {p.label}
             </button>
           );
         })}
@@ -194,12 +196,12 @@ function EditorPremio({ entry, onChange }) {
       {/* Indicador automático vs manual */}
       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
         {esAutomatico(entry.tipo_premio) ? (
-          <span style={{ fontSize: 10, color: C.verde, fontWeight: 600, background: `${C.verde}15`, padding: "2px 7px", borderRadius: 4 }}>
-            ⚡ Automático
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, color: C.verde, fontWeight: 600, background: `${C.verde}15`, padding: "2px 7px", borderRadius: 4 }}>
+            <Zap size={9} /> Automático
           </span>
         ) : (
           <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, background: "#f1f5f9", padding: "2px 7px", borderRadius: 4 }}>
-            ✋ Manual — tú lo gestionas
+            Manual — tú lo gestionas
           </span>
         )}
       </div>
@@ -284,7 +286,7 @@ function TabConfiguracion() {
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
           <thead>
             <tr>
-              {["Nivel del referidor", "Descuento %", "Envío gratis", "Nivel heredado (1 mes) ✨", "Beneficio extra (opcional)"].map(h => (
+              {["Nivel del referidor", "Descuento %", "Envío gratis", "Nivel heredado (1 mes)", "Beneficio extra (opcional)"].map(h => (
                 <th key={h} style={sTh}>{h}</th>
               ))}
             </tr>
@@ -352,8 +354,8 @@ function TabConfiguracion() {
 
         {/* Leyenda automático vs manual */}
         <div style={{ display: "flex", gap: 12, margin: "12px 0", fontSize: 11 }}>
-          <span style={{ color: C.verde, fontWeight: 600 }}>⚡ Automático — el sistema lo aplica solo (descuento, puntos, crédito)</span>
-          <span style={{ color: "#94a3b8", fontWeight: 600 }}>✋ Manual — tú lo gestionas y entregas (producto, envío, personalizado)</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: C.verde, fontWeight: 600 }}><Zap size={11} /> Automático — el sistema lo aplica solo (descuento, puntos, crédito)</span>
+          <span style={{ color: "#94a3b8", fontWeight: 600 }}>Manual — tú lo gestionas y entregas (producto, envío, personalizado)</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 8 }}>
@@ -418,8 +420,8 @@ function TabConfiguracion() {
 // COMPONENTE RAÍZ
 // ══════════════════════════════════════════════════════════════════════════════
 const TABS = [
-  { key: "estadisticas", label: "Estadísticas", icon: "📊" },
-  { key: "config",       label: "Configuración", icon: "⚙️" },
+  { key: "estadisticas", label: "Estadísticas",  Icon: BarChart2 },
+  { key: "config",       label: "Configuración", Icon: Settings },
 ];
 
 export default function Referidos() {
@@ -445,7 +447,7 @@ export default function Referidos() {
             borderBottom: `2px solid ${tab === t.key ? "#3B82F6" : "transparent"}`,
             marginBottom: -2, transition: "all 0.15s",
           }}>
-            {t.icon} {t.label}
+            <t.Icon size={14} /> {t.label}
           </button>
         ))}
       </div>

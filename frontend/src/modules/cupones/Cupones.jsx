@@ -1,3 +1,4 @@
+import { CheckCircle, AlertTriangle, Ticket, Lightbulb } from "lucide-react";
 import { useCupones } from "./hooks/useCupones";
 import CuponCard  from "./components/CuponCard";
 import CuponForm  from "./components/CuponForm";
@@ -39,7 +40,7 @@ export default function Cupones() {
         <div>
           <h2 style={s.title}>Cupones y descuentos</h2>
           <p style={s.subtitle}>
-            Crea códigos de descuento para tus clientes — cada empresa define sus propias condiciones
+            Crea códigos de descuento para tus clientes cada empresa define sus propias condiciones
           </p>
         </div>
         <button style={s.btnNuevo} onClick={abrirFormNuevo}>
@@ -48,15 +49,25 @@ export default function Cupones() {
       </div>
 
       {/* Notificaciones */}
-      {exito && <div style={s.exitoBox}>✓ {exito}</div>}
-      {error && !mostrarForm && <div style={s.errorBox}>⚠️ {error}</div>}
+      {exito && (
+        <div style={s.exitoBox}>
+          <CheckCircle size={14} style={{ flexShrink: 0 }} />
+          {exito}
+        </div>
+      )}
+      {error && !mostrarForm && (
+        <div style={s.errorBox}>
+          <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          {error}
+        </div>
+      )}
 
       {/* Contenido */}
       {loading ? (
         <SkeletonGrid count={3} height={180} />
       ) : cupones.length === 0 ? (
         <div style={s.empty}>
-          <span style={s.emptyIcon}>🎫</span>
+          <Ticket size={52} color="#2563eb" />
           <p style={s.emptyTitle}>Aún no tienes cupones</p>
           <p style={s.emptyDesc}>
             Crea cupones de descuento para atraer nuevos clientes, reactivar los que no compran hace tiempo
@@ -70,7 +81,7 @@ export default function Cupones() {
         <>
           {/* Info */}
           <div style={s.infoBox}>
-            <span style={s.infoIcon}>💡</span>
+            <Lightbulb size={16} color="#92400e" style={{ flexShrink: 0, marginTop: 1 }} />
             <p style={s.infoText}>
               Tus clientes pueden ingresar el código en el carrito de compras antes de confirmar el pedido.
               Los cupones inactivos o expirados no aplican.
@@ -164,21 +175,19 @@ const s = {
   exitoBox: {
     padding: "12px 16px", backgroundColor: "#f0fdf4",
     border: "1px solid #bbf7d0", borderRadius: "10px",
-    fontSize: "13px", fontWeight: "600", color: "#0F6E56",
+    fontSize: "13px", fontWeight: "600", color: "#15803d",
+    display: "flex", alignItems: "center", gap: "8px",
   },
   errorBox: {
     padding: "12px 16px", backgroundColor: "#fef2f2",
     border: "1px solid #fecaca", borderRadius: "10px",
     fontSize: "13px", color: "#b91c1c",
+    display: "flex", alignItems: "center", gap: "8px",
   },
-  loading: { display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", padding: "60px" },
-  loadingIcon: { fontSize: "40px" },
-  loadingText: { fontSize: "14px", color: "#94a3b8" },
   empty: {
     display: "flex", flexDirection: "column", alignItems: "center",
     gap: "10px", padding: "60px 24px", textAlign: "center",
   },
-  emptyIcon:  { fontSize: "52px" },
   emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
   emptyDesc:  { fontSize: "14px", color: "#64748b", maxWidth: "420px", lineHeight: "1.6" },
   emptyBtn: {
@@ -192,7 +201,6 @@ const s = {
     padding: "14px 16px", backgroundColor: "#fffbeb",
     borderRadius: "12px", border: "1px solid #fde68a",
   },
-  infoIcon: { fontSize: "18px", flexShrink: 0 },
   infoText: { fontSize: "13px", color: "#92400e", lineHeight: "1.6" },
   sectionLabel: {
     fontSize: "11px", fontWeight: "700", color: "#94a3b8",

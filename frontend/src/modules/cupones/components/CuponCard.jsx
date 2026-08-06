@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BarChart2, Pencil, Trash2 } from "lucide-react";
 
 export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVerUsos }) {
   const [confirmando, setConfirmando] = useState(false);
@@ -40,7 +41,7 @@ export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVer
           {agotado && <span style={s.badgeAgotado}>Agotado</span>}
           {!vigente && !agotado && <span style={s.badgeExpirado}>Expirado</span>}
           <div
-            style={{ ...s.toggleWrap, backgroundColor: cupon.activo ? "#0F6E56" : "#e2e8f0" }}
+            style={{ ...s.toggleWrap, backgroundColor: cupon.activo ? "#2563eb" : "#e2e8f0" }}
             onClick={() => onToggle(cupon.id)}
             title={cupon.activo ? "Desactivar" : "Activar"}
           >
@@ -77,7 +78,7 @@ export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVer
         {parseFloat(cupon.total_ahorrado) > 0 && (
           <div style={s.stat}>
             <span style={s.statLabel}>Total ahorrado</span>
-            <span style={{ ...s.statVal, color: "#0F6E56" }}>
+            <span style={{ ...s.statVal, color: "#15803d" }}>
               ${Number(cupon.total_ahorrado).toLocaleString("es-CO")}
             </span>
           </div>
@@ -94,9 +95,15 @@ export default function CuponCard({ cupon, onEditar, onToggle, onEliminar, onVer
           </>
         ) : (
           <>
-            <button style={s.btnUsos} onClick={() => onVerUsos(cupon)}>📊 Ver usos</button>
-            <button style={s.btnEditar} onClick={() => onEditar(cupon)}>✏️ Editar</button>
-            <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>🗑️</button>
+            <button style={s.btnUsos} onClick={() => onVerUsos(cupon)}>
+              <BarChart2 size={12} /> Ver usos
+            </button>
+            <button style={s.btnEditar} onClick={() => onEditar(cupon)}>
+              <Pencil size={12} /> Editar
+            </button>
+            <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>
+              <Trash2 size={13} />
+            </button>
           </>
         )}
       </div>
@@ -167,16 +174,19 @@ const s = {
     flex: 1, padding: "7px 0", fontSize: "12px", fontWeight: "600",
     backgroundColor: "#f8fafc", color: "#374151",
     border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
   },
   btnEditar: {
     flex: 1, padding: "7px 0", fontSize: "12px", fontWeight: "600",
     backgroundColor: "#f8fafc", color: "#374151",
     border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
   },
   btnEliminar: {
-    padding: "7px 12px", fontSize: "13px",
+    padding: "7px 12px",
     backgroundColor: "#fef2f2", color: "#b91c1c",
     border: "1px solid #fecaca", borderRadius: "8px", cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center",
   },
   confirmText: { fontSize: "12px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap", alignSelf: "center" },
   btnConfirmYes: {

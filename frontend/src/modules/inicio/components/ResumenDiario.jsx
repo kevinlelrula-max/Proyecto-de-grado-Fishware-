@@ -47,7 +47,11 @@ export default function ResumenDiario() {
       {/* ── ENCABEZADO ── */}
       <button style={s.header} onClick={() => setAbierto(v => !v)}>
         <div style={s.headerLeft}>
-          <span style={s.headerIcon}>📊</span>
+          <div style={s.headerIcon}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
           <div>
             <p style={s.headerTitle}>Resumen del día</p>
             <p style={s.headerSub}>{hoy_label}</p>
@@ -98,14 +102,13 @@ export default function ResumenDiario() {
           {/* Top productos */}
           {topProductos.length > 0 && (
             <div style={s.section}>
-              <p style={s.secTitle}>🏆 Top productos hoy</p>
+              <p style={s.secTitle}>Top productos hoy</p>
               <div style={s.prodList}>
                 {topProductos.map((p, i) => {
                   const pct = maxProd > 0 ? (parseFloat(p.ingresos) / maxProd) * 100 : 0;
-                  const medals = ["🥇", "🥈", "🥉"];
                   return (
                     <div key={i} style={s.prodRow}>
-                      <span style={s.medal}>{medals[i]}</span>
+                      <span style={s.medal}>{i + 1}</span>
                       <div style={s.prodInfo}>
                         <div style={s.prodNameRow}>
                           <span style={s.prodNombre}>{p.nombre}</span>
@@ -128,7 +131,7 @@ export default function ResumenDiario() {
           {/* Distribución por hora */}
           {porHora.length > 0 && (
             <div style={s.section}>
-              <p style={s.secTitle}>🕐 Ventas por hora (POS)</p>
+              <p style={s.secTitle}>Ventas por hora (POS)</p>
               <div style={s.chartWrap}>
                 {Array.from({ length: 24 }, (_, h) => {
                   const entry = porHora.find(r => r.hora === h);
@@ -176,17 +179,18 @@ const s = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "16px 20px",
-    background: "linear-gradient(135deg, #0B1628 0%, #0d2b45 100%)",
+    padding: "14px 20px",
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
     border: "none",
     cursor: "pointer",
     gap: 12,
     flexWrap: "wrap",
   },
-  headerLeft: { display: "flex", alignItems: "center", gap: 12 },
-  headerIcon: { fontSize: 26, lineHeight: 1 },
-  headerTitle: { fontSize: 15, fontWeight: 800, color: "white", margin: "0 0 2px" },
-  headerSub:   { fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0, textTransform: "capitalize" },
+  headerLeft: { display: "flex", alignItems: "center", gap: 10 },
+  headerIcon: { width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", borderRadius: 8, flexShrink: 0 },
+  headerTitle: { fontSize: 14, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" },
+  headerSub:   { fontSize: 11, color: "#94a3b8", margin: 0, textTransform: "capitalize" },
   headerRight: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 },
   trendBadge: {
     fontSize: 12,
@@ -194,7 +198,7 @@ const s = {
     padding: "4px 10px",
     borderRadius: 999,
   },
-  chevron: { fontSize: 11, color: "rgba(255,255,255,0.5)" },
+  chevron: { fontSize: 11, color: "#94a3b8" },
 
   kpiRow: {
     display: "flex",
@@ -215,7 +219,7 @@ const s = {
 
   prodList: { display: "flex", flexDirection: "column", gap: 12 },
   prodRow: { display: "flex", alignItems: "flex-start", gap: 10 },
-  medal: { fontSize: 20, lineHeight: 1, marginTop: 1, flexShrink: 0 },
+  medal: { fontSize: 11, fontWeight: 800, color: "#94a3b8", width: 18, textAlign: "center", flexShrink: 0, marginTop: 2 },
   prodInfo: { flex: 1 },
   prodNameRow: { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 },
   prodNombre: { fontSize: 13, fontWeight: 700, color: "#0f172a" },

@@ -1,60 +1,70 @@
+import { Trophy, Award } from "lucide-react";
+
 export default function NivelLealtad({ nivelLealtad }) {
   if (!nivelLealtad) return null;
 
   const { nivel_actual, total_mes, descuento } = nivelLealtad;
 
-  const niveles = [
-    { nombre: "Bronce", color: "#92400e", bg: "#fef3c7", min: 0 },
-    { nombre: "Plata",  color: "#475569", bg: "#f1f5f9", min: 0 },
-    { nombre: "Oro",    color: "#b45309", bg: "#fffbeb", min: 0 },
-  ];
+  const tierId = nivel_actual?.nombre?.toLowerCase() ?? "";
+  const tierColor = tierId.includes("oro") ? "#d97706"
+    : tierId.includes("plata") ? "#64748b"
+    : tierId.includes("bronce") ? "#b45309"
+    : "#2563eb";
+  const tierBg = tierId.includes("oro") ? "#fffbeb"
+    : tierId.includes("plata") ? "#f1f5f9"
+    : tierId.includes("bronce") ? "#fef3c7"
+    : "#eff6ff";
 
   return (
     <div style={s.card}>
-      <h3 style={s.title}>🏆 Mi nivel de lealtad</h3>
+      <div style={s.header}>
+        <div style={{ ...s.iconWrap, backgroundColor: "#fef3c7" }}>
+          <Trophy size={18} color="#d97706" />
+        </div>
+        <div>
+          <h3 style={s.title}>Nivel de lealtad</h3>
+          <p style={s.subtitle}>Descuentos automáticos por tus compras</p>
+        </div>
+      </div>
 
       {nivel_actual ? (
-        <div style={s.nivelActivo}>
-          <div style={s.nivelHeader}>
-            <div style={s.nivelIconWrap}>
-              🏆
-            </div>
-            <div>
-              <p style={s.nivelNombre}>{nivel_actual.nombre}</p>
-              <p style={s.nivelDesc}>
-                Tienes <strong>{descuento}% de descuento</strong> en todos los productos
-              </p>
-            </div>
+        <>
+          <div style={{ ...s.nivelBadge, borderLeftColor: tierColor, backgroundColor: tierBg }}>
+            <span style={{ ...s.nivelTag, color: tierColor }}>
+              {nivel_actual.nombre}
+            </span>
+            <p style={s.nivelDesc}>
+              Descuento de <strong style={{ color: tierColor }}>{descuento}%</strong> en todos los productos
+            </p>
           </div>
 
           <div style={s.stats}>
-            <div style={s.stat}>
-              <p style={s.statLabel}>Compras este mes</p>
-              <p style={s.statValor}>${Number(total_mes).toLocaleString("es-CO")}</p>
-            </div>
-            <div style={s.stat}>
-              <p style={s.statLabel}>Tu descuento</p>
-              <p style={{ ...s.statValor, color: "#0F6E56" }}>{descuento}%</p>
-            </div>
-            <div style={s.stat}>
-              <p style={s.statLabel}>Monto mínimo</p>
-              <p style={s.statValor}>${Number(nivel_actual.monto_minimo).toLocaleString("es-CO")}</p>
-            </div>
+            {[
+              { label: "Compras este mes", value: `$${Number(total_mes).toLocaleString("es-CO")}`, color: "#15803d" },
+              { label: "Tu descuento",     value: `${descuento}%`,                                  color: tierColor },
+              { label: "Monto mínimo",     value: `$${Number(nivel_actual.monto_minimo).toLocaleString("es-CO")}`, color: "#0f172a" },
+            ].map(st => (
+              <div key={st.label} style={s.stat}>
+                <p style={s.statLabel}>{st.label}</p>
+                <p style={{ ...s.statValor, color: st.color }}>{st.value}</p>
+              </div>
+            ))}
           </div>
 
           <div style={s.infoBox}>
             <p style={s.infoText}>
-              🎉 ¡Felicitaciones! Estás en el nivel <strong>{nivel_actual.nombre}</strong>.
-              Cada vez que compres en esta tienda, tus precios se actualizan automáticamente.
+              Nivel <strong>{nivel_actual.nombre}</strong> activo. Cada compra actualiza tus precios automáticamente.
             </p>
           </div>
-        </div>
+        </>
       ) : (
         <div style={s.sinNivel}>
-          <span style={s.sinNivelIcon}>🥉</span>
-          <p style={s.sinNivelTitle}>Aún no tienes nivel de lealtad</p>
+          <div style={s.sinNivelIconWrap}>
+            <Award size={28} color="#94a3b8" />
+          </div>
+          <p style={s.sinNivelTitle}>Sin nivel de lealtad aún</p>
           <p style={s.sinNivelDesc}>
-            Compra <strong>${Number(0).toLocaleString("es-CO")}</strong> este mes para comenzar a obtener descuentos
+            Compra este mes para comenzar a obtener descuentos automáticos
           </p>
           <div style={s.totalMes}>
             <p style={s.totalMesLabel}>Tus compras este mes</p>
@@ -76,54 +86,85 @@ const s = {
     flexDirection: "column",
     gap: "16px",
   },
-  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
-  nivelActivo: { display: "flex", flexDirection: "column", gap: "16px" },
-  nivelHeader: {
-    display: "flex", alignItems: "center", gap: "14px",
-    padding: "16px",
-    background: "linear-gradient(135deg, #0B1628, #0d2b45)",
-    borderRadius: "12px",
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
   },
-  nivelIconWrap: { fontSize: "36px", flexShrink: 0 },
-  nivelNombre: { fontSize: "18px", fontWeight: "800", color: "white", marginBottom: "4px" },
-  nivelDesc: { fontSize: "13px", color: "rgba(255,255,255,0.7)" },
+  iconWrap: {
+    width: "38px", height: "38px",
+    borderRadius: "10px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    flexShrink: 0,
+  },
+  title: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
+  subtitle: { fontSize: "13px", color: "#64748b", margin: 0 },
+  nivelBadge: {
+    borderLeft: "4px solid",
+    borderRadius: "0 10px 10px 0",
+    padding: "14px 18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  nivelTag: {
+    display: "inline-block",
+    fontSize: "12px", fontWeight: "800",
+    textTransform: "uppercase", letterSpacing: "0.06em",
+    marginBottom: "2px",
+  },
+  nivelDesc: { fontSize: "13px", color: "#475569", margin: 0, lineHeight: "1.5" },
   stats: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "12px",
+    gap: "10px",
   },
   stat: {
-    padding: "14px",
+    padding: "14px 10px",
     backgroundColor: "#f8fafc",
     borderRadius: "10px",
     border: "1px solid #e2e8f0",
     textAlign: "center",
   },
-  statLabel: { fontSize: "11px", fontWeight: "600", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" },
-  statValor: { fontSize: "20px", fontWeight: "800", color: "#0f172a" },
+  statLabel: {
+    fontSize: "10px", fontWeight: "600", color: "#94a3b8",
+    textTransform: "uppercase", letterSpacing: "0.05em",
+    marginBottom: "6px",
+  },
+  statValor: {
+    fontSize: "18px", fontWeight: "800",
+    fontVariantNumeric: "tabular-nums",
+    margin: 0,
+  },
   infoBox: {
     padding: "12px 14px",
     backgroundColor: "#f0fdf4",
     borderRadius: "10px",
     border: "1px solid #bbf7d0",
   },
-  infoText: { fontSize: "13px", color: "#0F6E56", lineHeight: "1.6" },
+  infoText: { fontSize: "13px", color: "#15803d", lineHeight: "1.6", margin: 0 },
   sinNivel: {
     display: "flex", flexDirection: "column",
     alignItems: "center", gap: "10px",
-    padding: "24px", textAlign: "center",
+    padding: "20px 0", textAlign: "center",
   },
-  sinNivelIcon: { fontSize: "48px" },
-  sinNivelTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a" },
-  sinNivelDesc: { fontSize: "13px", color: "#64748b", lineHeight: "1.6" },
+  sinNivelIconWrap: {
+    width: "60px", height: "60px",
+    borderRadius: "16px",
+    backgroundColor: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  sinNivelTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  sinNivelDesc: { fontSize: "13px", color: "#64748b", lineHeight: "1.6", margin: 0, maxWidth: "220px" },
   totalMes: {
-    marginTop: "8px",
-    padding: "14px 24px",
+    marginTop: "6px",
+    padding: "14px 28px",
     backgroundColor: "#f8fafc",
     borderRadius: "12px",
     border: "1px solid #e2e8f0",
     textAlign: "center",
   },
   totalMesLabel: { fontSize: "12px", color: "#94a3b8", marginBottom: "4px" },
-  totalMesValor: { fontSize: "24px", fontWeight: "800", color: "#0f172a" },
+  totalMesValor: { fontSize: "24px", fontWeight: "800", color: "#0f172a", fontVariantNumeric: "tabular-nums" },
 };

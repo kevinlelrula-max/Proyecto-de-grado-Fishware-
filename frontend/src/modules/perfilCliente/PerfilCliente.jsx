@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { User, Users, ArrowLeft } from "lucide-react";
 import { usePerfilCliente } from "./hooks/usePerfilCliente";
 import DatosPersonales from "./components/DatosPersonales";
 import CambiarContrasena from "./components/CambiarContrasena";
@@ -6,15 +7,16 @@ import NivelLealtad from "./components/NivelLealtad";
 import SeccionReferido from "../referidos/components/SeccionReferido";
 
 export default function PerfilCliente() {
-  const { empresaSlug } = useParams();
+  const { empresaSlug: slugParam } = useParams();
+  const navigate = useNavigate();
+  const empresaSlug = slugParam || localStorage.getItem("ultima_empresa_slug");
+  const rutaTienda = empresaSlug ? `/tienda/${empresaSlug}` : "/";
 
-  // Obtener empresaId desde localStorage
   const ultimaEmpresa = (() => {
     try { return JSON.parse(localStorage.getItem("ultima_empresa") || "null"); }
     catch { return null; }
   })();
   const empresaId = ultimaEmpresa?.id || null;
-
   const token = localStorage.getItem("cliente_token");
 
   const {
@@ -29,31 +31,43 @@ export default function PerfilCliente() {
   if (loading) {
     return (
       <div style={s.loading}>
-        <span style={s.loadingIcon}>👤</span>
+        <div style={s.loadingIconWrap}>
+          <User size={28} color="#2563eb" />
+        </div>
         <p style={s.loadingText}>Cargando perfil...</p>
       </div>
     );
   }
 
+  const inicialNombre = perfil?.nombre?.charAt(0).toUpperCase() ?? "C";
+
   return (
     <div style={s.page}>
 
-      {/* Header */}
-      <div style={s.header}>
-        <div style={s.headerAvatar}>
-          {perfil?.nombre?.charAt(0).toUpperCase()}
+      {/* Back button */}
+      <button style={s.backBtn} onClick={() => navigate(rutaTienda)}>
+        <ArrowLeft size={15} />
+        Volver a la tienda
+      </button>
+
+      {/* Profile hero */}
+      <div style={s.hero}>
+        <div style={s.heroLeft}>
+          <div style={s.heroAvatar}>{inicialNombre}</div>
+          <div>
+            <h2 style={s.heroName}>{perfil?.nombre} {perfil?.apellido}</h2>
+            <p style={s.heroEmail}>{perfil?.usuario}</p>
+          </div>
         </div>
-        <div>
-          <h2 style={s.title}>
-            {perfil?.nombre} {perfil?.apellido}
-          </h2>
-          <p style={s.subtitle}>{perfil?.usuario}</p>
+        <div style={s.heroBadge}>
+          <User size={13} color="#2563eb" />
+          Cliente registrado
         </div>
       </div>
 
-      {/* Contenido */}
+      {/* Two-column content */}
       <div style={s.grid}>
-        <div style={s.colLeft}>
+        <div style={s.col}>
           <DatosPersonales
             perfil={perfil}
             form={form}
@@ -72,10 +86,18 @@ export default function PerfilCliente() {
             onGuardar={cambiarContrasena}
           />
         </div>
-        <div style={s.colRight}>
+        <div style={s.col}>
           <NivelLealtad nivelLealtad={nivelLealtad} />
-          <div style={s.seccionReferido}>
-            <h3 style={s.seccionTitulo}>🤝 Programa de referidos</h3>
+          <div style={s.referidoCard}>
+            <div style={s.referidoHeader}>
+              <div style={s.referidoIconWrap}>
+                <Users size={16} color="#2563eb" />
+              </div>
+              <div>
+                <h3 style={s.referidoTitle}>Programa de referidos</h3>
+                <p style={s.referidoSub}>Invita amigos y gana beneficios</p>
+              </div>
+            </div>
             <SeccionReferido
               token={token}
               empresaId={empresaId}
@@ -91,59 +113,104 @@ export default function PerfilCliente() {
 
 const s = {
   page: {
-    maxWidth: "1000px",
+    maxWidth: "1100px",
     margin: "0 auto",
-    padding: "32px 24px",
+    padding: "28px 24px 48px",
     display: "flex",
     flexDirection: "column",
-    gap: "24px",
+    gap: "20px",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
   },
-  header: {
+  loading: {
+    display: "flex", flexDirection: "column",
+    alignItems: "center", gap: "14px",
+    padding: "100px 24px",
+  },
+  loadingIconWrap: {
+    width: "64px", height: "64px", borderRadius: "18px",
+    backgroundColor: "#eff6ff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  loadingText: { fontSize: "14px", color: "#94a3b8" },
+  backBtn: {
+    display: "flex", alignItems: "center", gap: "5px",
+    background: "none", border: "none",
+    color: "#64748b", fontSize: "13px", fontWeight: "500",
+    cursor: "pointer", padding: "4px 0",
+    alignSelf: "flex-start",
+  },
+  hero: {
+    backgroundColor: "white",
+    border: "1px solid #e2e8f0",
+    borderLeft: "4px solid #2563eb",
+    borderRadius: "16px",
+    padding: "24px 28px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "16px",
+  },
+  heroLeft: {
     display: "flex",
     alignItems: "center",
     gap: "16px",
   },
-  headerAvatar: {
-    width: "64px", height: "64px",
-    borderRadius: "16px",
-    background: "linear-gradient(135deg, #00C9A7, #0099FF)",
+  heroAvatar: {
+    width: "68px", height: "68px",
+    borderRadius: "18px",
+    backgroundColor: "#2563eb",
     color: "white",
-    fontSize: "24px", fontWeight: "700",
+    fontSize: "26px", fontWeight: "800",
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
+    letterSpacing: "-0.02em",
   },
-  title: {
+  heroName: {
     fontSize: "22px", fontWeight: "800",
     color: "#0f172a", letterSpacing: "-0.02em",
-    marginBottom: "4px",
+    marginBottom: "5px",
   },
-  subtitle: { fontSize: "14px", color: "#64748b" },
+  heroEmail: { fontSize: "14px", color: "#64748b", margin: 0 },
+  heroBadge: {
+    display: "flex", alignItems: "center", gap: "6px",
+    backgroundColor: "#eff6ff",
+    color: "#2563eb",
+    fontSize: "12px", fontWeight: "600",
+    padding: "7px 13px",
+    borderRadius: "8px",
+    flexShrink: 0,
+  },
   grid: {
     display: "grid",
-    gridTemplateColumns: "1.3fr 1fr",
+    gridTemplateColumns: "1.1fr 1fr",
     gap: "20px",
     alignItems: "start",
   },
-  colLeft: { display: "flex", flexDirection: "column", gap: "20px" },
-  colRight: { display: "flex", flexDirection: "column", gap: "20px" },
-  seccionReferido: {
-    background: "#fff",
+  col: { display: "flex", flexDirection: "column", gap: "20px" },
+  referidoCard: {
+    backgroundColor: "white",
     borderRadius: "16px",
     border: "1px solid #e2e8f0",
-    padding: "20px",
+    padding: "24px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
   },
-  seccionTitulo: {
-    fontSize: "15px",
-    fontWeight: "700",
-    color: "#0f172a",
-    margin: "0 0 16px",
+  referidoHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
   },
-  loading: {
-    display: "flex", flexDirection: "column",
-    alignItems: "center", gap: "12px",
-    padding: "80px",
+  referidoIconWrap: {
+    width: "38px", height: "38px",
+    borderRadius: "10px",
+    backgroundColor: "#eff6ff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    flexShrink: 0,
   },
-  loadingIcon: { fontSize: "40px" },
-  loadingText: { fontSize: "14px", color: "#94a3b8" },
+  referidoTitle: {
+    fontSize: "15px", fontWeight: "700",
+    color: "#0f172a", margin: "0 0 2px",
+  },
+  referidoSub: { fontSize: "12px", color: "#64748b", margin: 0 },
 };

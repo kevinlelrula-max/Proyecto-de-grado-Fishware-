@@ -143,13 +143,27 @@ export const getInsight = async (req, res) => {
 
     const [ventasHoy, ventasAyer, stockCritico, pedidos, topProductos] = await Promise.all([
       pool.query(
-        `SELECT COALESCE(SUM(total),0) AS ingresos, COUNT(*) AS transacciones
-         FROM ventas WHERE empresa_id=$1 AND DATE(fecha)=CURRENT_DATE`,
+        `SELECT COALESCE(SUM(ingresos),0) AS ingresos, COALESCE(SUM(transacciones),0) AS transacciones
+         FROM (
+           SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones FROM ventas
+           WHERE empresa_id=$1 AND DATE(fecha)=CURRENT_DATE
+           UNION ALL
+           SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones FROM pedidos_online
+           WHERE empresa_id=$1 AND estado IN ('entregado','confirmado','en_preparacion','enviado')
+           AND DATE(fecha_pedido)=CURRENT_DATE
+         ) src`,
         [empresa_id]
       ),
       pool.query(
-        `SELECT COALESCE(SUM(total),0) AS ingresos, COUNT(*) AS transacciones
-         FROM ventas WHERE empresa_id=$1 AND DATE(fecha)=$2`,
+        `SELECT COALESCE(SUM(ingresos),0) AS ingresos, COALESCE(SUM(transacciones),0) AS transacciones
+         FROM (
+           SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones FROM ventas
+           WHERE empresa_id=$1 AND DATE(fecha)=$2
+           UNION ALL
+           SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones FROM pedidos_online
+           WHERE empresa_id=$1 AND estado IN ('entregado','confirmado','en_preparacion','enviado')
+           AND DATE(fecha_pedido)=$2
+         ) src`,
         [empresa_id, ayer]
       ),
       pool.query(
@@ -165,11 +179,19 @@ export const getInsight = async (req, res) => {
         [empresa_id]
       ),
       pool.query(
-        `SELECT p.nombre, SUM(dv.cantidad) AS unidades
-         FROM detalle_venta dv
-         JOIN ventas v ON v.id=dv.venta_id
-         JOIN productos p ON p.id=dv.producto_id
-         WHERE v.empresa_id=$1 AND DATE(v.fecha) BETWEEN $2 AND $3
+        `SELECT p.nombre, SUM(src.cantidad) AS unidades
+         FROM (
+           SELECT dv.producto_id, dv.cantidad FROM detalle_venta dv
+           JOIN ventas v ON v.id=dv.venta_id
+           WHERE v.empresa_id=$1 AND DATE(v.fecha) BETWEEN $2 AND $3
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id=dp.pedido_id
+           WHERE po.empresa_id=$1
+             AND po.estado IN ('entregado','confirmado','en_preparacion','enviado')
+             AND DATE(po.fecha_pedido) BETWEEN $2 AND $3
+         ) src
+         JOIN productos p ON p.id=src.producto_id AND p.empresa_id=$1
          GROUP BY p.id, p.nombre ORDER BY unidades DESC LIMIT 3`,
         [empresa_id, hace7, hoy]
       ),

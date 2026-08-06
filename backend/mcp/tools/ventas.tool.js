@@ -11,11 +11,22 @@ export function registerVentasTools(server, pool, empresa_id) {
     async ({ desde, hasta }) => {
       const result = await pool.query(
         `SELECT
-           COUNT(*) AS transacciones,
-           COALESCE(SUM(total), 0) AS ingresos_total,
-           COALESCE(AVG(total), 0) AS ticket_promedio
-         FROM ventas
-         WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3`,
+           SUM(transacciones) AS transacciones,
+           COALESCE(SUM(ingresos_total), 0) AS ingresos_total,
+           CASE WHEN SUM(transacciones) > 0
+                THEN SUM(ingresos_total) / SUM(transacciones)
+                ELSE 0 END AS ticket_promedio
+         FROM (
+           SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos_total
+           FROM ventas
+           WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3
+           UNION ALL
+           SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos_total
+           FROM pedidos_online
+           WHERE empresa_id = $1
+             AND estado IN ('entregado', 'confirmado', 'en_preparacion', 'enviado')
+             AND DATE(fecha_pedido) BETWEEN $2 AND $3
+         ) src`,
         [empresa_id, desde, hasta]
       );
 
@@ -47,12 +58,22 @@ export function registerVentasTools(server, pool, empresa_id) {
       const result = await pool.query(
         `SELECT
            p.nombre,
-           SUM(dv.cantidad) AS unidades,
-           SUM(dv.cantidad * dv.precio_unitario) AS ingresos
-         FROM detalle_venta dv
-         JOIN ventas v ON v.id = dv.venta_id
-         JOIN productos p ON p.id = dv.producto_id
-         WHERE v.empresa_id = $1 AND DATE(v.fecha) BETWEEN $2 AND $3
+           SUM(src.cantidad) AS unidades,
+           SUM(src.ingresos) AS ingresos
+         FROM (
+           SELECT dv.producto_id, dv.cantidad, dv.cantidad * dv.precio_unitario AS ingresos
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1 AND DATE(v.fecha) BETWEEN $2 AND $3
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad, dp.cantidad * dp.precio_unitario AS ingresos
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.estado IN ('entregado','confirmado','en_preparacion','enviado')
+             AND DATE(po.fecha_pedido) BETWEEN $2 AND $3
+         ) src
+         JOIN productos p ON p.id = src.producto_id AND p.empresa_id = $1
          GROUP BY p.id, p.nombre
          ORDER BY unidades DESC
          LIMIT $4`,
@@ -95,13 +116,31 @@ export function registerVentasTools(server, pool, empresa_id) {
     async ({ periodo1_desde, periodo1_hasta, periodo2_desde, periodo2_hasta }) => {
       const [p1, p2] = await Promise.all([
         pool.query(
-          `SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
-           FROM ventas WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3`,
+          `SELECT SUM(transacciones) AS transacciones, COALESCE(SUM(ingresos), 0) AS ingresos
+           FROM (
+             SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
+             FROM ventas WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3
+             UNION ALL
+             SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
+             FROM pedidos_online
+             WHERE empresa_id = $1
+               AND estado IN ('entregado', 'confirmado', 'en_preparacion', 'enviado')
+               AND DATE(fecha_pedido) BETWEEN $2 AND $3
+           ) src`,
           [empresa_id, periodo1_desde, periodo1_hasta]
         ),
         pool.query(
-          `SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
-           FROM ventas WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3`,
+          `SELECT SUM(transacciones) AS transacciones, COALESCE(SUM(ingresos), 0) AS ingresos
+           FROM (
+             SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
+             FROM ventas WHERE empresa_id = $1 AND DATE(fecha) BETWEEN $2 AND $3
+             UNION ALL
+             SELECT COUNT(*) AS transacciones, COALESCE(SUM(total), 0) AS ingresos
+             FROM pedidos_online
+             WHERE empresa_id = $1
+               AND estado IN ('entregado', 'confirmado', 'en_preparacion', 'enviado')
+               AND DATE(fecha_pedido) BETWEEN $2 AND $3
+           ) src`,
           [empresa_id, periodo2_desde, periodo2_hasta]
         ),
       ]);

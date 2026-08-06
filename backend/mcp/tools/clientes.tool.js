@@ -14,11 +14,21 @@ export function registerClientesTools(server, pool, empresa_id) {
            c.nombre,
            c.email,
            c.telefono,
-           COUNT(v.id) AS total_compras,
-           COALESCE(SUM(v.total), 0) AS total_gastado
+           COUNT(DISTINCT src.ref_id) AS total_compras,
+           COALESCE(SUM(src.total), 0) AS total_gastado
          FROM clientes c
-         JOIN ventas v ON v.cliente_id = c.id
-         WHERE v.empresa_id = $1 AND v.fecha >= NOW() - ($2 || ' days')::INTERVAL
+         JOIN (
+           SELECT cliente_id, id AS ref_id, total
+           FROM ventas
+           WHERE empresa_id = $1 AND fecha >= NOW() - ($2 || ' days')::INTERVAL
+           UNION ALL
+           SELECT cliente_id, id AS ref_id, total
+           FROM pedidos_online
+           WHERE empresa_id = $1
+             AND estado IN ('entregado','confirmado','en_preparacion','enviado')
+             AND fecha_pedido >= NOW() - ($2 || ' days')::INTERVAL
+         ) src ON src.cliente_id = c.id
+         WHERE c.empresa_id = $1
          GROUP BY c.id, c.nombre, c.email, c.telefono
          ORDER BY total_compras DESC, total_gastado DESC
          LIMIT $3`,
@@ -73,31 +83,46 @@ export function registerClientesTools(server, pool, empresa_id) {
 
       const cliente = clienteResult.rows[0];
 
-      const ventasResult = await pool.query(
-        `SELECT
-           v.id,
-           v.fecha,
-           v.total,
-           JSON_AGG(
-             JSON_BUILD_OBJECT('producto', p.nombre, 'cantidad', dv.cantidad)
-             ORDER BY p.nombre
-           ) AS productos
-         FROM ventas v
-         JOIN detalle_venta dv ON dv.venta_id = v.id
-         JOIN productos p ON p.id = dv.producto_id
-         WHERE v.empresa_id = $1 AND v.cliente_id = $2
-         GROUP BY v.id, v.fecha, v.total
-         ORDER BY v.fecha DESC
-         LIMIT 15`,
+      const historialResult = await pool.query(
+        `SELECT id, fecha, total, origen, productos
+         FROM (
+           SELECT
+             v.id,
+             v.fecha,
+             v.total,
+             'POS' AS origen,
+             JSON_AGG(
+               JSON_BUILD_OBJECT('producto', p.nombre, 'cantidad', dv.cantidad)
+               ORDER BY p.nombre
+             ) AS productos
+           FROM ventas v
+           JOIN detalle_venta dv ON dv.venta_id = v.id
+           JOIN productos p ON p.id = dv.producto_id
+           WHERE v.empresa_id = $1 AND v.cliente_id = $2
+           GROUP BY v.id, v.fecha, v.total
+           UNION ALL
+           SELECT
+             po.id,
+             po.fecha_pedido AS fecha,
+             po.total,
+             'Tienda online' AS origen,
+             JSON_AGG(
+               JSON_BUILD_OBJECT('producto', p.nombre, 'cantidad', dp.cantidad)
+               ORDER BY p.nombre
+             ) AS productos
+           FROM pedidos_online po
+           JOIN detalle_pedido_online dp ON dp.pedido_id = po.id
+           JOIN productos p ON p.id = dp.producto_id
+           WHERE po.empresa_id = $1 AND po.cliente_id = $2
+             AND po.estado IN ('entregado','confirmado','en_preparacion','enviado')
+           GROUP BY po.id, po.fecha_pedido, po.total
+         ) src
+         ORDER BY fecha DESC
+         LIMIT 20`,
         [empresa_id, cliente.id]
       );
 
-      const totalGastado = ventasResult.rows.reduce(
-        (acc, v) => acc + Number(v.total),
-        0
-      );
-
-      if (ventasResult.rows.length === 0) {
+      if (historialResult.rows.length === 0) {
         return {
           content: [
             {
@@ -108,10 +133,12 @@ export function registerClientesTools(server, pool, empresa_id) {
         };
       }
 
-      const historial = ventasResult.rows
+      const totalGastado = historialResult.rows.reduce((acc, v) => acc + Number(v.total), 0);
+
+      const historial = historialResult.rows
         .map(
           (v) =>
-            `• ${new Date(v.fecha).toLocaleDateString("es-CO")} — $${Number(v.total).toLocaleString("es-CO")} COP\n` +
+            `• ${new Date(v.fecha).toLocaleDateString("es-CO")} [${v.origen}] — $${Number(v.total).toLocaleString("es-CO")} COP\n` +
             `  ${v.productos.map((p) => `${p.producto} x${p.cantidad}`).join(", ")}`
         )
         .join("\n");
@@ -122,7 +149,7 @@ export function registerClientesTools(server, pool, empresa_id) {
             type: "text",
             text:
               `Cliente: ${cliente.nombre}${cliente.email ? ` · ${cliente.email}` : ""}${cliente.telefono ? ` · ${cliente.telefono}` : ""}\n` +
-              `Total gastado: $${totalGastado.toLocaleString("es-CO")} COP en ${ventasResult.rows.length} compra(s)\n\n` +
+              `Total gastado: $${totalGastado.toLocaleString("es-CO")} COP en ${historialResult.rows.length} compra(s)\n\n` +
               `Historial:\n${historial}`,
           },
         ],

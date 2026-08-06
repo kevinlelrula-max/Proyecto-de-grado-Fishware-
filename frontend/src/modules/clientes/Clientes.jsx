@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
+import { Search, ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
 import useClientes from "./hooks/useClientes";
+import { useClientesDormidos } from "./hooks/useClientesDormidos";
 import TablaClientes from "./components/TablaClientes";
 import FormCliente from "./components/FormCliente";
 import Vista360 from "./components/Vista360";
 import SegmentacionClientes from "./components/SegmentacionClientes";
+import ClientesDormidos from "./components/ClientesDormidos";
 
 export default function Clientes() {
   const { clientes, agregarCliente, editarCliente, borrarCliente } = useClientes();
+  const { clientes: clientesDormidos } = useClientesDormidos();
 
   const [tab, setTab] = useState("lista");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
@@ -52,32 +56,40 @@ export default function Clientes() {
 
       {/* HEADER */}
       <div style={s.header}>
-        <div style={s.headerLeft}>
-          <span style={s.headerIcon}></span>
+        <div>
           <h2 style={s.headerTitle}>Clientes</h2>
+          <p style={s.headerSubtitle}>Administra tus clientes y su historial</p>
         </div>
         <button style={s.btnNew} onClick={handleNuevo}>
-          + Nuevo Cliente
+          <UserPlus size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
+          Nuevo cliente
         </button>
       </div>
 
       {/* ── TABS ── */}
       <div style={s.tabs}>
         {[
-          { key: "lista",      label: "Lista de clientes", emoji: "👥" },
-          { key: "segmentos",  label: "Segmentación CRM",  emoji: "📊" },
+          { key: "lista",      label: "Lista de clientes" },
+          { key: "segmentos",  label: "Segmentación CRM"  },
+          { key: "inactivos",  label: `Inactivos${clientesDormidos.length ? ` (${clientesDormidos.length})` : ""}` },
         ].map(t => (
           <button
             key={t.key}
             style={{ ...s.tab, ...(tab === t.key ? s.tabActivo : {}) }}
             onClick={() => setTab(t.key)}
           >
-            {t.emoji} {t.label}
+            {t.label}
           </button>
         ))}
       </div>
 
       {tab === "segmentos" && <SegmentacionClientes />}
+
+      {tab === "inactivos" && (
+        <div style={{ padding: "4px 0" }}>
+          <ClientesDormidos clientes={clientesDormidos} />
+        </div>
+      )}
 
       {tab === "lista" && <>
       {/* STAT CARDS */}
@@ -99,7 +111,7 @@ export default function Clientes() {
       {/* CONTROLES */}
       <div style={s.controls}>
         <div style={s.searchWrap}>
-          <span style={s.searchIcon}>🔍</span>
+          <Search size={14} style={s.searchIcon} />
           <input
             style={s.searchInput}
             placeholder="Buscar cliente por nombre..."
@@ -138,17 +150,19 @@ export default function Clientes() {
           onClick={() => setPaginaActual(paginaActual - 1)}
           disabled={paginaActual === 1}
         >
-          ← Anterior
+          <ChevronLeft size={14} style={{ verticalAlign: "middle" }} />
+          Anterior
         </button>
         <span style={s.pageInfo}>
-          Página {paginaActual} de {totalPaginas || 1}
+          {paginaActual} de {totalPaginas || 1}
         </span>
         <button
           style={{ ...s.pageBtn, opacity: (paginaActual === totalPaginas || totalPaginas === 0) ? 0.4 : 1 }}
           onClick={() => setPaginaActual(paginaActual + 1)}
           disabled={paginaActual === totalPaginas || totalPaginas === 0}
         >
-          Siguiente →
+          Siguiente
+          <ChevronRight size={14} style={{ verticalAlign: "middle" }} />
         </button>
       </div>
 
@@ -205,13 +219,13 @@ const s = {
   },
 
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
-  headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
-  headerIcon: { fontSize: "22px" },
-  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "0 0 3px" },
+  headerSubtitle: { fontSize: "13px", color: "#94a3b8", margin: 0 },
   btnNew: {
-    padding: "9px 20px", backgroundColor: "#2563eb",
+    display: "inline-flex", alignItems: "center",
+    padding: "9px 18px", backgroundColor: "#2563eb",
     color: "white", border: "none", borderRadius: "10px",
-    cursor: "pointer", fontSize: "14px", fontWeight: "600",
+    cursor: "pointer", fontSize: "13px", fontWeight: "600",
   },
 
   statsRow: { display: "flex", gap: "12px", marginBottom: "20px" },
@@ -225,11 +239,11 @@ const s = {
 
   controls: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" },
   searchWrap: { flex: 1, position: "relative", display: "flex", alignItems: "center" },
-  searchIcon: { position: "absolute", left: "12px", fontSize: "14px" },
+  searchIcon: { position: "absolute", left: "11px", color: "#94a3b8", flexShrink: 0 },
   searchInput: {
     width: "100%", padding: "9px 12px 9px 34px",
     borderRadius: "10px", border: "1px solid #e2e8f0",
-    fontSize: "14px", color: "#0f172a", outline: "none", backgroundColor: "#fff",
+    fontSize: "13px", color: "#0f172a", outline: "none", backgroundColor: "#fff",
   },
   selectWrap: { display: "flex", alignItems: "center", gap: "6px" },
   selectLabel: { fontSize: "13px", color: "#64748b" },

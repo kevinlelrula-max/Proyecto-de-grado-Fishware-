@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import BuscadorGlobal from "./BuscadorGlobal";
+import PersonalizarColor, { useAcento } from "./PersonalizarColor";
+import { cn } from "@/lib/utils";
 
 import Inicio from "../modules/inicio/Inicio";
 import Productos from "../modules/productos/Productos";
@@ -45,7 +47,7 @@ const TODO_EL_MENU = [
   { key: "referidos",     label: "Referidos",        icon: ReferidosIcon },
   { key: "mensajes",      label: "Mensajes",         icon: MensajesIcon },
   { key: "integraciones", label: "Integraciones",    icon: IntegracionesIcon },
-  { key: "pedidos",       label: "Pedidos online",   icon: PedidosIcon },
+  { key: "pedidos",       label: "Pedidos",   icon: PedidosIcon },
   { key: "claude-ia",     label: "Claude AI",        icon: ClaudeIaIcon },
 ];
 
@@ -212,7 +214,7 @@ function ChevronIcon() {
   );
 }
 
-// ── Campana de notificaciones ────────────────────────────────────────────────
+// ── Notificaciones ───────────────────────────────────────────────────────────
 const TIPO_META = {
   nuevo_pedido:     { emoji: "🛍️", color: "#3B82F6" },
   stock_bajo:       { emoji: "⚠️", color: "#F59E0B" },
@@ -233,7 +235,7 @@ function formatRelativo(fechaStr) {
 }
 
 function NotificacionesBell({ token, irA }) {
-  const [notifs, setNotifs]   = useState([]);
+  const [notifs, setNotifs]     = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
   const [openBell, setOpenBell] = useState(false);
   const ref = useRef(null);
@@ -258,7 +260,6 @@ function NotificacionesBell({ token, irA }) {
     return () => clearInterval(iv);
   }, [fetchNotifs]);
 
-  // click fuera cierra
   useEffect(() => {
     if (!openBell) return;
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpenBell(false); };
@@ -299,10 +300,10 @@ function NotificacionesBell({ token, irA }) {
   };
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpenBell(v => !v)}
-        className="fw-notif-btn"
+        className="relative w-9 h-9 rounded-[9px] bg-white border border-black/[0.08] flex items-center justify-center cursor-pointer text-[#5A7090] transition-colors hover:bg-slate-50 hover:text-[#0B1628] p-0"
         title="Notificaciones"
       >
         <BellIcon />
@@ -329,37 +330,25 @@ function NotificacionesBell({ token, irA }) {
           display: "flex", flexDirection: "column", overflow: "hidden",
           maxHeight: 480,
         }}>
-          {/* Header */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 16px", borderBottom: "1px solid #F0F4F8",
-          }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #F0F4F8" }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: "#0B1628" }}>
               Notificaciones
               {noLeidas > 0 && (
-                <span style={{
-                  marginLeft: 8, background: "#EF4444", color: "#fff",
-                  fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 7px",
-                }}>{noLeidas}</span>
+                <span style={{ marginLeft: 8, background: "#EF4444", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 7px" }}>
+                  {noLeidas}
+                </span>
               )}
             </span>
             {noLeidas > 0 && (
-              <button onClick={marcarTodas} style={{
-                fontSize: 11, color: "#00A884", background: "none", border: "none",
-                cursor: "pointer", fontWeight: 500, padding: 0,
-              }}>
+              <button onClick={marcarTodas} style={{ fontSize: 11, color: "#00A884", background: "none", border: "none", cursor: "pointer", fontWeight: 500, padding: 0 }}>
                 Marcar todas leídas
               </button>
             )}
           </div>
 
-          {/* Lista */}
           <div style={{ overflowY: "auto", flex: 1 }}>
             {notifs.length === 0 ? (
-              <div style={{
-                padding: "32px 16px", textAlign: "center",
-                color: "#94A3B8", fontSize: 13,
-              }}>
+              <div style={{ padding: "32px 16px", textAlign: "center", color: "#94A3B8", fontSize: 13 }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>🔔</div>
                 Sin notificaciones
               </div>
@@ -369,59 +358,29 @@ function NotificacionesBell({ token, irA }) {
                 <div
                   key={n.id}
                   onClick={() => handleClickNotif(n)}
-                  style={{
-                    display: "flex", gap: 10, alignItems: "flex-start",
-                    padding: "11px 16px",
-                    background: n.leida ? "transparent" : "rgba(0,201,167,0.05)",
-                    borderBottom: "1px solid #F8FAFC",
-                    cursor: "pointer", transition: "background 0.1s",
-                  }}
+                  style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "11px 16px", background: n.leida ? "transparent" : "rgba(0,201,167,0.05)", borderBottom: "1px solid #F8FAFC", cursor: "pointer", transition: "background 0.1s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "#F5F7FA"}
                   onMouseLeave={e => e.currentTarget.style.background = n.leida ? "transparent" : "rgba(0,201,167,0.05)"}
                 >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                    background: `${meta.color}18`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 16,
-                  }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: `${meta.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
                     {meta.emoji}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 13, fontWeight: n.leida ? 400 : 600,
-                      color: "#0B1628", lineHeight: 1.3,
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                    }}>
+                    <div style={{ fontSize: 13, fontWeight: n.leida ? 400 : 600, color: "#0B1628", lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {n.titulo}
                     </div>
-                    {n.mensaje && (
-                      <div style={{ fontSize: 12, color: "#64748B", marginTop: 2, lineHeight: 1.4 }}>
-                        {n.mensaje}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 3 }}>
-                      {formatRelativo(n.creado_en)}
-                    </div>
+                    {n.mensaje && <div style={{ fontSize: 12, color: "#64748B", marginTop: 2, lineHeight: 1.4 }}>{n.mensaje}</div>}
+                    <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 3 }}>{formatRelativo(n.creado_en)}</div>
                   </div>
-                  {!n.leida && (
-                    <div style={{
-                      width: 7, height: 7, borderRadius: "50%",
-                      background: "#00C9A7", flexShrink: 0, marginTop: 4,
-                    }} />
-                  )}
+                  {!n.leida && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#00C9A7", flexShrink: 0, marginTop: 4 }} />}
                 </div>
               );
             })}
           </div>
 
-          {/* Footer */}
           {notifs.some(n => n.leida) && (
             <div style={{ padding: "8px 16px", borderTop: "1px solid #F0F4F8" }}>
-              <button onClick={limpiarLeidas} style={{
-                fontSize: 12, color: "#94A3B8", background: "none", border: "none",
-                cursor: "pointer", width: "100%", textAlign: "center", padding: "4px 0",
-              }}>
+              <button onClick={limpiarLeidas} style={{ fontSize: 12, color: "#94A3B8", background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "center", padding: "4px 0" }}>
                 Limpiar notificaciones leídas
               </button>
             </div>
@@ -432,6 +391,37 @@ function NotificacionesBell({ token, irA }) {
   );
 }
 
+// ── Nav item ─────────────────────────────────────────────────────────────────
+function NavItem({ item, active, onClick, badge }) {
+  const Icon = item.icon;
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] text-[13px] border border-transparent w-full text-left transition-all duration-150",
+        active
+          ? "bg-gradient-to-br from-[#00C9A7]/20 to-[#0099FF]/12 border-[#00C9A7]/25 text-white font-medium"
+          : "font-normal text-[#5A7090] hover:bg-white/5 hover:text-[#C8D6E5]"
+      )}
+    >
+      <div className={cn(
+        "w-[30px] h-[30px] rounded-[7px] flex items-center justify-center flex-shrink-0 transition-all duration-150",
+        active
+          ? "bg-gradient-to-br from-[#00C9A7] to-[#0099FF]"
+          : "bg-white/[0.04] border border-white/[0.06]"
+      )}>
+        <Icon active={active} />
+      </div>
+      {item.label}
+      {badge > 0 && (
+        <span className="ml-auto bg-red-500 text-white rounded-full text-[10px] font-bold px-1.5 py-[1px] leading-none">
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function DashboardEmpresa() {
   const navigate      = useNavigate();
@@ -439,6 +429,8 @@ export default function DashboardEmpresa() {
   const decoded       = decodeToken(token);
   const rolId         = decoded?.rol_id || 3;
   const nombreUsuario = decoded?.usuario || "Usuario";
+
+  useAcento();
 
   const [permisosRol, setPermisosRol]           = useState(null);
   const [cargandoPermisos, setCargandoPermisos] = useState(true);
@@ -480,7 +472,6 @@ export default function DashboardEmpresa() {
     ? TODO_EL_MENU.filter(item => permisosRol.includes(item.key))
     : [];
 
-  // ── Qué grupo contiene cada sección ──────────────────────────────────────
   const GRUPOS_DEF = [
     { id: "principal",   label: "Principal",   keys: ["productos","clientes","ventas","reportes"] },
     { id: "operaciones", label: "Operaciones", keys: ["usuarios","pos"] },
@@ -489,14 +480,13 @@ export default function DashboardEmpresa() {
 
   const grupoDeSeccion = (key) => GRUPOS_DEF.find(g => g.keys.includes(key))?.id || null;
 
-  const [seccion, setSeccion]             = useState(null);
-  const [open, setOpen]                   = useState(false);
+  const [seccion, setSeccion]               = useState(null);
+  const [open, setOpen]                     = useState(false);
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
-  const [logoUrl, setLogoUrl]             = useState(null);
-  const [nombreEmpresa, setNombreEmpresa] = useState("Merkai");
+  const [logoUrl, setLogoUrl]               = useState(null);
+  const [nombreEmpresa, setNombreEmpresa]   = useState("Merkai");
 
-  // Grupos abiertos — arranca todo abierto
   const [gruposAbiertos, setGruposAbiertos] = useState({
     principal: true, operaciones: true, comercial: true,
   });
@@ -549,7 +539,6 @@ export default function DashboardEmpresa() {
     }
   };
 
-  // Atajo Ctrl+K / Cmd+K
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -566,21 +555,23 @@ export default function DashboardEmpresa() {
 
   if (cargandoPermisos) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#F0F4F8", fontFamily: "'Sora', sans-serif", flexDirection: "column", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #00C9A7, #0099FF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🐟</div>
-        <div style={{ fontSize: 13, color: "#64748b" }}>Cargando permisos...</div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3" style={{ fontFamily: "'Sora', sans-serif" }}>
+        <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-xl">🐟</div>
+        <div className="text-sm text-slate-500">Cargando permisos...</div>
       </div>
     );
   }
 
   if (!cargandoPermisos && menu.length === 0) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#F0F4F8", fontFamily: "'Sora', sans-serif", flexDirection: "column", gap: 12 }}>
-        <div style={{ fontSize: 32 }}>🔒</div>
-        <div style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>Sin acceso</div>
-        <div style={{ fontSize: 13, color: "#64748b" }}>Tu rol no tiene secciones habilitadas.</div>
-        <button style={{ marginTop: 8, padding: "8px 20px", background: "linear-gradient(135deg, #00C9A7, #0099FF)", border: "none", borderRadius: 9, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-          onClick={() => { localStorage.clear(); navigate("/"); }}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3" style={{ fontFamily: "'Sora', sans-serif" }}>
+        <div className="text-[32px]">🔒</div>
+        <div className="text-[15px] font-semibold text-slate-900">Sin acceso</div>
+        <div className="text-[13px] text-slate-500">Tu rol no tiene secciones habilitadas.</div>
+        <button
+          className="mt-2 px-5 py-2 bg-gradient-to-br from-[#00C9A7] to-[#0099FF] border-none rounded-[9px] text-white text-[13px] font-semibold cursor-pointer"
+          onClick={() => { localStorage.clear(); navigate("/"); }}
+        >
           Cerrar sesión
         </button>
       </div>
@@ -588,321 +579,277 @@ export default function DashboardEmpresa() {
   }
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .fw-shell { display: flex; min-height: 100vh; background: #F0F4F8; font-family: 'Sora', sans-serif; }
-        .fw-sidebar { width: 240px; flex-shrink: 0; background: #0B1628; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 40; }
-        .fw-sb-top { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .fw-sb-brand { display: flex; align-items: center; gap: 10px; }
-        .fw-sb-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #00C9A7, #0099FF); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .fw-sb-name { font-size: 15px; font-weight: 600; color: #E8F4FF; letter-spacing: -0.02em; line-height: 1.2; }
-        .fw-sb-sub { font-size: 10px; color: #4A6080; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
-        .fw-sb-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
-        .fw-sb-section { font-size: 10px; font-weight: 500; color: #2D4060; text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 8px 6px; margin-top: 4px; }
-        .fw-sb-group-hdr { display: flex; align-items: center; justify-content: space-between; padding: 9px 8px 5px; margin-top: 6px; cursor: pointer; border-radius: 7px; transition: background 0.12s; user-select: none; }
-        .fw-sb-group-hdr:hover { background: rgba(255,255,255,0.04); }
-        .fw-sb-group-label { font-size: 10px; font-weight: 600; color: #2D4060; text-transform: uppercase; letter-spacing: 0.1em; }
-        .fw-sb-group-chevron { color: #2D4060; transition: transform 0.2s; flex-shrink: 0; }
-        .fw-sb-group-chevron.open { transform: rotate(180deg); }
-        .fw-sb-group-body { overflow: hidden; transition: max-height 0.22s ease, opacity 0.18s ease; }
-        .fw-sb-group-body.closed { max-height: 0 !important; opacity: 0; }
-        .fw-sb-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 9px; font-size: 13px; font-weight: 400; color: #5A7090; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; background: none; width: 100%; text-align: left; }
-        .fw-sb-item:hover { background: rgba(255,255,255,0.05); color: #C8D6E5; }
-        .fw-sb-item.fw-active { background: linear-gradient(135deg, rgba(0,201,167,0.2), rgba(0,153,255,0.12)); border-color: rgba(0,201,167,0.25); color: #fff; font-weight: 500; }
-        .fw-sb-item.fw-active .fw-sb-icon { background: linear-gradient(135deg, #00C9A7, #0099FF); border-color: transparent; }
-        .fw-sb-icon { width: 30px; height: 30px; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
-        .fw-sb-badge { background: #ef4444; color: white; border-radius: 999px; font-size: 10px; font-weight: 700; padding: 1px 6px; margin-left: auto; }
-        .fw-sb-bottom { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
-        .fw-sb-user { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; }
-        .fw-sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #00C9A7, #0099FF); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0; }
-        .fw-sb-uname { font-size: 12px; font-weight: 500; color: #C8D6E5; line-height: 1.3; }
-        .fw-sb-urole { font-size: 10px; color: #00C9A7; margin-top: 1px; }
-        .fw-main { flex: 1; margin-left: 240px; display: flex; flex-direction: column; min-height: 100vh; }
-        .fw-topbar { position: sticky; top: 0; z-index: 30; background: rgba(240,244,248,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-        .fw-topbar-left { display: flex; align-items: center; gap: 8px; }
-        .fw-breadcrumb { font-size: 13px; color: #8A9BB0; }
-        .fw-page-title { font-size: 15px; font-weight: 600; color: #0B1628; letter-spacing: -0.02em; }
-        .fw-topbar-right { display: flex; align-items: center; gap: 8px; }
-        .fw-notif-btn { width: 36px; height: 36px; border-radius: 9px; background: #fff; border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #5A7090; position: relative; transition: all 0.15s; padding: 0; }
-        .fw-notif-btn:hover { background: #f5f7fa; color: #0B1628; }
-        .fw-user-btn { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; cursor: pointer; transition: all 0.15s; position: relative; }
-        .fw-user-btn:hover { background: #f5f7fa; border-color: rgba(0,0,0,0.12); }
-        .fw-user-avatar { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #00C9A7, #0099FF); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
-        .fw-user-name { font-size: 13px; font-weight: 500; color: #0B1628; }
-        .fw-user-chevron { color: #8A9BB0; margin-left: 2px; }
-        .fw-dropdown { position: absolute; top: calc(100% + 6px); right: 0; width: 200px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); overflow: hidden; z-index: 100; }
-        .fw-dropdown-header { padding: 12px 14px; border-bottom: 1px solid #F0F4F8; }
-        .fw-dropdown-uname { font-size: 13px; font-weight: 500; color: #0B1628; }
-        .fw-dropdown-role { font-size: 11px; color: #00A884; margin-top: 2px; }
-        .fw-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; color: #3D5068; cursor: pointer; transition: background 0.1s; background: none; border: none; width: 100%; text-align: left; }
-        .fw-dropdown-item:hover { background: #F5F7FA; color: #0B1628; }
-        .fw-dropdown-item.danger { color: #E24B4A; }
-        .fw-dropdown-item.danger:hover { background: #FFF0F0; }
-        .fw-dropdown-divider { height: 1px; background: #F0F4F8; margin: 4px 0; }
-        .fw-content { flex: 1; padding: 24px 28px; }
-        .fw-content-card { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); min-height: calc(100vh - 108px); overflow: hidden; }
-        .fw-content-card:has(.editor-fullbleed) { overflow: visible; background: transparent; border: none; box-shadow: none; }
-        .fw-soporte-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; background-color: #25D366; color: white; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; position: fixed; bottom: 28px; right: 28px; z-index: 999; box-shadow: 0 4px 20px rgba(37,211,102,0.4); transition: transform 0.2s, box-shadow 0.2s; }
-        .fw-soporte-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,0.5); }
-        .fw-hamburger { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9px; background: #fff; border: 1px solid rgba(0,0,0,0.08); cursor: pointer; padding: 0; color: #5A7090; flex-shrink: 0; margin-right: 4px; }
-        .fw-hamburger:hover { background: #f5f7fa; color: #0B1628; }
-        .fw-overlay { display: none; position: fixed; inset: 0; background: rgba(11,22,40,0.55); z-index: 39; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-        @media (max-width: 768px) {
-          .fw-sidebar { transform: translateX(-240px); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
-          .fw-sidebar.fw-sb-open { transform: translateX(0); box-shadow: 4px 0 32px rgba(0,0,0,0.35); }
-          .fw-main { margin-left: 0 !important; }
-          .fw-overlay.fw-overlay-on { display: block; }
-          .fw-hamburger { display: flex; }
-          .fw-content { padding: 16px; }
-          .fw-topbar { padding: 0 16px; }
-        }
-      `}</style>
+    <div className="flex min-h-screen bg-[#F0F4F8]" style={{ fontFamily: "'Sora', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap');`}</style>
 
-      <div className="fw-shell">
-
-        {/* ── OVERLAY MOBILE ── */}
+      {/* Overlay mobile */}
+      {sidebarAbierto && (
         <div
-          className={`fw-overlay ${sidebarAbierto ? "fw-overlay-on" : ""}`}
+          className="fixed inset-0 bg-[#0B1628]/55 z-[39] backdrop-blur-sm md:hidden"
           onClick={() => setSidebarAbierto(false)}
         />
+      )}
 
-        {/* ── SIDEBAR ── */}
-        <aside className={`fw-sidebar ${sidebarAbierto ? "fw-sb-open" : ""}`}>
-          <div className="fw-sb-top">
-            <div className="fw-sb-brand">
-              {logoUrl ? (
-                <img src={`${BASE_URL}${logoUrl}`} alt="Logo"
-                  style={{ width: 36, height: 36, borderRadius: 10, objectFit: "contain", background: "#fff", padding: 2 }}
-                />
-              ) : (
-                <div className="fw-sb-logo">🐟</div>
-              )}
-              <div>
-                <div className="fw-sb-name">{nombreEmpresa}</div>
-                <div className="fw-sb-sub">Panel de gestión</div>
+      {/* ── SIDEBAR ── */}
+      <aside className={cn(
+        "fixed top-0 left-0 bottom-0 w-60 bg-[#0B1628] flex flex-col z-40 transition-transform duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+        sidebarAbierto
+          ? "translate-x-0 shadow-[4px_0_32px_rgba(0,0,0,0.35)]"
+          : "-translate-x-full md:translate-x-0"
+      )}>
+        {/* Brand */}
+        <div className="px-5 py-6 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2.5">
+            {logoUrl ? (
+              <img
+                src={`${BASE_URL}${logoUrl}`}
+                alt="Logo"
+                className="w-9 h-9 rounded-[10px] object-contain bg-white p-0.5 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-lg flex-shrink-0">
+                🐟
               </div>
+            )}
+            <div>
+              <div className="text-[15px] font-semibold text-[#E8F4FF] tracking-tight leading-snug">{nombreEmpresa}</div>
+              <div className="text-[10px] text-[#4A6080] uppercase tracking-[0.08em] mt-0.5">Panel de gestión</div>
             </div>
           </div>
+        </div>
 
-          <nav className="fw-sb-nav">
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
 
-            {/* ── INICIO (sin grupo) ── */}
-            {menu.filter(i => i.key === "inicio").map(item => {
-              const Icon = item.icon;
-              const active = seccion === item.key;
-              return (
-                <button key={item.key} className={`fw-sb-item ${active ? "fw-active" : ""}`} onClick={() => irA(item.key)}>
-                  <div className="fw-sb-icon"><Icon active={active} /></div>
-                  {item.label}
-                </button>
-              );
-            })}
+          {/* Inicio — sin grupo */}
+          {menu.filter(i => i.key === "inicio").map(item => (
+            <NavItem key={item.key} item={item} active={seccion === item.key} onClick={() => irA(item.key)} />
+          ))}
 
-            {/* ── GRUPOS COLAPSABLES ── */}
-            {GRUPOS_DEF.map(grupo => {
-              const items = menu.filter(i => grupo.keys.includes(i.key));
-              if (items.length === 0) return null;
-              const abierto = gruposAbiertos[grupo.id] !== false;
-              const maxH = abierto ? "600px" : "0px";
-              // indicador de sección activa dentro del grupo cuando está cerrado
-              const itemActivo = !abierto && items.find(i => i.key === seccion);
+          {/* Grupos colapsables */}
+          {GRUPOS_DEF.map(grupo => {
+            const items = menu.filter(i => grupo.keys.includes(i.key));
+            if (items.length === 0) return null;
+            const abierto = gruposAbiertos[grupo.id] !== false;
+            const itemActivo = !abierto && items.find(i => i.key === seccion);
 
-              return (
-                <div key={grupo.id}>
-                  <div className="fw-sb-group-hdr" onClick={() => toggleGrupo(grupo.id)}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span className="fw-sb-group-label">{grupo.label}</span>
-                      {itemActivo && (
-                        <span style={{
-                          fontSize: 10, color: "#00C9A7", fontWeight: 500,
-                          textTransform: "none", letterSpacing: 0,
-                        }}>· {itemActivo.label}</span>
-                      )}
-                    </div>
-                    <svg
-                      className={`fw-sb-group-chevron ${abierto ? "open" : ""}`}
-                      width="10" height="10" viewBox="0 0 24 24"
-                      fill="none" stroke="currentColor" strokeWidth="2.5"
-                      strokeLinecap="round" strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                  </div>
-
-                  <div
-                    className={`fw-sb-group-body ${abierto ? "" : "closed"}`}
-                    style={{ maxHeight: maxH, opacity: abierto ? 1 : 0 }}
-                  >
-                    {items.map(item => {
-                      const Icon = item.icon;
-                      const active = seccion === item.key;
-                      return (
-                        <button
-                          key={item.key}
-                          className={`fw-sb-item ${active ? "fw-active" : ""}`}
-                          onClick={() => irA(item.key)}
-                        >
-                          <div className="fw-sb-icon"><Icon active={active} /></div>
-                          {item.label}
-                          {item.key === "mensajes" && mensajesNoLeidos > 0 && (
-                            <span className="fw-sb-badge">{mensajesNoLeidos}</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* ── CLAUDE AI (standalone, destacado) ── */}
-            {menu.filter(i => i.key === "claude-ia").map(item => {
-              const Icon = item.icon;
-              const active = seccion === item.key;
-              return (
-                <button
-                  key={item.key}
-                  className={`fw-sb-item ${active ? "fw-active" : ""}`}
-                  onClick={() => irA(item.key)}
-                  style={{
-                    marginTop: 10,
-                    background: active
-                      ? undefined
-                      : "linear-gradient(135deg, rgba(0,201,167,0.08), rgba(0,153,255,0.05))",
-                    borderColor: active ? undefined : "rgba(0,201,167,0.2)",
-                    color: active ? undefined : "#00C9A7",
-                  }}
+            return (
+              <div key={grupo.id}>
+                <div
+                  className="flex items-center justify-between px-2 pt-2.5 pb-1.5 mt-1.5 cursor-pointer rounded-[7px] hover:bg-white/[0.04] transition-colors select-none"
+                  onClick={() => toggleGrupo(grupo.id)}
                 >
-                  <div className="fw-sb-icon"><Icon active={active} /></div>
-                  {item.label}
-                  <span style={{
-                    marginLeft: "auto", fontSize: 9, fontWeight: 700,
-                    color: active ? "#fff" : "#00C9A7",
-                    background: "rgba(0,201,167,0.12)",
-                    border: "1px solid rgba(0,201,167,0.3)",
-                    padding: "1px 6px", borderRadius: 4,
-                  }}>AI</span>
-                </button>
-              );
-            })}
-
-          </nav>
-
-          <div className="fw-sb-bottom">
-            <div className="fw-sb-user">
-              <div className="fw-sb-avatar">{inicial}</div>
-              <div>
-                <div className="fw-sb-uname">{nombreUsuario}</div>
-                <div className="fw-sb-urole">{rolLabel}</div>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── MAIN ── */}
-        <main className="fw-main">
-
-          {/* TOPBAR */}
-          <div className="fw-topbar">
-            <div className="fw-topbar-left">
-              <button className="fw-hamburger" onClick={() => setSidebarAbierto(v => !v)} aria-label="Menú">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <line x1="3" y1="12" x2="21" y2="12"/>
-                  <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-              </button>
-              <span className="fw-breadcrumb">Merkai</span>
-              <span className="fw-breadcrumb" style={{ margin: "0 4px" }}>›</span>
-              <span className="fw-page-title">
-                {menu.find(m => m.key === seccion)?.label || seccion}
-              </span>
-            </div>
-
-            <div className="fw-topbar-right">
-              {/* Buscador Ctrl+K */}
-              <button onClick={() => setBuscadorAbierto(true)} title="Buscar (Ctrl+K)" style={{ display:"flex",alignItems:"center",gap:7,padding:"6px 12px",background:"#f1f5f9",border:"1px solid #e2e8f0",borderRadius:9,cursor:"pointer",fontSize:13,color:"#64748b",fontWeight:500 }}>
-                <span>🔍</span>
-                <span style={{ fontSize:12 }}>Buscar</span>
-                <kbd style={{ fontSize:10,background:"#e2e8f0",borderRadius:4,padding:"1px 5px",color:"#94a3b8",fontFamily:"inherit" }}>Ctrl K</kbd>
-              </button>
-
-              <NotificacionesBell token={token} irA={irA} />
-
-              <div className="fw-user-btn" onClick={e => { e.stopPropagation(); setOpen(!open); }}>
-                <div className="fw-user-avatar">{inicial}</div>
-                <span className="fw-user-name">{nombreUsuario}</span>
-                <span className="fw-user-chevron"><ChevronIcon /></span>
-
-                {open && (
-                  <div className="fw-dropdown" onClick={e => e.stopPropagation()}>
-                    <div className="fw-dropdown-header">
-                      <div className="fw-dropdown-uname">{nombreUsuario}</div>
-                      <div className="fw-dropdown-role">{rolLabel}</div>
-                    </div>
-                    <button className="fw-dropdown-item" onClick={() => { setOpen(false); navigate("/perfil"); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                      Mi perfil
-                    </button>
-                    {(rolId === 1 || rolId === 2) && (
-                      <button className="fw-dropdown-item" onClick={() => { setOpen(false); irA("configuracion"); }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        Configuración
-                      </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold text-[#2D4060] uppercase tracking-[0.1em]">
+                      {grupo.label}
+                    </span>
+                    {itemActivo && (
+                      <span className="text-[10px] text-[#00C9A7] font-medium normal-case tracking-normal">
+                        · {itemActivo.label}
+                      </span>
                     )}
-                    <div className="fw-dropdown-divider" />
-                    <button className="fw-dropdown-item danger" onClick={() => { localStorage.clear(); navigate("/"); }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                      Cerrar sesión
-                    </button>
                   </div>
-                )}
+                  <svg
+                    className={cn("text-[#2D4060] transition-transform duration-200 flex-shrink-0", abierto && "rotate-180")}
+                    width="10" height="10" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+
+                <div className={cn(
+                  "overflow-hidden transition-all duration-200 flex flex-col gap-0.5",
+                  abierto ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+                )}>
+                  {items.map(item => (
+                    <NavItem
+                      key={item.key}
+                      item={item}
+                      active={seccion === item.key}
+                      onClick={() => irA(item.key)}
+                      badge={item.key === "mensajes" ? mensajesNoLeidos : 0}
+                    />
+                  ))}
+                </div>
               </div>
+            );
+          })}
+
+          {/* Claude AI — standalone destacado */}
+          {menu.filter(i => i.key === "claude-ia").map(item => {
+            const active = seccion === item.key;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.key}
+                onClick={() => irA(item.key)}
+                className={cn(
+                  "flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] text-[13px] border w-full text-left transition-all duration-150 mt-2.5",
+                  active
+                    ? "bg-gradient-to-br from-[#00C9A7]/20 to-[#0099FF]/12 border-[#00C9A7]/25 text-white font-medium"
+                    : "bg-gradient-to-br from-[#00C9A7]/8 to-[#0099FF]/5 border-[#00C9A7]/20 text-[#00C9A7] font-normal hover:from-[#00C9A7]/15 hover:to-[#0099FF]/10"
+                )}
+              >
+                <div className={cn(
+                  "w-[30px] h-[30px] rounded-[7px] flex items-center justify-center flex-shrink-0 transition-all",
+                  active ? "bg-gradient-to-br from-[#00C9A7] to-[#0099FF]" : "bg-white/[0.04] border border-white/[0.06]"
+                )}>
+                  <Icon active={active} />
+                </div>
+                {item.label}
+                <span className={cn(
+                  "ml-auto text-[9px] font-bold px-1.5 py-[1px] rounded border",
+                  active
+                    ? "text-white bg-[#00C9A7]/20 border-[#00C9A7]/30"
+                    : "text-[#00C9A7] bg-[#00C9A7]/12 border-[#00C9A7]/30"
+                )}>AI</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* User bottom */}
+        <div className="px-3 py-4 border-t border-white/[0.06]">
+          <div className="flex items-center gap-2.5 p-2.5 bg-white/[0.04] border border-white/[0.07] rounded-[10px]">
+            <div className="w-8 h-8 rounded-[8px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-[13px] font-semibold text-white flex-shrink-0">
+              {inicial}
+            </div>
+            <div>
+              <div className="text-xs font-medium text-[#C8D6E5]">{nombreUsuario}</div>
+              <div className="text-[10px] text-[#00C9A7] mt-0.5">{rolLabel}</div>
             </div>
           </div>
+        </div>
+      </aside>
 
-          {/* CONTENIDO */}
-          <div className="fw-content">
-            <div className="fw-content-card">
-              {seccion === "inicio"        && <Inicio onIrA={irA} />}
-              {seccion === "productos"     && <Productos />}
-              {seccion === "clientes"      && <Clientes />}
-              {seccion === "ventas"        && <Ventas />}
-              {seccion === "reportes"      && <Reportes />}
-              {seccion === "usuarios"      && <Usuarios />}
-              {seccion === "pos"           && <PuntoDeVenta />}
-              {seccion === "configuracion" && <Configuracion />}
-              {seccion === "editor"        && <EditorTienda />}
-              {seccion === "lealtad"       && <NivelesLealtad />}
-              {seccion === "cupones"       && <Cupones />}
-              {seccion === "reseñas"       && <Reseñas />}
-              {seccion === "referidos"     && <Referidos />}
-              {seccion === "mensajes"      && <Mensajes />}
-              {seccion === "integraciones" && <Integraciones />}
-              {seccion === "pedidos"       && <PedidosOnline />}
-              {seccion === "claude-ia"    && (
-                <div style={{ maxWidth: 640, margin: "0 auto" }}>
-                  <ConectorIA />
+      {/* ── MAIN ── */}
+      <main className="flex-1 md:ml-60 ml-0 flex flex-col min-h-screen">
+
+        {/* TOPBAR */}
+        <div className="sticky top-0 z-30 bg-[#F0F4F8]/85 backdrop-blur-xl border-b border-black/[0.06] px-4 md:px-7 h-[60px] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              className="md:hidden w-9 h-9 rounded-[9px] bg-white border border-black/[0.08] flex items-center justify-center cursor-pointer text-[#5A7090] hover:bg-slate-50 hover:text-[#0B1628] transition-colors p-0 mr-1 flex-shrink-0"
+              onClick={() => setSidebarAbierto(v => !v)}
+              aria-label="Menú"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+            <span className="text-[15px] font-semibold text-[#0B1628] tracking-tight">
+              {menu.find(m => m.key === seccion)?.label || seccion}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <PersonalizarColor />
+
+            {/* Buscador Ctrl+K */}
+            <button
+              onClick={() => setBuscadorAbierto(true)}
+              title="Buscar (Ctrl+K)"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-[9px] cursor-pointer text-[13px] text-slate-500 font-medium hover:bg-slate-200/70 transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span className="text-xs">Buscar</span>
+              <kbd className="text-[10px] bg-slate-200 rounded px-1 py-[1px] text-slate-400 font-sans">Ctrl K</kbd>
+            </button>
+
+            <NotificacionesBell token={token} irA={irA} />
+
+            {/* User menu */}
+            <div
+              className="relative flex items-center gap-2 py-1.5 pl-1.5 pr-3 bg-white border border-black/[0.08] rounded-[10px] cursor-pointer hover:bg-slate-50 hover:border-black/[0.12] transition-all select-none"
+              onClick={e => { e.stopPropagation(); setOpen(!open); }}
+            >
+              <div className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-xs font-semibold text-white">
+                {inicial}
+              </div>
+              <span className="text-[13px] font-medium text-[#0B1628]">{nombreUsuario}</span>
+              <span className="text-[#8A9BB0] ml-0.5"><ChevronIcon /></span>
+
+              {open && (
+                <div
+                  className="absolute top-[calc(100%+6px)] right-0 w-[200px] bg-white border border-black/[0.08] rounded-xl shadow-xl overflow-hidden z-[100]"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="px-3.5 py-3 border-b border-slate-100">
+                    <div className="text-[13px] font-medium text-[#0B1628]">{nombreUsuario}</div>
+                    <div className="text-[11px] text-[#00A884] mt-0.5">{rolLabel}</div>
+                  </div>
+                  <button
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#3D5068] hover:bg-slate-50 hover:text-[#0B1628] transition-colors bg-transparent border-none w-full text-left cursor-pointer"
+                    onClick={() => { setOpen(false); navigate("/perfil"); }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                    Mi perfil
+                  </button>
+                  {(rolId === 1 || rolId === 2) && (
+                    <button
+                      className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#3D5068] hover:bg-slate-50 hover:text-[#0B1628] transition-colors bg-transparent border-none w-full text-left cursor-pointer"
+                      onClick={() => { setOpen(false); irA("configuracion"); }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                      Configuración
+                    </button>
+                  )}
+                  <div className="h-px bg-slate-100 my-1" />
+                  <button
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-red-500 hover:bg-red-50 transition-colors bg-transparent border-none w-full text-left cursor-pointer"
+                    onClick={() => { localStorage.clear(); navigate("/"); }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Cerrar sesión
+                  </button>
                 </div>
               )}
             </div>
           </div>
-        </main>
+        </div>
 
-        {/* ── BOTÓN SOPORTE FLOTANTE ── */}
-        <BtnSoporte />
+        {/* CONTENIDO */}
+        <div className="flex-1 p-4 md:p-7">
+          <div className="bg-white rounded-2xl border border-black/[0.06] min-h-[calc(100vh-108px)] overflow-hidden [&:has(.editor-fullbleed)]:overflow-visible [&:has(.editor-fullbleed)]:bg-transparent [&:has(.editor-fullbleed)]:border-none [&:has(.editor-fullbleed)]:shadow-none">
+            {seccion === "inicio"        && <Inicio onIrA={irA} />}
+            {seccion === "productos"     && <Productos />}
+            {seccion === "clientes"      && <Clientes />}
+            {seccion === "ventas"        && <Ventas />}
+            {seccion === "reportes"      && <Reportes />}
+            {seccion === "usuarios"      && <Usuarios />}
+            {seccion === "pos"           && <PuntoDeVenta />}
+            {seccion === "configuracion" && <Configuracion />}
+            {seccion === "editor"        && <EditorTienda />}
+            {seccion === "lealtad"       && <NivelesLealtad />}
+            {seccion === "cupones"       && <Cupones />}
+            {seccion === "reseñas"       && <Reseñas />}
+            {seccion === "referidos"     && <Referidos />}
+            {seccion === "mensajes"      && <Mensajes />}
+            {seccion === "integraciones" && <Integraciones />}
+            {seccion === "pedidos"       && <PedidosOnline />}
+            {seccion === "claude-ia"     && (
+              <div className="max-w-[640px] mx-auto">
+                <ConectorIA />
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
 
-      </div>
+      <BtnSoporte />
 
-      {/* ── BUSCADOR GLOBAL ── */}
       <BuscadorGlobal
         abierto={buscadorAbierto}
         onCerrar={() => setBuscadorAbierto(false)}
         onIrA={irA}
         permisosRol={permisosRol || []}
       />
-    </>
+    </div>
   );
 }

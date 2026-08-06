@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { LayoutGrid, LayoutList, AlertTriangle, Plug } from "lucide-react";
 import { useIntegraciones, PASARELAS } from "./hooks/useIntegraciones";
 import PasarelaCard from "./components/PasarelaCard";
 
@@ -25,7 +26,7 @@ export default function Integraciones() {
       {/* ── Header ── */}
       <div style={s.header}>
         <div>
-          <h2 style={s.title}>🚀 Integraciones</h2>
+          <h2 style={s.title}>Integraciones</h2>
           <p style={s.sub}>
             Conecta pasarelas de pago para que tus clientes puedan pagar en tu tienda online.
           </p>
@@ -45,7 +46,7 @@ export default function Integraciones() {
               style={{
                 ...s.tab,
                 color:        filtro === t.key ? "#0f172a" : "#94a3b8",
-                borderBottom: filtro === t.key ? "2px solid #0f172a" : "2px solid transparent",
+                borderBottom: filtro === t.key ? "2px solid #2563eb" : "2px solid transparent",
                 fontWeight:   filtro === t.key ? 600 : 400,
               }}
             >
@@ -58,32 +59,26 @@ export default function Integraciones() {
           <button
             onClick={() => setVista("grid")}
             title="Vista cuadrícula"
-            style={{ ...s.vistaBtn, backgroundColor: vista === "grid" ? "#0f172a" : "white", color: vista === "grid" ? "white" : "#94a3b8" }}
+            style={{ ...s.vistaBtn, backgroundColor: vista === "grid" ? "#2563eb" : "white", color: vista === "grid" ? "white" : "#94a3b8" }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
+            <LayoutGrid size={14} />
           </button>
           <button
             onClick={() => setVista("lista")}
             title="Vista lista"
-            style={{ ...s.vistaBtn, backgroundColor: vista === "lista" ? "#0f172a" : "white", color: vista === "lista" ? "white" : "#94a3b8" }}
+            style={{ ...s.vistaBtn, backgroundColor: vista === "lista" ? "#2563eb" : "white", color: vista === "lista" ? "white" : "#94a3b8" }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
+            <LayoutList size={14} />
           </button>
         </div>
       </div>
 
       {/* ── Error ── */}
       {error && (
-        <div style={s.errorBox}>⚠️ {error}</div>
+        <div style={{ ...s.errorBox, display: "flex", alignItems: "center", gap: 8 }}>
+          <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+          {error}
+        </div>
       )}
 
       {/* ── Contenido ── */}
@@ -95,7 +90,7 @@ export default function Integraciones() {
         </div>
       ) : pasarelasFiltradas.length === 0 ? (
         <div style={s.empty}>
-          <span style={{ fontSize: 40 }}>🔌</span>
+          <Plug size={40} color="#e2e8f0" />
           <p style={s.emptyTitle}>No hay pasarelas conectadas aún</p>
           <p style={s.emptySub}>Haz clic en "Todas" para ver las disponibles y conectar una</p>
           <button onClick={() => setFiltro("todas")} style={s.emptyBtn}>
@@ -120,18 +115,12 @@ export default function Integraciones() {
         </div>
       )}
 
-      {/* ── Nota seguridad ── */}
-      <div style={s.securityNote}>
-        🔒 <strong>Seguridad:</strong> Las llaves privadas se encriptan con AES-256 antes de guardarse.
-        Nunca se exponen al frontend. Usa llaves de <strong>sandbox</strong> para hacer pruebas.
-      </div>
 
     </div>
   );
 }
 
 const s = {
-  // ── Sin maxWidth para usar todo el ancho disponible ──
   wrap: { padding: "24px 28px", fontFamily: "'Sora', 'Inter', sans-serif" },
 
   header: { marginBottom: 20 },
@@ -157,7 +146,6 @@ const s = {
     justifyContent: "center", transition: "all 0.15s",
   },
 
-  // ── Grid con cards más anchas ──
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -186,7 +174,7 @@ const s = {
   emptySub:   { fontSize: 13, color: "#94a3b8", maxWidth: 300 },
   emptyBtn: {
     marginTop: 8, padding: "9px 20px",
-    backgroundColor: "#0f172a", color: "white",
+    backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: 9, fontSize: 13,
     fontWeight: 600, cursor: "pointer",
   },

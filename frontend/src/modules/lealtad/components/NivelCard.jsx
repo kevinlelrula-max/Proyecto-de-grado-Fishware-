@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { Pause, Play, Pencil, Trash2, Award, Medal, Star, Sparkles, Crown, CheckCircle } from "lucide-react";
 
 export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
   const [confirmando, setConfirmando] = useState(false);
-  const iconos = ["🥉", "🥈", "🥇", "💎", "👑"];
+  const iconos = [Award, Medal, Star, Sparkles, Crown];
   const colores = [
     { bg: "#fef3c7", color: "#92400e", border: "#fde68a" }, // bronce
     { bg: "#f1f5f9", color: "#475569", border: "#cbd5e1" }, // plata
@@ -11,12 +12,11 @@ export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
     { bg: "#fdf4ff", color: "#7e22ce", border: "#e9d5ff" }, // platino
   ];
 
-  // Asignar color e icono según índice o nombre
   const nombres = ["bronce", "plata", "oro", "diamante", "platino"];
   const idx = nombres.findIndex(n => nivel.nombre.toLowerCase().includes(n));
   const colorIdx = idx >= 0 ? idx : 0;
   const { bg, color, border } = colores[colorIdx];
-  const icono = iconos[colorIdx];
+  const IconComponent = iconos[colorIdx];
 
   return (
     <div style={{
@@ -27,12 +27,13 @@ export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
       {/* Header */}
       <div style={s.header}>
         <div style={{ ...s.iconWrap, backgroundColor: bg, color }}>
-          {icono}
+          <IconComponent size={22} />
         </div>
         <div style={s.info}>
           <p style={{ ...s.nombre, color }}>{nivel.nombre}</p>
-          <p style={s.estado}>
-            {nivel.activo ? "✓ Activo" : "Inactivo"}
+          <p style={{ ...s.estado, color: nivel.activo ? "#15803d" : "#94a3b8", display: "flex", alignItems: "center", gap: "3px" }}>
+            {nivel.activo && <CheckCircle size={10} />}
+            {nivel.activo ? "Activo" : "Inactivo"}
           </p>
         </div>
         <div style={s.actions}>
@@ -45,10 +46,14 @@ export default function NivelCard({ nivel, onEditar, onEliminar, onToggle }) {
           ) : (
             <>
               <button style={s.btnToggle} onClick={() => onToggle(nivel)} title={nivel.activo ? "Desactivar" : "Activar"}>
-                {nivel.activo ? "⏸" : "▶"}
+                {nivel.activo ? <Pause size={13} /> : <Play size={13} />}
               </button>
-              <button style={s.btnEditar} onClick={() => onEditar(nivel)}>✏️</button>
-              <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>🗑️</button>
+              <button style={s.btnEditar} onClick={() => onEditar(nivel)}>
+                <Pencil size={13} />
+              </button>
+              <button style={s.btnEliminar} onClick={() => setConfirmando(true)}>
+                <Trash2 size={13} />
+              </button>
             </>
           )}
         </div>
@@ -105,7 +110,6 @@ const s = {
     width: "44px",
     height: "44px",
     borderRadius: "12px",
-    fontSize: "22px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -119,7 +123,6 @@ const s = {
   },
   estado: {
     fontSize: "11px",
-    color: "#94a3b8",
   },
   actions: {
     display: "flex",
@@ -131,7 +134,10 @@ const s = {
     borderRadius: "7px",
     padding: "5px 8px",
     cursor: "pointer",
-    fontSize: "13px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#64748b",
   },
   btnEditar: {
     background: "none",
@@ -139,7 +145,10 @@ const s = {
     borderRadius: "7px",
     padding: "5px 8px",
     cursor: "pointer",
-    fontSize: "13px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#64748b",
   },
   btnEliminar: {
     background: "none",
@@ -147,7 +156,10 @@ const s = {
     borderRadius: "7px",
     padding: "5px 8px",
     cursor: "pointer",
-    fontSize: "13px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#b91c1c",
   },
   confirmText: { fontSize: "11px", color: "#dc2626", fontWeight: "600", whiteSpace: "nowrap" },
   btnConfirmYes: {

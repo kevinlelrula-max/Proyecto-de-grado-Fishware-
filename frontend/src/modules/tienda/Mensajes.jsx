@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { RefreshCw, Mail, Phone, MessageCircle, MessageSquare } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -6,11 +7,14 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
+const AVATAR_COLORS = ["#2563eb","#0891b2","#7c3aed","#db2777","#ea580c","#059669"];
+const avatarBg = (nombre = "") => AVATAR_COLORS[nombre.charCodeAt(0) % AVATAR_COLORS.length];
+
 export default function Mensajes() {
-  const [mensajes, setMensajes]       = useState([]);
-  const [loading, setLoading]         = useState(true);
+  const [mensajes, setMensajes]         = useState([]);
+  const [loading, setLoading]           = useState(true);
   const [seleccionado, setSeleccionado] = useState(null);
-  const [filtro, setFiltro]           = useState("todos"); // todos | no_leidos
+  const [filtro, setFiltro]             = useState("todos");
 
   const fetchMensajes = useCallback(async () => {
     setLoading(true);
@@ -19,8 +23,7 @@ export default function Mensajes() {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      setMensajes(data);
+      setMensajes(await res.json());
     } catch {
       setMensajes([]);
     } finally {
@@ -57,28 +60,42 @@ export default function Mensajes() {
       {/* Header */}
       <div style={s.header}>
         <div>
-          <h2 style={s.title}>Mensajes de contacto</h2>
+          <h2 style={s.title}>Mensajes</h2>
           <p style={s.subtitle}>Mensajes recibidos desde tu tienda online</p>
         </div>
         <button style={s.btnRefresh} onClick={fetchMensajes}>
-          🔄 Actualizar
+          <RefreshCw size={13} style={{ marginRight: 6, verticalAlign: "middle" }} />
+          Actualizar
         </button>
       </div>
 
       {/* Filtros */}
       <div style={s.filtros}>
-        <button
-          style={{ ...s.filtroBtn, backgroundColor: filtro === "todos" ? "#0B1628" : "white", color: filtro === "todos" ? "white" : "#64748b" }}
-          onClick={() => setFiltro("todos")}
-        >
-          Todos ({mensajes.length})
-        </button>
-        <button
-          style={{ ...s.filtroBtn, backgroundColor: filtro === "no_leidos" ? "#0B1628" : "white", color: filtro === "no_leidos" ? "white" : "#64748b" }}
-          onClick={() => setFiltro("no_leidos")}
-        >
-          No leídos {noLeidos > 0 && <span style={s.badge}>{noLeidos}</span>}
-        </button>
+        {[
+          { key: "todos",     label: `Todos (${mensajes.length})` },
+          { key: "no_leidos", label: "Sin leer", count: noLeidos },
+        ].map(f => (
+          <button
+            key={f.key}
+            style={{
+              ...s.filtroBtn,
+              backgroundColor: filtro === f.key ? "#2563eb" : "white",
+              color: filtro === f.key ? "white" : "#64748b",
+              borderColor: filtro === f.key ? "#2563eb" : "#e2e8f0",
+            }}
+            onClick={() => setFiltro(f.key)}
+          >
+            {f.label}
+            {f.count > 0 && (
+              <span style={{
+                ...s.badge,
+                background: filtro === f.key ? "rgba(255,255,255,0.25)" : "#ef4444",
+              }}>
+                {f.count}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -87,7 +104,7 @@ export default function Mensajes() {
         </div>
       ) : mensajesFiltrados.length === 0 ? (
         <div style={s.empty}>
-          <span style={s.emptyIcon}>💬</span>
+          <MessageSquare size={40} color="#e2e8f0" />
           <p style={s.emptyTitle}>
             {filtro === "no_leidos" ? "No tienes mensajes sin leer" : "Aún no tienes mensajes"}
           </p>
@@ -98,38 +115,41 @@ export default function Mensajes() {
 
           {/* Lista */}
           <div style={s.lista}>
-            {mensajesFiltrados.map((m) => (
-              <div
-                key={m.id}
-                style={{
-                  ...s.item,
-                  backgroundColor: seleccionado?.id === m.id ? "#f0f9ff" : "white",
-                  borderColor: seleccionado?.id === m.id ? "#0099FF" : "#e2e8f0",
-                  borderLeft: !m.leido ? "4px solid #0F6E56" : "4px solid transparent",
-                }}
-                onClick={() => handleSeleccionar(m)}
-              >
-                <div style={s.itemTop}>
-                  <div style={s.itemAvatar}>
-                    {m.nombre?.charAt(0).toUpperCase()}
-                  </div>
-                  <div style={s.itemInfo}>
-                    <p style={{ ...s.itemNombre, fontWeight: m.leido ? "500" : "700" }}>
-                      {m.nombre}
-                    </p>
-                    <p style={s.itemPreview}>
-                      {m.mensaje.length > 60 ? `${m.mensaje.slice(0, 60)}...` : m.mensaje}
-                    </p>
-                  </div>
-                  <div style={s.itemRight}>
-                    <p style={s.itemFecha}>
-                      {new Date(m.fecha).toLocaleDateString("es-CO", { day: "numeric", month: "short" })}
-                    </p>
-                    {!m.leido && <div style={s.dotNoLeido} />}
+            {mensajesFiltrados.map((m) => {
+              const activo = seleccionado?.id === m.id;
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    ...s.item,
+                    backgroundColor: activo ? "#eff6ff" : "white",
+                    borderColor: activo ? "#2563eb" : "#e2e8f0",
+                    borderLeft: !m.leido ? "3px solid #2563eb" : "3px solid transparent",
+                  }}
+                  onClick={() => handleSeleccionar(m)}
+                >
+                  <div style={s.itemTop}>
+                    <div style={{ ...s.itemAvatar, background: avatarBg(m.nombre) }}>
+                      {m.nombre?.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={s.itemInfo}>
+                      <p style={{ ...s.itemNombre, fontWeight: m.leido ? "500" : "700" }}>
+                        {m.nombre}
+                      </p>
+                      <p style={s.itemPreview}>
+                        {m.mensaje.length > 60 ? `${m.mensaje.slice(0, 60)}...` : m.mensaje}
+                      </p>
+                    </div>
+                    <div style={s.itemRight}>
+                      <p style={s.itemFecha}>
+                        {new Date(m.fecha).toLocaleDateString("es-CO", { day: "numeric", month: "short" })}
+                      </p>
+                      {!m.leido && <div style={s.dotNoLeido} />}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Detalle */}
@@ -137,7 +157,7 @@ export default function Mensajes() {
             {seleccionado ? (
               <div style={s.detalleCard}>
                 <div style={s.detalleHeader}>
-                  <div style={s.detalleAvatar}>
+                  <div style={{ ...s.detalleAvatar, background: avatarBg(seleccionado.nombre) }}>
                     {seleccionado.nombre?.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -155,12 +175,14 @@ export default function Mensajes() {
                 <div style={s.detalleContacto}>
                   {seleccionado.email && (
                     <a href={`mailto:${seleccionado.email}`} style={s.detalleContactoItem}>
-                      ✉️ {seleccionado.email}
+                      <Mail size={13} style={{ marginRight: 7, color: "#94a3b8", flexShrink: 0 }} />
+                      {seleccionado.email}
                     </a>
                   )}
                   {seleccionado.telefono && (
                     <a href={`tel:${seleccionado.telefono}`} style={s.detalleContactoItem}>
-                      📞 {seleccionado.telefono}
+                      <Phone size={13} style={{ marginRight: 7, color: "#94a3b8", flexShrink: 0 }} />
+                      {seleccionado.telefono}
                     </a>
                   )}
                   {seleccionado.telefono && (
@@ -169,7 +191,8 @@ export default function Mensajes() {
                       target="_blank" rel="noreferrer"
                       style={{ ...s.detalleContactoItem, color: "#25D366" }}
                     >
-                      📱 Responder por WhatsApp
+                      <MessageCircle size={13} style={{ marginRight: 7, flexShrink: 0 }} />
+                      Responder por WhatsApp
                     </a>
                   )}
                 </div>
@@ -184,13 +207,14 @@ export default function Mensajes() {
                     href={`mailto:${seleccionado.email}?subject=Re: Tu mensaje a nuestra tienda`}
                     style={s.btnResponder}
                   >
-                    ✉️ Responder por email
+                    <Mail size={14} />
+                    Responder por email
                   </a>
                 )}
               </div>
             ) : (
               <div style={s.detalleVacio}>
-                <span style={{ fontSize: "40px" }}>💬</span>
+                <MessageSquare size={36} color="#e2e8f0" />
                 <p style={s.detalleVacioText}>Selecciona un mensaje para verlo</p>
               </div>
             )}
@@ -212,86 +236,86 @@ const s = {
     display: "flex", alignItems: "center",
     justifyContent: "space-between", gap: "16px",
   },
-  title: { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "4px" },
-  subtitle: { fontSize: "13px", color: "#94a3b8" },
+  title:    { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "0 0 3px" },
+  subtitle: { fontSize: "13px", color: "#94a3b8", margin: 0 },
   btnRefresh: {
-    padding: "8px 16px", backgroundColor: "white",
+    display: "inline-flex", alignItems: "center",
+    padding: "8px 14px", backgroundColor: "white",
     border: "1px solid #e2e8f0", borderRadius: "9px",
     fontSize: "13px", fontWeight: "600", cursor: "pointer",
     color: "#64748b",
   },
   filtros: { display: "flex", gap: "8px" },
   filtroBtn: {
-    padding: "7px 16px", border: "1px solid #e2e8f0",
-    borderRadius: "9px", fontSize: "13px", fontWeight: "500",
+    padding: "7px 16px", border: "1.5px solid",
+    borderRadius: "999px", fontSize: "13px", fontWeight: "600",
     cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
+    transition: "all 0.15s",
   },
   badge: {
-    backgroundColor: "#ef4444", color: "white",
-    borderRadius: "999px", fontSize: "11px",
-    fontWeight: "700", padding: "1px 6px",
+    color: "white", borderRadius: "999px",
+    fontSize: "11px", fontWeight: "700", padding: "1px 6px",
   },
-  loading: { display: "flex", justifyContent: "center", padding: "40px" },
+  loading:     { display: "flex", justifyContent: "center", padding: "40px" },
   loadingText: { fontSize: "14px", color: "#94a3b8" },
   empty: {
     display: "flex", flexDirection: "column",
     alignItems: "center", gap: "10px",
     padding: "60px", textAlign: "center",
   },
-  emptyIcon: { fontSize: "48px" },
-  emptyTitle: { fontSize: "16px", fontWeight: "600", color: "#64748b" },
-  emptyDesc: { fontSize: "13px", color: "#94a3b8" },
+  emptyTitle: { fontSize: "15px", fontWeight: "600", color: "#64748b", margin: 0 },
+  emptyDesc:  { fontSize: "13px", color: "#94a3b8", margin: 0 },
   grid: {
     display: "grid", gridTemplateColumns: "1fr 1.4fr",
     gap: "20px", alignItems: "start",
   },
   lista: {
-    display: "flex", flexDirection: "column", gap: "8px",
+    display: "flex", flexDirection: "column", gap: "6px",
     maxHeight: "600px", overflowY: "auto",
   },
   item: {
     borderRadius: "12px", border: "1px solid",
-    padding: "14px 16px", cursor: "pointer",
+    padding: "13px 15px", cursor: "pointer",
     transition: "all 0.15s",
   },
-  itemTop: { display: "flex", alignItems: "flex-start", gap: "12px" },
+  itemTop:    { display: "flex", alignItems: "flex-start", gap: "12px" },
   itemAvatar: {
-    width: "38px", height: "38px", borderRadius: "10px",
-    backgroundColor: "#E1F5EE", color: "#0F6E56",
-    fontSize: "15px", fontWeight: "700",
+    width: "36px", height: "36px", borderRadius: "10px",
+    color: "white", fontSize: "14px", fontWeight: "700",
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
   },
-  itemInfo: { flex: 1, minWidth: 0 },
-  itemNombre: { fontSize: "14px", color: "#0f172a", marginBottom: "3px" },
+  itemInfo:    { flex: 1, minWidth: 0 },
+  itemNombre:  { fontSize: "13px", color: "#0f172a", marginBottom: "3px" },
   itemPreview: { fontSize: "12px", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  itemRight: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 },
-  itemFecha: { fontSize: "11px", color: "#94a3b8" },
-  dotNoLeido: { width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#0F6E56" },
+  itemRight:   { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 },
+  itemFecha:   { fontSize: "11px", color: "#94a3b8" },
+  dotNoLeido:  { width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#2563eb" },
   detalle: {},
   detalleCard: {
     backgroundColor: "white", borderRadius: "16px",
     border: "1px solid #e2e8f0", padding: "24px",
-    display: "flex", flexDirection: "column", gap: "20px",
+    display: "flex", flexDirection: "column", gap: "18px",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
   },
   detalleHeader: { display: "flex", alignItems: "center", gap: "14px" },
   detalleAvatar: {
-    width: "52px", height: "52px", borderRadius: "14px",
-    background: "linear-gradient(135deg, #00C9A7, #0099FF)",
-    color: "white", fontSize: "20px", fontWeight: "700",
+    width: "48px", height: "48px", borderRadius: "12px",
+    color: "white", fontSize: "19px", fontWeight: "700",
     display: "flex", alignItems: "center", justifyContent: "center",
     flexShrink: 0,
   },
-  detalleNombre: { fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" },
-  detalleFecha: { fontSize: "12px", color: "#94a3b8" },
+  detalleNombre: { fontSize: "17px", fontWeight: "700", color: "#0f172a", marginBottom: "3px" },
+  detalleFecha:  { fontSize: "12px", color: "#94a3b8" },
   detalleContacto: {
     display: "flex", flexDirection: "column", gap: "8px",
-    padding: "14px 16px",
+    padding: "13px 15px",
     backgroundColor: "#f8fafc",
     borderRadius: "10px", border: "1px solid #e2e8f0",
   },
   detalleContactoItem: {
-    fontSize: "14px", color: "#0f172a",
+    display: "flex", alignItems: "center",
+    fontSize: "13px", color: "#0f172a",
     textDecoration: "none", fontWeight: "500",
   },
   detalleMensaje: {
@@ -299,13 +323,16 @@ const s = {
     backgroundColor: "#f8fafc",
     borderRadius: "10px", border: "1px solid #e2e8f0",
   },
-  detalleMensajeLabel: { fontSize: "11px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px" },
-  detalleMensajeTexto: { fontSize: "15px", color: "#0f172a", lineHeight: "1.7" },
+  detalleMensajeLabel: {
+    fontSize: "11px", fontWeight: "600", color: "#94a3b8",
+    textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px",
+  },
+  detalleMensajeTexto: { fontSize: "14px", color: "#0f172a", lineHeight: "1.7", margin: 0 },
   btnResponder: {
-    display: "inline-flex", alignItems: "center", gap: "8px",
-    padding: "11px 20px",
-    backgroundColor: "#0B1628", color: "white",
-    borderRadius: "10px", fontSize: "14px",
+    display: "inline-flex", alignItems: "center", gap: "7px",
+    padding: "10px 20px",
+    backgroundColor: "#2563eb", color: "white",
+    borderRadius: "10px", fontSize: "13px",
     fontWeight: "600", textDecoration: "none",
     alignSelf: "flex-start",
   },
@@ -313,8 +340,7 @@ const s = {
     backgroundColor: "white", borderRadius: "16px",
     border: "1px solid #e2e8f0", padding: "60px",
     display: "flex", flexDirection: "column",
-    alignItems: "center", gap: "12px",
-    textAlign: "center",
+    alignItems: "center", gap: "12px", textAlign: "center",
   },
   detalleVacioText: { fontSize: "14px", color: "#94a3b8" },
 };

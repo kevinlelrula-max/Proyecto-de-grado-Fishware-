@@ -71,28 +71,27 @@ export default function InsightWidget() {
 
 const s = {
   card: {
-    background: "linear-gradient(135deg, #0B1628 0%, #0f2240 100%)",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-    border: "1px solid rgba(255,255,255,0.06)",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+    background: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    border: "1px solid #e2e8f0",
+    borderLeft: "3px solid #00C9A7",
   },
   header: {
-    display: "flex", alignItems: "center", gap: 12, marginBottom: 16,
+    display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
   },
   iconWrap: {
-    width: 36, height: 36, borderRadius: 10,
-    background: "rgba(0,201,167,0.15)",
-    border: "1px solid rgba(0,201,167,0.25)",
+    width: 30, height: 30, borderRadius: 8,
+    background: "#f0fdf9",
+    border: "1px solid #ccfbf1",
     display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: 16, color: "#00C9A7", flexShrink: 0,
+    fontSize: 13, color: "#00C9A7", flexShrink: 0,
   },
-  title: { fontSize: 14, fontWeight: 700, color: "#fff" },
-  sub:   { fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 },
-  body:  { minHeight: 60 },
+  title: { fontSize: 13, fontWeight: 600, color: "#0f172a" },
+  sub:   { fontSize: 11, color: "#94a3b8", marginTop: 1 },
+  body:  { minHeight: 40 },
   text: {
-    fontSize: 14, color: "rgba(255,255,255,0.82)",
+    fontSize: 13, color: "#475569",
     lineHeight: 1.75, margin: 0,
   },
   loading: {
@@ -100,15 +99,15 @@ const s = {
   },
   dots: { display: "flex", gap: 5 },
   dot: {
-    display: "inline-block", width: 7, height: 7,
+    display: "inline-block", width: 6, height: 6,
     borderRadius: "50%", background: "#00C9A7",
     animation: "blink 1.2s ease-in-out infinite",
   },
-  loadingText: { fontSize: 13, color: "rgba(255,255,255,0.4)" },
+  loadingText: { fontSize: 13, color: "#94a3b8" },
   error: {
-    fontSize: 13, color: "#f87171",
-    background: "rgba(239,68,68,0.08)",
-    border: "1px solid rgba(239,68,68,0.15)",
+    fontSize: 13, color: "#b91c1c",
+    background: "#fef2f2",
+    border: "1px solid #fecaca",
     borderRadius: 8, padding: "10px 14px",
   },
 };

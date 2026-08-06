@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
+import { Building2, CreditCard, Zap, CheckCircle } from "lucide-react";
 import EmpresaForm from "./components/EmpresaForm";
 import MetodosPago from "./components/MetodosPago";
 import Integraciones from "../../modules/integraciones/Integraciones";
 import { useConfiguracion } from "./hooks/useConfiguracion";
 
 const TABS = [
-  { key: "empresa",       label: "Empresa" },
-  { key: "pagos",         label: "Métodos de pago" },
-  { key: "integraciones", label: "🚀 Integraciones" },
+  { key: "empresa",       label: "Empresa",          Icon: Building2 },
+  { key: "pagos",         label: "Métodos de pago",  Icon: CreditCard },
+  { key: "integraciones", label: "Integraciones",    Icon: Zap },
 ];
 
 export default function Configuracion() {
@@ -32,7 +33,6 @@ export default function Configuracion() {
     );
   }
 
-  // La tab de integraciones y claude AI manejan su propio guardado
   const mostrarBtnGuardar = tabActiva !== "integraciones";
 
   return (
@@ -47,23 +47,24 @@ export default function Configuracion() {
             <button
               key={tab.key}
               onClick={() => setTabActiva(tab.key)}
-              className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-150 ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg font-medium transition-all duration-150 ${
                 tabActiva === tab.key
                   ? "bg-white text-gray-700 shadow-sm"
                   : "text-gray-400 hover:text-gray-600"
               }`}
             >
+              <tab.Icon size={14} />
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Botón guardar — solo en tabs que lo necesitan */}
+        {/* Botón guardar */}
         {mostrarBtnGuardar && (
           <button
             onClick={guardar}
             disabled={guardando}
-            className={`px-5 py-2 text-sm font-semibold rounded-xl transition-all ${
+            className={`flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl transition-all ${
               guardando
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : exito
@@ -71,7 +72,8 @@ export default function Configuracion() {
                 : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
             }`}
           >
-            {guardando ? "Guardando..." : exito ? "✓ Guardado" : "Guardar cambios"}
+            {exito && <CheckCircle size={14} />}
+            {guardando ? "Guardando..." : exito ? "Guardado" : "Guardar cambios"}
           </button>
         )}
       </div>

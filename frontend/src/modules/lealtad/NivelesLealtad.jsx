@@ -1,3 +1,4 @@
+import { CheckCircle, AlertTriangle, Trophy, Lightbulb } from "lucide-react";
 import { useLealtad } from "./hooks/useLealtad";
 import NivelCard from "./components/NivelCard";
 import NivelForm from "./components/NivelForm";
@@ -30,7 +31,7 @@ export default function NivelesLealtad() {
         <div>
           <h2 style={s.title}>Niveles de lealtad</h2>
           <p style={s.subtitle}>
-            Define recompensas para tus clientes más frecuentes — verán precios especiales automáticamente
+            Define recompensas para tus clientes más frecuentes verán precios especiales automáticamente
           </p>
         </div>
         <button style={s.btnNuevo} onClick={abrirFormNuevo}>
@@ -40,21 +41,26 @@ export default function NivelesLealtad() {
 
       {/* Éxito */}
       {exito && (
-        <div style={s.exitoBox}>✓ {exito}</div>
+        <div style={s.exitoBox}>
+          <CheckCircle size={14} style={{ flexShrink: 0 }} />
+          {exito}
+        </div>
       )}
 
       {/* Error global */}
       {error && !mostrarForm && (
-        <div style={s.errorBox}>⚠️ {error}</div>
+        <div style={s.errorBox}>
+          <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+          {error}
+        </div>
       )}
 
       {/* Loading */}
       {loading ? (
         <SkeletonGrid count={3} height={160} />
       ) : niveles.length === 0 ? (
-        /* Empty state */
         <div style={s.empty}>
-          <span style={s.emptyIcon}>🏆</span>
+          <Trophy size={52} color="#2563eb" />
           <p style={s.emptyTitle}>Aún no tienes niveles de lealtad</p>
           <p style={s.emptyDesc}>
             Crea niveles para recompensar a tus clientes más frecuentes con precios especiales.
@@ -67,7 +73,7 @@ export default function NivelesLealtad() {
         <>
           {/* Info */}
           <div style={s.infoBox}>
-            <span style={s.infoIcon}>💡</span>
+            <Lightbulb size={16} color="#92400e" style={{ flexShrink: 0, marginTop: 1 }} />
             <p style={s.infoText}>
               Los clientes que superen el monto mínimo de compras en el mes verán automáticamente
               los precios con descuento en tu tienda online.
@@ -152,7 +158,10 @@ const s = {
     borderRadius: "10px",
     fontSize: "13px",
     fontWeight: "600",
-    color: "#0F6E56",
+    color: "#15803d",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   errorBox: {
     padding: "12px 16px",
@@ -161,16 +170,10 @@ const s = {
     borderRadius: "10px",
     fontSize: "13px",
     color: "#b91c1c",
-  },
-  loading: {
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
-    gap: "12px",
-    padding: "60px",
+    gap: "8px",
   },
-  loadingIcon: { fontSize: "40px" },
-  loadingText: { fontSize: "14px", color: "#94a3b8" },
   empty: {
     display: "flex",
     flexDirection: "column",
@@ -179,7 +182,6 @@ const s = {
     padding: "60px 24px",
     textAlign: "center",
   },
-  emptyIcon: { fontSize: "52px" },
   emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
   emptyDesc: { fontSize: "14px", color: "#64748b", maxWidth: "360px", lineHeight: "1.6" },
   emptyBtn: {
@@ -202,7 +204,6 @@ const s = {
     borderRadius: "12px",
     border: "1px solid #fde68a",
   },
-  infoIcon: { fontSize: "18px", flexShrink: 0 },
   infoText: { fontSize: "13px", color: "#92400e", lineHeight: "1.6" },
   grid: {
     display: "grid",

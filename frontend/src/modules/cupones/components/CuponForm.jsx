@@ -1,3 +1,5 @@
+import { X, AlertTriangle } from "lucide-react";
+
 export default function CuponForm({ form, editandoId, guardando, error, onChange, onGuardar, onCancelar }) {
   return (
     <>
@@ -6,7 +8,9 @@ export default function CuponForm({ form, editandoId, guardando, error, onChange
 
         <div style={s.header}>
           <h3 style={s.title}>{editandoId ? "Editar cupón" : "Nuevo cupón"}</h3>
-          <button style={s.closeBtn} onClick={onCancelar}>✕</button>
+          <button style={s.closeBtn} onClick={onCancelar}>
+            <X size={16} />
+          </button>
         </div>
 
         <div style={s.body}>
@@ -155,7 +159,12 @@ export default function CuponForm({ form, editandoId, guardando, error, onChange
             </div>
           </div>
 
-          {error && <div style={s.errorBox}>⚠️ {error}</div>}
+          {error && (
+            <div style={s.errorBox}>
+              <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+              {error}
+            </div>
+          )}
         </div>
 
         <div style={s.footer}>
@@ -195,7 +204,10 @@ const s = {
     flexShrink: 0,
   },
   title:    { fontSize: "17px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  closeBtn: { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#94a3b8", padding: "4px 8px" },
+  closeBtn: {
+    background: "none", border: "none", cursor: "pointer", color: "#94a3b8",
+    padding: "4px 8px", display: "flex", alignItems: "center", justifyContent: "center",
+  },
   body:     { padding: "20px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "16px" },
   row:      { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" },
   field:    { display: "flex", flexDirection: "column", gap: "5px" },
@@ -216,6 +228,7 @@ const s = {
   errorBox: {
     backgroundColor: "#fef2f2", border: "1px solid #fecaca",
     borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c",
+    display: "flex", alignItems: "center", gap: "8px",
   },
   footer: {
     padding: "16px 24px",

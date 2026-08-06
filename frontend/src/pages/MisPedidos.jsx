@@ -1,5 +1,6 @@
 import { useNavigate, Navigate, useParams } from "react-router-dom";
-import { useMisPedidos, ESTADOS } from "../modules/tienda/hooks/useMisPedidos";
+import { Package, RefreshCw, Bell, AlertTriangle, ShoppingBag, ArrowLeft } from "lucide-react";
+import { useMisPedidos } from "../modules/tienda/hooks/useMisPedidos";
 import PedidoCard from "../modules/tienda/components/PedidoCard";
 
 export default function MisPedidos() {
@@ -13,31 +14,31 @@ export default function MisPedidos() {
     return <Navigate to="/tienda/login" state={{ from: "/tienda/mis-pedidos" }} replace />;
   }
 
-  // Agrupar pedidos por estado activo vs finalizado
-  const pedidosActivos    = pedidos.filter((p) => !["entregado", "cancelado"].includes(p.estado));
+  const pedidosActivos     = pedidos.filter((p) => !["entregado", "cancelado"].includes(p.estado));
   const pedidosFinalizados = pedidos.filter((p) => ["entregado", "cancelado"].includes(p.estado));
 
   return (
     <div style={s.page}>
 
-      {/* ── NAVBAR ── */}
+      {/* Navbar */}
       <nav style={s.nav}>
         <div style={s.navInner}>
-          <div style={s.navBrand} onClick={() => navigate(rutaTienda)}>
-            <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="9" fill="#0F6E56"/>
+          <div style={s.navLeft}>
+            <button style={s.backBtn} onClick={() => navigate(rutaTienda)}>
+              <ArrowLeft size={15} />
+              Volver a la tienda
+            </button>
+          </div>
+          <div style={s.navCenter}>
+            <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+              <rect width="36" height="36" rx="9" fill="#2563eb"/>
               <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            <div>
-              <span style={s.navBrandName}>Merkai</span>
-              <span style={s.navBrandSub}>Tienda</span>
-            </div>
+            <span style={s.navBrand}>Merkai</span>
           </div>
-
-          <div style={s.navActions}>
-            
+          <div style={s.navRight}>
             <div style={s.navUser}>
               <div style={s.navAvatar}>{clienteNombre?.[0]?.toUpperCase() ?? "C"}</div>
               <span style={s.navUserName}>{clienteNombre}</span>
@@ -47,97 +48,98 @@ export default function MisPedidos() {
               localStorage.removeItem("cliente_id");
               localStorage.removeItem("cliente_nombre");
               navigate(rutaTienda);
-            }}>
-              Salir
-            </button>
+            }}>Salir</button>
           </div>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
-      <div style={s.hero}>
-        <div style={s.heroInner}>
-          <div>
-            <h1 style={s.heroTitle}>📦 Mis pedidos</h1>
-            <p style={s.heroSub}>
-              Seguimiento en tiempo real de tus compras
-            </p>
+      {/* Page header */}
+      <div style={s.pageHeader}>
+        <div style={s.pageHeaderInner}>
+          <div style={s.pageHeaderLeft}>
+            <h1 style={s.pageTitle}>Mis pedidos</h1>
+            {pedidos.length > 0 && (
+              <p style={s.pageSub}>
+                {pedidosActivos.length > 0
+                  ? `${pedidosActivos.length} pedido${pedidosActivos.length > 1 ? "s" : ""} en curso`
+                  : "Todos tus pedidos están finalizados"}
+              </p>
+            )}
           </div>
           <button style={s.refetchBtn} onClick={refetch}>
-            🔄 Actualizar
+            <RefreshCw size={13} />
+            Actualizar
           </button>
         </div>
+
         {notifPermiso !== "granted" && (
           <div style={s.notifBanner}>
-            <span style={s.notifText}>
-              🔔 Activa las notificaciones para saber cuándo cambia el estado de tu pedido
-            </span>
+            <div style={s.notifLeft}>
+              <Bell size={13} color="#92400e" style={{ flexShrink: 0 }} />
+              <span style={s.notifText}>Activa las notificaciones para seguir tu pedido en tiempo real</span>
+            </div>
             <button
               onClick={pedirPermiso}
               style={{ ...s.notifBtn, ...(notifPermiso === "denied" ? s.notifBtnBloq : {}) }}
               disabled={notifPermiso === "denied"}
             >
-              {notifPermiso === "denied" ? "Bloqueadas en el navegador" : "Activar"}
+              {notifPermiso === "denied" ? "Bloqueadas" : "Activar"}
             </button>
           </div>
         )}
-        <div style={s.heroGlow} />
       </div>
 
-      {/* ── CONTENIDO ── */}
+      {/* Contenido */}
       <div style={s.content}>
 
-        {/* Error */}
         {error && (
-          <div style={s.errorBox}>⚠️ {error}</div>
+          <div style={s.errorBox}>
+            <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+            {error}
+          </div>
         )}
 
-        {/* Loading */}
         {loading ? (
           <div style={s.skeletonWrap}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} style={s.skeleton} />
-            ))}
+            {[1, 2, 3].map((i) => <div key={i} style={s.skeleton} />)}
           </div>
         ) : pedidos.length === 0 ? (
-          /* Empty state */
           <div style={s.empty}>
-            <span style={s.emptyIcon}>📦</span>
-            <p style={s.emptyTitle}>Aún no tienes pedidos</p>
-            <p style={s.emptyDesc}>Visita el marketplace y haz tu primer pedido</p>
+            <div style={s.emptyIconWrap}>
+              <ShoppingBag size={32} color="#2563eb" />
+            </div>
+            <p style={s.emptyTitle}>Sin pedidos todavía</p>
+            <p style={s.emptyDesc}>Visita el marketplace y haz tu primera compra</p>
             <button style={s.emptyBtn} onClick={() => navigate(rutaTienda)}>
-              Ir al marketplace →
+              Ir al marketplace
             </button>
           </div>
         ) : (
           <>
-            {/* Pedidos activos */}
             {pedidosActivos.length > 0 && (
               <div style={s.section}>
                 <div style={s.sectionHeader}>
-                  <h2 style={s.sectionTitle}>En curso</h2>
+                  <span style={s.sectionTitle}>En curso</span>
                   <span style={s.sectionCount}>{pedidosActivos.length}</span>
-                  <span style={s.pollBadge}>🔄 Actualización automática cada 30 seg</span>
+                  <div style={s.pollBadge}>
+                    <div style={s.pollDot} />
+                    Actualización automática cada 30 s
+                  </div>
                 </div>
                 <div style={s.grid}>
-                  {pedidosActivos.map((pedido) => (
-                    <PedidoCard key={pedido.id} pedido={pedido} />
-                  ))}
+                  {pedidosActivos.map((p) => <PedidoCard key={p.id} pedido={p} />)}
                 </div>
               </div>
             )}
 
-            {/* Pedidos finalizados */}
             {pedidosFinalizados.length > 0 && (
               <div style={s.section}>
                 <div style={s.sectionHeader}>
-                  <h2 style={s.sectionTitle}>Historial</h2>
+                  <span style={s.sectionTitle}>Historial</span>
                   <span style={s.sectionCount}>{pedidosFinalizados.length}</span>
                 </div>
                 <div style={s.grid}>
-                  {pedidosFinalizados.map((pedido) => (
-                    <PedidoCard key={pedido.id} pedido={pedido} />
-                  ))}
+                  {pedidosFinalizados.map((p) => <PedidoCard key={p.id} pedido={p} />)}
                 </div>
               </div>
             )}
@@ -145,14 +147,9 @@ export default function MisPedidos() {
         )}
       </div>
 
-      {/* ── FOOTER ── */}
       <footer style={s.footer}>
-        <span style={s.footerText}>© 2026 Merkai · Marketplace</span>
-        <button style={s.footerBack} onClick={() => navigate(rutaTienda)}>
-          ← Volver al marketplace
-        </button>
+        <span style={s.footerText}>Merkai · Marketplace</span>
       </footer>
-
     </div>
   );
 }
@@ -160,138 +157,140 @@ export default function MisPedidos() {
 const s = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f0f4f8",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
     display: "flex", flexDirection: "column",
   },
-
-  // Navbar
   nav: {
     position: "sticky", top: 0, zIndex: 100,
-    backgroundColor: "rgba(15,23,42,0.97)",
-    backdropFilter: "blur(12px)",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
+    backgroundColor: "white",
+    borderBottom: "1px solid #e2e8f0",
   },
   navInner: {
     maxWidth: "1100px", margin: "0 auto",
-    padding: "0 24px", height: "60px",
+    padding: "0 24px", height: "56px",
     display: "flex", alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-between", gap: "16px",
   },
-  navBrand: {
-    display: "flex", alignItems: "center", gap: "10px", cursor: "pointer",
+  navLeft: { flex: 1, display: "flex" },
+  navCenter: { display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 },
+  navRight: { flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "10px" },
+  navBrand: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
+  backBtn: {
+    display: "flex", alignItems: "center", gap: "5px",
+    background: "none", border: "none",
+    color: "#64748b", fontSize: "13px", fontWeight: "500",
+    cursor: "pointer", padding: "4px 0",
   },
-  navBrandName: { fontSize: "16px", fontWeight: "700", color: "white", display: "block", lineHeight: 1.1 },
-  navBrandSub: { fontSize: "10px", color: "#34d399", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", display: "block" },
-  navActions: { display: "flex", alignItems: "center", gap: "10px" },
-  navBtnGhost: {
-    padding: "6px 14px", background: "transparent",
-    border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px",
-    color: "rgba(255,255,255,0.8)", fontSize: "13px", cursor: "pointer",
-  },
-  navUser: { display: "flex", alignItems: "center", gap: "8px" },
+  navUser: { display: "flex", alignItems: "center", gap: "7px" },
   navAvatar: {
-    width: "30px", height: "30px", borderRadius: "50%",
-    backgroundColor: "#0F6E56", color: "white",
-    fontSize: "12px", fontWeight: "700",
+    width: "28px", height: "28px", borderRadius: "50%",
+    backgroundColor: "#2563eb", color: "white",
+    fontSize: "11px", fontWeight: "700",
     display: "flex", alignItems: "center", justifyContent: "center",
   },
-  navUserName: { fontSize: "13px", color: "rgba(255,255,255,0.8)", fontWeight: "500" },
-  navBtnSalir: { background: "none", border: "none", color: "#64748b", fontSize: "12px", cursor: "pointer" },
+  navUserName: { fontSize: "13px", color: "#374151", fontWeight: "500" },
+  navBtnSalir: { background: "none", border: "none", color: "#94a3b8", fontSize: "12px", cursor: "pointer" },
 
-  // Hero
-  hero: {
-    background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 60%, #0f1f2e 100%)",
-    padding: "32px 24px", position: "relative", overflow: "hidden",
+  pageHeader: {
+    backgroundColor: "white",
+    borderBottom: "1px solid #e2e8f0",
+    padding: "20px 24px 16px",
   },
-  heroInner: {
+  pageHeaderInner: {
     maxWidth: "1100px", margin: "0 auto",
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    position: "relative", zIndex: 1,
+    display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px",
   },
-  heroTitle: { fontSize: "28px", fontWeight: "800", color: "white", margin: 0, letterSpacing: "-0.02em" },
-  heroSub: { fontSize: "14px", color: "rgba(255,255,255,0.55)", marginTop: "6px" },
-  heroGlow: {
-    position: "absolute", top: "-80px", right: "-80px",
-    width: "300px", height: "300px", borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(15,110,86,0.2) 0%, transparent 70%)",
-    pointerEvents: "none",
-  },
+  pageHeaderLeft: {},
+  pageTitle: { fontSize: "24px", fontWeight: "800", color: "#0f172a", margin: "0 0 3px", letterSpacing: "-0.02em" },
+  pageSub: { fontSize: "13px", color: "#64748b" },
   refetchBtn: {
-    padding: "9px 18px", backgroundColor: "rgba(255,255,255,0.1)",
-    border: "1px solid rgba(255,255,255,0.2)", borderRadius: "10px",
-    color: "white", fontSize: "13px", cursor: "pointer", fontWeight: "500",
-    flexShrink: 0,
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "8px 14px",
+    backgroundColor: "white", border: "1.5px solid #e2e8f0",
+    borderRadius: "9px", color: "#374151",
+    fontSize: "13px", cursor: "pointer", fontWeight: "600",
+    flexShrink: 0, marginTop: "2px",
   },
 
-  // Contenido
+  notifBanner: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    gap: "12px", padding: "9px 12px",
+    backgroundColor: "#fffbeb", border: "1px solid #fde68a",
+    borderRadius: "9px", marginTop: "12px",
+    maxWidth: "1100px", margin: "12px auto 0",
+  },
+  notifLeft: { display: "flex", alignItems: "center", gap: "7px", flex: 1 },
+  notifText: { fontSize: "12px", color: "#92400e" },
+  notifBtn: {
+    flexShrink: 0, padding: "5px 12px",
+    backgroundColor: "#f59e0b", color: "white",
+    border: "none", borderRadius: "7px",
+    fontSize: "11px", fontWeight: "600", cursor: "pointer",
+  },
+  notifBtnBloq: { backgroundColor: "#e2e8f0", color: "#94a3b8", cursor: "not-allowed" },
+
   content: {
     flex: 1, maxWidth: "1100px", margin: "0 auto",
-    padding: "32px 24px", width: "100%", boxSizing: "border-box",
+    padding: "24px 24px 40px", width: "100%", boxSizing: "border-box",
   },
 
-  // Secciones
-  section: { marginBottom: "40px" },
+  section: { marginBottom: "32px" },
   sectionHeader: {
-    display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px",
+    display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px",
   },
-  sectionTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  sectionTitle: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
   sectionCount: {
     backgroundColor: "#e2e8f0", color: "#64748b",
-    fontSize: "12px", fontWeight: "700",
-    padding: "2px 8px", borderRadius: "999px",
+    fontSize: "11px", fontWeight: "700",
+    padding: "2px 7px", borderRadius: "999px",
   },
   pollBadge: {
-    fontSize: "11px", color: "#0F6E56",
-    backgroundColor: "#E1F5EE", padding: "3px 10px",
+    display: "flex", alignItems: "center", gap: "5px",
+    fontSize: "11px", color: "#2563eb",
+    backgroundColor: "#eff6ff", padding: "3px 9px",
     borderRadius: "999px", fontWeight: "500",
   },
-
-  // Grid
-  grid: { display: "flex", flexDirection: "column", gap: "16px" },
-
-  // Skeleton
-  skeletonWrap: { display: "flex", flexDirection: "column", gap: "16px" },
-  skeleton: {
-    height: "220px", borderRadius: "16px",
-    backgroundColor: "#e2e8f0",
+  pollDot: {
+    width: "6px", height: "6px", borderRadius: "50%",
+    backgroundColor: "#2563eb",
+    animation: "none",
   },
 
-  // Empty
+  grid: { display: "flex", flexDirection: "column", gap: "12px" },
+  skeletonWrap: { display: "flex", flexDirection: "column", gap: "12px" },
+  skeleton: { height: "280px", borderRadius: "16px", backgroundColor: "#dde3ea" },
+
   empty: {
     textAlign: "center", padding: "80px 24px",
-    display: "flex", flexDirection: "column", alignItems: "center", gap: "12px",
+    display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
+    backgroundColor: "white", borderRadius: "16px", border: "1px solid #e2e8f0",
   },
-  emptyIcon: { fontSize: "52px" },
-  emptyTitle: { fontSize: "18px", fontWeight: "700", color: "#0f172a" },
-  emptyDesc: { fontSize: "14px", color: "#64748b" },
+  emptyIconWrap: {
+    width: "64px", height: "64px", borderRadius: "18px",
+    backgroundColor: "#eff6ff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    marginBottom: "4px",
+  },
+  emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
+  emptyDesc: { fontSize: "13px", color: "#64748b" },
   emptyBtn: {
-    marginTop: "8px", padding: "11px 24px",
-    backgroundColor: "#0F6E56", color: "white",
-    border: "none", borderRadius: "10px",
-    fontSize: "14px", fontWeight: "600", cursor: "pointer",
+    marginTop: "6px", padding: "10px 22px",
+    backgroundColor: "#2563eb", color: "white",
+    border: "none", borderRadius: "9px",
+    fontSize: "13px", fontWeight: "600", cursor: "pointer",
   },
 
-  // Error
   errorBox: {
+    display: "flex", alignItems: "center", gap: "8px",
     backgroundColor: "#fef2f2", border: "1px solid #fecaca",
     borderRadius: "10px", padding: "12px 16px",
-    fontSize: "13px", color: "#b91c1c", marginBottom: "20px",
+    fontSize: "13px", color: "#b91c1c", marginBottom: "16px",
   },
 
-  // Footer
   footer: {
     borderTop: "1px solid #e2e8f0", backgroundColor: "white",
-    padding: "14px 24px",
-    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "12px 24px", textAlign: "center",
   },
   footerText: { fontSize: "12px", color: "#94a3b8" },
-  footerBack: {
-    background: "none", border: "none",
-    color: "#0F6E56", fontSize: "12px", fontWeight: "600", cursor: "pointer",
-  },
-  notifBanner: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "10px 16px", backgroundColor: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "10px", marginTop: "14px", position: "relative", zIndex: 1 },
-  notifText:   { fontSize: "13px", color: "rgba(255,255,255,0.85)", flex: 1 },
-  notifBtn:    { flexShrink: 0, padding: "6px 14px", backgroundColor: "#f59e0b", color: "white", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
-  notifBtnBloq: { backgroundColor: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.4)", cursor: "not-allowed" },
 };

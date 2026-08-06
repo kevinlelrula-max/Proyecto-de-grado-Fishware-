@@ -34,7 +34,7 @@ export default function OnboardingCard({ onIrA, onboarding = {}, onSkip }) {
       icon:      "🏪",
       titulo:    "Personaliza tu tienda online",
       desc:      "Color, banner y descripción para que luzca profesional.",
-      accion:    "tienda",
+      accion:    "editor",
       tiempo:    "3 min",
       completo:  tieneTienda,
     },

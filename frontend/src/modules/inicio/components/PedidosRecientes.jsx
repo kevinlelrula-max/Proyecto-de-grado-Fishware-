@@ -1,117 +1,73 @@
+import { Clock } from "lucide-react";
+
 const ESTADOS = {
-  pendiente:      { label: "Pendiente",  color: "#f59e0b", bg: "#fffbeb" },
-  confirmado:     { label: "Confirmado", color: "#3b82f6", bg: "#eff6ff" },
-  en_preparacion: { label: "Preparando", color: "#8b5cf6", bg: "#f5f3ff" },
-  enviado:        { label: "Enviado",    color: "#0e7490", bg: "#ecfeff" },
-  entregado:      { label: "Entregado",  color: "#0F6E56", bg: "#E1F5EE" },
-  cancelado:      { label: "Cancelado",  color: "#ef4444", bg: "#fef2f2" },
+  pendiente:      { label: "Pendiente",  cls: "bg-amber-100 text-amber-700" },
+  confirmado:     { label: "Confirmado", cls: "bg-primary/10 text-primary" },
+  en_preparacion: { label: "Preparando", cls: "bg-purple-100 text-purple-700" },
+  enviado:        { label: "Enviado",    cls: "bg-cyan-100 text-cyan-700" },
+  entregado:      { label: "Entregado",  cls: "bg-primary/10 text-primary" },
+  cancelado:      { label: "Cancelado",  cls: "bg-red-100 text-red-600" },
 };
 
 export default function PedidosRecientes({ pedidos, onIrA }) {
   return (
-    <div style={s.wrap}>
-      <div style={s.header}>
+    <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+      <div className="mb-5 flex items-center justify-between">
         <div>
-          <h3 style={s.title}>Últimos pedidos online</h3>
-          <p style={s.subtitle}>Pedidos recibidos por tu tienda</p>
+          <h2 className="text-lg font-semibold text-foreground">Últimos pedidos</h2>
+          <p className="text-sm text-muted-foreground">Lo más reciente de tus clientes</p>
         </div>
-        <button style={s.verTodos} onClick={() => onIrA("ventas")}>
-          Ver todos →
+        <button
+          onClick={() => onIrA("ventas")}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          Ver todos
         </button>
       </div>
 
       {!pedidos || pedidos.length === 0 ? (
-        <div style={s.empty}>
-          <span style={s.emptyIcon}>📭</span>
-          <p style={s.emptyTitle}>Aún no tienes pedidos</p>
-          <p style={s.emptyDesc}>Cuando tus clientes compren aparecerán aquí</p>
+        <div className="flex flex-col items-center gap-2 py-10 text-center">
+          <p className="text-sm font-semibold text-muted-foreground">Aún no tienes pedidos</p>
+          <p className="text-xs text-muted-foreground">Cuando tus clientes compren aparecerán aquí</p>
         </div>
       ) : (
-        <div style={s.list}>
+        <ul className="flex flex-col gap-2">
           {pedidos.map((pedido) => {
             const estado = ESTADOS[pedido.estado] || ESTADOS.pendiente;
-            const fecha  = new Date(pedido.fecha_pedido).toLocaleDateString("es-CO", {
+            const fecha = new Date(pedido.fecha_pedido).toLocaleDateString("es-CO", {
               day: "numeric", month: "short",
               hour: "2-digit", minute: "2-digit",
             });
             return (
-              <div key={pedido.id} style={s.item}>
-                <div style={s.itemAvatar}>
+              <li
+                key={pedido.id}
+                className="flex items-center gap-4 rounded-2xl border border-transparent px-3 py-3 transition-colors hover:border-border hover:bg-muted/50"
+              >
+                <span className="flex size-11 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
                   {pedido.nombre?.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-foreground">
+                    {pedido.nombre} {pedido.apellido}
+                  </p>
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="size-3.5" />
+                    {fecha}
+                  </p>
                 </div>
-                <div style={s.itemInfo}>
-                  <p style={s.itemNombre}>{pedido.nombre} {pedido.apellido}</p>
-                  <p style={s.itemFecha}>{fecha}</p>
-                </div>
-                <div style={s.itemRight}>
-                  <span style={{ ...s.badge, backgroundColor: estado.bg, color: estado.color }}>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${estado.cls}`}>
                     {estado.label}
                   </span>
-                  <p style={s.itemTotal}>${Number(pedido.total).toLocaleString("es-CO")}</p>
+                  <span className="text-base font-semibold text-foreground">
+                    ${Number(pedido.total).toLocaleString("es-CO")}
+                  </span>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }
-
-const s = {
-  wrap: {
-    backgroundColor: "white",
-    borderRadius: "16px",
-    border: "1px solid #e2e8f0",
-    overflow: "hidden",
-  },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "20px 24px",
-    borderBottom: "1px solid #f1f5f9",
-  },
-  title: { fontSize: "15px", fontWeight: "700", color: "#0f172a" },
-  subtitle: { fontSize: "12px", color: "#94a3b8", marginTop: "2px" },
-  verTodos: {
-    background: "none", border: "none",
-    color: "#00C9A7", fontSize: "13px",
-    fontWeight: "600", cursor: "pointer",
-  },
-  empty: {
-    display: "flex", flexDirection: "column",
-    alignItems: "center", gap: "8px",
-    padding: "40px 24px", textAlign: "center",
-  },
-  emptyIcon: { fontSize: "36px" },
-  emptyTitle: { fontSize: "14px", fontWeight: "600", color: "#64748b" },
-  emptyDesc: { fontSize: "12px", color: "#94a3b8" },
-  list: { display: "flex", flexDirection: "column" },
-  item: {
-    display: "flex",
-    alignItems: "center",
-    gap: "14px",
-    padding: "14px 24px",
-    borderBottom: "1px solid #f8fafc",
-    transition: "background 0.15s",
-  },
-  itemAvatar: {
-    width: "36px", height: "36px",
-    borderRadius: "10px",
-    backgroundColor: "#E1F5EE",
-    color: "#0F6E56",
-    fontSize: "14px", fontWeight: "700",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    flexShrink: 0,
-  },
-  itemInfo: { flex: 1 },
-  itemNombre: { fontSize: "13px", fontWeight: "600", color: "#0f172a" },
-  itemFecha: { fontSize: "11px", color: "#94a3b8", marginTop: "2px" },
-  itemRight: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" },
-  badge: {
-    padding: "2px 8px", borderRadius: "999px",
-    fontSize: "11px", fontWeight: "600",
-  },
-  itemTotal: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
-};

@@ -1,3 +1,5 @@
+import { X, BarChart2 } from "lucide-react";
+
 export default function ModalUsos({ cuponUsos, loading, onCerrar }) {
   const { cupon, usos = [] } = cuponUsos || {};
 
@@ -11,7 +13,9 @@ export default function ModalUsos({ cuponUsos, loading, onCerrar }) {
             <h3 style={s.title}>Usos del cupón <span style={s.codigo}>{cupon?.codigo}</span></h3>
             <p style={s.sub}>{usos.length} uso{usos.length !== 1 ? "s" : ""} registrado{usos.length !== 1 ? "s" : ""}</p>
           </div>
-          <button style={s.closeBtn} onClick={onCerrar}>✕</button>
+          <button style={s.closeBtn} onClick={onCerrar}>
+            <X size={16} />
+          </button>
         </div>
 
         <div style={s.body}>
@@ -19,7 +23,7 @@ export default function ModalUsos({ cuponUsos, loading, onCerrar }) {
             <div style={s.loading}>Cargando...</div>
           ) : usos.length === 0 ? (
             <div style={s.empty}>
-              <span style={s.emptyIcon}>📊</span>
+              <BarChart2 size={36} color="#2563eb" />
               <p style={s.emptyText}>Este cupón aún no ha sido usado</p>
             </div>
           ) : (
@@ -41,7 +45,7 @@ export default function ModalUsos({ cuponUsos, loading, onCerrar }) {
                         : "—"}
                     </td>
                     <td style={s.td}>{uso.pedido_id ? `#${uso.pedido_id}` : "—"}</td>
-                    <td style={{ ...s.td, color: "#0F6E56", fontWeight: "700" }}>
+                    <td style={{ ...s.td, color: "#15803d", fontWeight: "700" }}>
                       ${Number(uso.descuento_aplicado).toLocaleString("es-CO")}
                     </td>
                     <td style={s.td}>
@@ -75,13 +79,15 @@ const s = {
     display: "flex", justifyContent: "space-between", alignItems: "flex-start",
   },
   title:    { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  codigo:   { fontFamily: "'DM Mono', monospace", color: "#0F6E56" },
+  codigo:   { fontFamily: "'DM Mono', monospace", color: "#2563eb" },
   sub:      { fontSize: "12px", color: "#64748b", marginTop: "2px" },
-  closeBtn: { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#94a3b8", padding: "4px 8px" },
+  closeBtn: {
+    background: "none", border: "none", cursor: "pointer", color: "#94a3b8",
+    padding: "4px 8px", display: "flex", alignItems: "center", justifyContent: "center",
+  },
   body:     { padding: "16px 24px", overflowY: "auto", flex: 1 },
   loading:  { textAlign: "center", padding: "40px", fontSize: "14px", color: "#64748b" },
   empty:    { display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", padding: "40px" },
-  emptyIcon:{ fontSize: "36px" },
   emptyText:{ fontSize: "14px", color: "#64748b" },
   table:    { width: "100%", borderCollapse: "collapse", fontSize: "13px" },
   th: {

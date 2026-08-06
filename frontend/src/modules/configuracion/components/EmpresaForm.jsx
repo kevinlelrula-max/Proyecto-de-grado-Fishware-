@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { ImageIcon, MessageCircle, Camera, Globe } from "lucide-react";
 
 const UNIDADES = [
   { value: "unidad",  label: "Unidad / Pieza" },
@@ -10,6 +11,12 @@ const UNIDADES = [
   { value: "caja",    label: "Caja" },
   { value: "paquete", label: "Paquete" },
   { value: "docena",  label: "Docena" },
+];
+
+const REDES = [
+  { key: "whatsapp",  label: "WhatsApp",  Icon: MessageCircle, placeholder: "573001234567 (sin + ni espacios)" },
+  { key: "instagram", label: "Instagram", Icon: Camera,        placeholder: "@minegocio" },
+  { key: "facebook",  label: "Facebook",  Icon: Globe,         placeholder: "minegocio" },
 ];
 
 export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChange }) {
@@ -43,21 +50,18 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
           className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 cursor-pointer transition"
         >
           {logoPreview ? (
-            <img
-              src={logoPreview}
-              alt="Logo empresa"
-              className="h-20 object-contain rounded-lg"
-            />
+            <img src={logoPreview} alt="Logo empresa" className="h-20 object-contain rounded-lg" />
           ) : (
             <>
-              <span className="text-3xl">🖼️</span>
+              <span className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                <ImageIcon size={20} />
+              </span>
               <p className="text-sm text-gray-500">Haz clic para subir el logo</p>
               <p className="text-xs text-gray-400">PNG, JPG · máx. 2 MB</p>
             </>
           )}
-
           {logoPreview && (
-            <p className="text-xs text-cyan-500 mt-1">Haz clic para cambiar</p>
+            <p className="text-xs text-blue-500 mt-1">Haz clic para cambiar</p>
           )}
         </div>
 
@@ -79,10 +83,7 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
 
         <div className="grid grid-cols-2 gap-4">
           {campos.map((campo) => (
-            <div
-              key={campo.key}
-              className={campo.full ? "col-span-2" : "col-span-1"}
-            >
+            <div key={campo.key} className={campo.full ? "col-span-2" : "col-span-1"}>
               <label className="block text-xs font-medium text-gray-500 mb-1">
                 {campo.label}
               </label>
@@ -91,7 +92,7 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
                 value={empresa[campo.key] || ""}
                 placeholder={campo.placeholder}
                 onChange={(e) => onChange(campo.key, e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
           ))}
@@ -104,7 +105,7 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
             <select
               value={empresa.unidad_predeterminada || "unidad"}
               onChange={(e) => onChange("unidad_predeterminada", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition bg-white"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
             >
               {UNIDADES.map((u) => (
                 <option key={u.value} value={u.value}>{u.label}</option>
@@ -114,6 +115,32 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
               Se usará como valor por defecto al crear un nuevo producto. Cada producto puede cambiarse individualmente.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Redes sociales */}
+      <div className="bg-white rounded-2xl shadow-md p-6">
+        <h3 className="text-base font-semibold text-gray-700 mb-1">Redes sociales</h3>
+        <p className="text-sm text-gray-400 mb-5">Aparecen en la sección de contacto de tu tienda</p>
+
+        <div className="space-y-4">
+          {REDES.map(({ key, label, Icon, placeholder }) => (
+            <div key={key} className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
+                <Icon size={16} />
+              </span>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+                <input
+                  type="text"
+                  value={empresa[key] || ""}
+                  onChange={(e) => onChange(key, e.target.value)}
+                  placeholder={placeholder}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

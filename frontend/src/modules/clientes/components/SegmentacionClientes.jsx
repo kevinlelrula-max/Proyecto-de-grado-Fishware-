@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { Crown, Repeat2, UserPlus, AlertTriangle, Clock, UserMinus, Phone, Mail, MessageCircle } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const SEGMENTOS = {
   embajador: {
     label: "Embajadores VIP",
-    emoji: "🌟",
+    Icon: Crown,
     color: "#6d28d9",
     bg: "#f5f3ff",
     border: "#c4b5fd",
@@ -15,7 +16,7 @@ const SEGMENTOS = {
   },
   frecuente: {
     label: "Frecuentes",
-    emoji: "💚",
+    Icon: Repeat2,
     color: "#15803d",
     bg: "#f0fdf4",
     border: "#86efac",
@@ -25,7 +26,7 @@ const SEGMENTOS = {
   },
   nuevo: {
     label: "Nuevos",
-    emoji: "🆕",
+    Icon: UserPlus,
     color: "#1d4ed8",
     bg: "#eff6ff",
     border: "#93c5fd",
@@ -35,7 +36,7 @@ const SEGMENTOS = {
   },
   en_riesgo: {
     label: "En riesgo",
-    emoji: "⚠️",
+    Icon: AlertTriangle,
     color: "#b45309",
     bg: "#fffbeb",
     border: "#fcd34d",
@@ -45,7 +46,7 @@ const SEGMENTOS = {
   },
   inactivo: {
     label: "Inactivos",
-    emoji: "💤",
+    Icon: Clock,
     color: "#b91c1c",
     bg: "#fef2f2",
     border: "#fca5a5",
@@ -55,7 +56,7 @@ const SEGMENTOS = {
   },
   sin_compra: {
     label: "Sin compra",
-    emoji: "👤",
+    Icon: UserMinus,
     color: "#475569",
     bg: "#f8fafc",
     border: "#cbd5e1",
@@ -80,10 +81,10 @@ function waLink(telefono, mensaje) {
 }
 
 export default function SegmentacionClientes() {
-  const [clientes, setClientes]           = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [segActivo, setSegActivo]         = useState("embajador");
-  const [expandido, setExpandido]         = useState(null);
+  const [clientes, setClientes]   = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [segActivo, setSegActivo] = useState("embajador");
+  const [expandido, setExpandido] = useState(null);
   const empresa = localStorage.getItem("empresa_nombre") || "nuestra tienda";
 
   useEffect(() => {
@@ -104,7 +105,6 @@ export default function SegmentacionClientes() {
     );
   }
 
-  // Agrupar por segmento
   const grupos = {};
   ORDEN.forEach(seg => {
     grupos[seg] = clientes.filter(c => c.segmento === seg);
@@ -115,6 +115,7 @@ export default function SegmentacionClientes() {
 
   const clientesSeg = grupos[segActivo] || [];
   const cfg         = SEGMENTOS[segActivo];
+  const IconActivo  = cfg.Icon;
 
   return (
     <div style={s.wrap}>
@@ -134,6 +135,7 @@ export default function SegmentacionClientes() {
           const c   = SEGMENTOS[seg];
           const cnt = grupos[seg].length;
           const act = segActivo === seg;
+          const PillIcon = c.Icon;
           return (
             <button
               key={seg}
@@ -145,7 +147,13 @@ export default function SegmentacionClientes() {
               }}
               onClick={() => setSegActivo(seg)}
             >
-              <span style={s.pillEmoji}>{c.emoji}</span>
+              <span style={{
+                ...s.pillIconWrap,
+                background: act ? `${c.color}18` : "#f1f5f9",
+                color: act ? c.color : "#94a3b8",
+              }}>
+                <PillIcon size={13} />
+              </span>
               <div style={s.pillTexts}>
                 <span style={s.pillLabel}>{c.label}</span>
                 <span style={{ ...s.pillCnt, color: act ? c.color : "#94a3b8" }}>{cnt} clientes</span>
@@ -159,11 +167,14 @@ export default function SegmentacionClientes() {
       <div style={{ ...s.panel, borderColor: cfg.border, backgroundColor: cfg.bg }}>
         {/* Cabecera del segmento */}
         <div style={s.panelHeader}>
-          <div>
-            <p style={{ ...s.panelTitle, color: cfg.color }}>
-              {cfg.emoji} {cfg.label}
-            </p>
-            <p style={s.panelDesc}>{cfg.desc}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ ...s.panelIconWrap, background: `${cfg.color}18`, color: cfg.color }}>
+              <IconActivo size={16} />
+            </span>
+            <div>
+              <p style={{ ...s.panelTitle, color: cfg.color }}>{cfg.label}</p>
+              <p style={s.panelDesc}>{cfg.desc}</p>
+            </div>
           </div>
           <div style={s.panelKpis}>
             <div style={s.panelKpi}>
@@ -185,9 +196,9 @@ export default function SegmentacionClientes() {
           <p style={s.vacioMsg}>No hay clientes en este segmento.</p>
         ) : (
           <>
-            {/* Mensaje sugerido + acción masiva */}
+            {/* Mensaje sugerido */}
             <div style={s.msgBox}>
-              <p style={s.msgLabel}>Mensaje sugerido para este segmento:</p>
+              <p style={s.msgLabel}>Mensaje de contacto sugerido</p>
               <p style={s.msgTexto}>
                 "{cfg.mensaje(`[nombre]`, empresa)}"
               </p>
@@ -222,7 +233,7 @@ export default function SegmentacionClientes() {
                           onClick={e => e.stopPropagation()}
                           title="Enviar WhatsApp"
                         >
-                          <span style={s.waIcon}>📲</span>
+                          <MessageCircle size={13} />
                           WhatsApp
                         </a>
                       )}
@@ -230,11 +241,21 @@ export default function SegmentacionClientes() {
 
                     {open && (
                       <div style={s.clienteDetalle}>
-                        {c.telefono && <p style={s.detalleItem}>📞 {c.telefono}</p>}
-                        {c.email    && <p style={s.detalleItem}>✉️ {c.email}</p>}
+                        {c.telefono && (
+                          <p style={s.detalleItem}>
+                            <Phone size={11} style={{ marginRight: 5, verticalAlign: "middle", color: "#94a3b8" }} />
+                            {c.telefono}
+                          </p>
+                        )}
+                        {c.email && (
+                          <p style={s.detalleItem}>
+                            <Mail size={11} style={{ marginRight: 5, verticalAlign: "middle", color: "#94a3b8" }} />
+                            {c.email}
+                          </p>
+                        )}
                         {link && (
                           <div style={s.msgPrev}>
-                            <p style={s.msgPrevLabel}>Mensaje que se enviará:</p>
+                            <p style={s.msgPrevLabel}>Mensaje que se enviará</p>
                             <p style={s.msgPrevText}>{cfg.mensaje(c.nombre, empresa)}</p>
                           </div>
                         )}
@@ -258,11 +279,7 @@ const s = {
   title:  { fontSize: 17, fontWeight: 800, color: "#0f172a", margin: "0 0 4px" },
   sub:    { fontSize: 12, color: "#94a3b8", margin: 0 },
 
-  pillsWrap: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 10,
-  },
+  pillsWrap: { display: "flex", flexWrap: "wrap", gap: 10 },
   pill: {
     display: "flex",
     alignItems: "center",
@@ -273,7 +290,16 @@ const s = {
     transition: "all 0.15s",
     textAlign: "left",
   },
-  pillEmoji: { fontSize: 18, flexShrink: 0 },
+  pillIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    transition: "all 0.15s",
+  },
   pillTexts: { display: "flex", flexDirection: "column", gap: 1 },
   pillLabel: { fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" },
   pillCnt:   { fontSize: 11, fontWeight: 600 },
@@ -286,12 +312,21 @@ const s = {
   panelHeader: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     padding: "16px 20px",
     flexWrap: "wrap",
     gap: 12,
   },
-  panelTitle: { fontSize: 15, fontWeight: 800, margin: "0 0 3px" },
+  panelIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  panelTitle: { fontSize: 14, fontWeight: 800, margin: "0 0 2px" },
   panelDesc:  { fontSize: 11, color: "#64748b", margin: 0 },
   panelKpis: { display: "flex", gap: 20 },
   panelKpi:  { textAlign: "right" },
@@ -307,7 +342,7 @@ const s = {
     borderRadius: 10,
     border: "1px dashed #cbd5e1",
   },
-  msgLabel: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" },
+  msgLabel: { fontSize: 11, fontWeight: 600, color: "#64748b", margin: "0 0 6px" },
   msgTexto: { fontSize: 12, color: "#374151", lineHeight: 1.6, margin: 0, fontStyle: "italic" },
 
   lista: { backgroundColor: "rgba(255,255,255,0.6)" },
@@ -337,7 +372,7 @@ const s = {
   waBtn: {
     display: "inline-flex",
     alignItems: "center",
-    gap: 4,
+    gap: 5,
     padding: "6px 12px",
     backgroundColor: "#25D366",
     color: "white",
@@ -348,7 +383,6 @@ const s = {
     flexShrink: 0,
     whiteSpace: "nowrap",
   },
-  waIcon: { fontSize: 14 },
 
   clienteDetalle: {
     padding: "0 20px 14px 66px",
@@ -356,7 +390,7 @@ const s = {
     flexDirection: "column",
     gap: 4,
   },
-  detalleItem: { fontSize: 12, color: "#475569", margin: 0 },
+  detalleItem: { fontSize: 12, color: "#475569", margin: 0, display: "flex", alignItems: "center" },
   msgPrev: {
     marginTop: 8,
     padding: "10px 12px",
@@ -364,6 +398,6 @@ const s = {
     borderRadius: 8,
     border: "1px solid #e2e8f0",
   },
-  msgPrevLabel: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" },
+  msgPrevLabel: { fontSize: 11, fontWeight: 600, color: "#64748b", margin: "0 0 4px" },
   msgPrevText:  { fontSize: 12, color: "#374151", lineHeight: 1.6, margin: 0 },
 };

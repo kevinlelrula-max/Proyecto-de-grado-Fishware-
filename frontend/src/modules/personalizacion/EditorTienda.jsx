@@ -1,32 +1,39 @@
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { ChevronLeft, Monitor, Smartphone, PanelLeftClose, PanelLeftOpen, Store, ExternalLink } from "lucide-react";
 import { useEditor } from "./hooks/useEditor";
 import PanelEditor from "./components/PanelEditor";
 import PreviewStore from "./components/PreviewStore";
 
-// ── Botón de entrada al editor (lo que se ve dentro del dashboard) ──────────
 export default function EditorTienda() {
   const [editorAbierto, setEditorAbierto] = useState(false);
 
   return (
     <>
-      {/* Vista dentro del dashboard — botón de entrada */}
       {!editorAbierto && (
-        <div style={s.entryWrap}>
-          <div style={s.entryCard}>
-            <div style={s.entryIcon}>🎨</div>
-            <h2 style={s.entryTitle}>Editor de tienda</h2>
-            <p style={s.entrySub}>
-              Personaliza el aspecto de tu tienda online — banner, colores, secciones y más.
-            </p>
-            <button style={s.entryBtn} onClick={() => setEditorAbierto(true)}>
-              Abrir editor →
+        <div className="flex items-center justify-center h-full p-10">
+          <div className="flex flex-col items-center gap-5 text-center max-w-sm">
+            <span className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Store size={28} />
+            </span>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-1">
+                Editor de tienda
+              </h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Personaliza el aspecto de tu tienda online — banner, colores, secciones y más.
+              </p>
+            </div>
+            <button
+              onClick={() => setEditorAbierto(true)}
+              className="mt-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              Abrir editor
             </button>
           </div>
         </div>
       )}
 
-      {/* Editor en pantalla completa — montado como portal sobre todo */}
       {editorAbierto && createPortal(
         <EditorFullscreen onCerrar={() => setEditorAbierto(false)} />,
         document.body
@@ -35,7 +42,6 @@ export default function EditorTienda() {
   );
 }
 
-// ── Editor en pantalla completa ──────────────────────────────────────────────
 function EditorFullscreen({ onCerrar }) {
   const {
     datos, bannerPreview,
@@ -53,7 +59,6 @@ function EditorFullscreen({ onCerrar }) {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  // Bloquear scroll del body mientras el editor está abierto
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -67,66 +72,84 @@ function EditorFullscreen({ onCerrar }) {
   const slug = datos.slug || localStorage.getItem("empresa_slug") || "";
 
   return (
-    <div style={fs.overlay}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, backgroundColor: "#f1f5f9", display: "flex", flexDirection: "column", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
 
-      {/* ── TOPBAR del editor ── */}
+      {/* ── TOPBAR ── */}
       <div style={fs.topbar}>
 
-        {/* Izquierda: volver */}
         <button style={fs.backBtn} onClick={onCerrar}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Volver al dashboard
+          <ChevronLeft size={14} strokeWidth={2.2} />
+          Volver
         </button>
 
-        {/* Centro: título + URL */}
         <div style={fs.topCenter}>
-          <span style={fs.topTitle}>✏️ Editor de tienda</span>
-          {slug && (
-            <span style={fs.topSlug}>
-              /tienda/{slug}
-            </span>
-          )}
+          <span style={fs.topDot} />
+          <span style={fs.topTitle}>Editor de tienda</span>
         </div>
 
-        {/* Derecha: toggle panel + toggle vista + publicar */}
         <div style={fs.topRight}>
+          {/* Toggle panel */}
           <button
-            style={{ ...fs.topBtn, backgroundColor: panelAbierto ? "rgba(0,201,167,0.1)" : "rgba(255,255,255,0.05)" }}
+            style={{
+              ...fs.iconBtn,
+              backgroundColor: panelAbierto ? "#eff6ff" : "transparent",
+              borderColor: panelAbierto ? "rgba(37,99,235,0.35)" : "#e2e8f0",
+              color: panelAbierto ? "#2563eb" : "#64748b",
+            }}
             onClick={() => setPanelAbierto(v => !v)}
             title={panelAbierto ? "Ocultar panel" : "Mostrar panel"}
           >
-            {panelAbierto ? "◀ Panel" : "▶ Panel"}
+            {panelAbierto
+              ? <PanelLeftClose size={15} />
+              : <PanelLeftOpen size={15} />
+            }
           </button>
 
           {/* Toggle desktop/mobile */}
           <div style={fs.vistasToggle}>
             {[
-              { key: "desktop", icon: "🖥️", label: "Escritorio" },
-              { key: "mobile",  icon: "📱", label: "Móvil" },
-            ].map(v => (
+              { key: "desktop", Icon: Monitor,    label: "Escritorio" },
+              { key: "mobile",  Icon: Smartphone, label: "Móvil" },
+            ].map(({ key, Icon, label }) => (
               <button
-                key={v.key}
-                onClick={() => setVista(v.key)}
-                title={v.label}
+                key={key}
+                onClick={() => setVista(key)}
+                title={label}
                 style={{
                   ...fs.vistaBtn,
-                  backgroundColor: vista === v.key ? "rgba(255,255,255,0.15)" : "transparent",
-                  color: vista === v.key ? "white" : "#64748b",
+                  backgroundColor: vista === key ? "#2563eb" : "transparent",
+                  color: vista === key ? "white" : "#94a3b8",
+                  boxShadow: vista === key ? "0 1px 3px rgba(37,99,235,0.3)" : "none",
                 }}
               >
-                {v.icon}
+                <Icon size={14} />
               </button>
             ))}
           </div>
+
+          {/* Ver tienda */}
+          {slug && (
+            <a
+              href={`${window.location.origin}/tienda/${slug}`}
+              target="_blank"
+              rel="noreferrer"
+              style={fs.verTiendaBtn}
+            >
+              <ExternalLink size={13} />
+              Ver tienda
+            </a>
+          )}
 
           <button
             onClick={handleGuardar}
             disabled={guardando}
             style={{
               ...fs.publishBtn,
-              background: exito ? "#10b981" : guardando ? "#475569" : "#2563eb",
+              background: exito
+                ? "#10b981"
+                : guardando
+                ? "#94a3b8"
+                : "linear-gradient(135deg,#2563eb,#1d4ed8)",
               cursor: guardando ? "not-allowed" : "pointer",
             }}
           >
@@ -135,16 +158,15 @@ function EditorFullscreen({ onCerrar }) {
         </div>
       </div>
 
-      {/* ── CUERPO: panel + preview ── */}
       {cargando ? (
-        <div style={fs.loading}>
-          <span style={{ fontSize: 32 }}>⚙️</span>
-          <span style={{ fontSize: 14, color: "#64748b" }}>Cargando editor...</span>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#0F6E56", animation: "spin 0.8s linear infinite" }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <span style={{ fontSize: 13, color: "#94a3b8" }}>Cargando editor...</span>
         </div>
       ) : (
-        <div style={fs.body}>
+        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-          {/* Panel lateral (colapsable) */}
           {panelAbierto && (
             <div style={fs.panel}>
               <PanelEditor
@@ -170,116 +192,132 @@ function EditorFullscreen({ onCerrar }) {
             </div>
           )}
 
-          {/* Preview */}
-          <div style={fs.preview}>
+          <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <PreviewStore
               vista={vista}
-              setVista={setVista}
               slug={slug}
               iframeKey={iframeKey}
-              onReload={() => setIframeKey(k => k + 1)}
             />
           </div>
 
         </div>
       )}
-
     </div>
   );
 }
 
-/* ─── ESTILOS ─── */
 const fs = {
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    zIndex: 9999,
-    backgroundColor: "#0B1628",
-    display: "flex",
-    flexDirection: "column",
-    fontFamily: "'Sora', 'Inter', sans-serif",
-  },
-
-  // Topbar
   topbar: {
-    height: "52px",
+    height: 52,
     flexShrink: 0,
-    backgroundColor: "#0d1e35",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
+    backgroundColor: "white",
+    borderBottom: "1px solid #e2e8f0",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 16px",
+    padding: "0 14px",
     gap: 12,
   },
+
   backBtn: {
     display: "flex",
     alignItems: "center",
-    gap: 6,
+    gap: 5,
     background: "none",
-    border: "1px solid rgba(255,255,255,0.1)",
+    border: "1px solid rgba(37,99,235,0.3)",
     borderRadius: 8,
-    color: "rgba(255,255,255,0.6)",
+    color: "#2563eb",
     fontSize: 12,
-    fontWeight: 500,
+    fontWeight: 600,
     padding: "6px 12px",
     cursor: "pointer",
     flexShrink: 0,
-    transition: "all 0.15s",
   },
+
   topCenter: {
     flex: 1,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 8,
+  },
+  topDot: {
+    width: 7,
+    height: 7,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg,#0F6E56,#0e9b7a)",
+    flexShrink: 0,
   },
   topTitle: {
     fontSize: 13,
     fontWeight: 700,
-    color: "rgba(255,255,255,0.9)",
+    color: "#0f172a",
     letterSpacing: "-0.01em",
   },
-  topSlug: {
+  topStore: {
     fontSize: 11,
-    color: "rgba(255,255,255,0.3)",
-    fontFamily: "monospace",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    color: "#94a3b8",
+    backgroundColor: "#f1f5f9",
     padding: "2px 8px",
     borderRadius: 5,
+    fontWeight: 500,
   },
+
   topRight: {
     display: "flex",
     alignItems: "center",
     gap: 8,
     flexShrink: 0,
   },
-  topBtn: {
-    padding: "6px 12px",
-    border: "1px solid rgba(255,255,255,0.1)",
+
+  iconBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    border: "1px solid",
     borderRadius: 8,
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 12,
-    fontWeight: 500,
     cursor: "pointer",
     transition: "all 0.15s",
+    background: "none",
   },
+
   vistasToggle: {
     display: "flex",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "#f1f5f9",
     borderRadius: 8,
-    padding: 2,
+    padding: 3,
     gap: 2,
-    border: "1px solid rgba(255,255,255,0.08)",
   },
   vistaBtn: {
-    padding: "4px 10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
     border: "none",
     borderRadius: 6,
-    fontSize: 13,
     cursor: "pointer",
     transition: "all 0.15s",
   },
+
+  verTiendaBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    padding: "6px 12px",
+    background: "none",
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    color: "#64748b",
+    fontSize: 12,
+    fontWeight: 500,
+    textDecoration: "none",
+    flexShrink: 0,
+  },
+
   publishBtn: {
     padding: "7px 18px",
     border: "none",
@@ -287,81 +325,15 @@ const fs = {
     color: "white",
     fontSize: 13,
     fontWeight: 700,
-    transition: "all 0.2s",
     letterSpacing: "-0.01em",
+    transition: "all 0.2s",
   },
 
-  // Cuerpo
-  body: {
-    flex: 1,
-    display: "flex",
-    overflow: "hidden",
-  },
   panel: {
     width: 300,
     flexShrink: 0,
     overflowY: "auto",
-    borderRight: "1px solid rgba(255,255,255,0.06)",
-    backgroundColor: "#0B1628",
-  },
-  preview: {
-    flex: 1,
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-  },
-
-  loading: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
-};
-
-// ── Estilos de la pantalla de entrada (dentro del dashboard) ─────────────────
-const s = {
-  entryWrap: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100%",
-    padding: 40,
-  },
-  entryCard: {
-    textAlign: "center",
-    maxWidth: 400,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 14,
-  },
-  entryIcon: { fontSize: 52 },
-  entryTitle: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: "#0B1628",
-    letterSpacing: "-0.02em",
-    margin: 0,
-  },
-  entrySub: {
-    fontSize: 14,
-    color: "#64748b",
-    lineHeight: 1.6,
-    margin: 0,
-  },
-  entryBtn: {
-    padding: "12px 28px",
-    background: "#2563eb",
-    border: "none",
-    borderRadius: 12,
-    color: "white",
-    fontSize: 15,
-    fontWeight: 700,
-    cursor: "pointer",
-    marginTop: 8,
-    letterSpacing: "-0.01em",
+    borderRight: "1px solid #e2e8f0",
+    backgroundColor: "white",
   },
 };

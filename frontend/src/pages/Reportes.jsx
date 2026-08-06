@@ -1,4 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
+import {
+  LayoutDashboard, TrendingUp, ArrowLeftRight, Sparkles, Target,
+  DollarSign, Receipt, Package, Users, Banknote, Layers, BarChart2,
+  Download, Printer, Inbox, AlertTriangle, Star,
+} from "lucide-react";
+import MetaVentas from "../modules/reportes/components/MetaVentas";
+import { useMetaVentas } from "../modules/reportes/hooks/useMetaVentas";
 import { getReporteEmpresa, getReporteRentabilidad, getReporteComparativa } from "../services/api";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -73,8 +80,8 @@ function Spinner() {
 
 function Empty({ msg = "Sin datos en este período" }) {
   return (
-    <div style={{ padding: "32px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
-      <div style={{ fontSize: 28, marginBottom: 6 }}>📭</div>
+    <div style={{ padding: "32px 0", textAlign: "center", color: "#94a3b8", fontSize: 13, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <Inbox size={28} color="#e2e8f0" />
       {msg}
     </div>
   );
@@ -87,7 +94,7 @@ function KpiCard({ label, value, sub, color, icon, delta }) {
         <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
           {label}
         </span>
-        <span style={{ fontSize: 17, width: 32, height: 32, borderRadius: 8, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ width: 32, height: 32, borderRadius: 8, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", color: color, flexShrink: 0 }}>
           {icon}
         </span>
       </div>
@@ -205,16 +212,16 @@ function TabResumen({ periodo }) {
 
       {/* Botones exportar */}
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
-        <button onClick={exportar} style={sBtn}>📥 CSV</button>
-        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
+        <button onClick={exportar} style={sBtn}><Download size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />CSV</button>
+        <button onClick={() => window.print()} style={sBtn}><Printer size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />Imprimir</button>
       </div>
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
-        <KpiCard label="Ingresos totales"  value={fmt(kpis.ingresos)}         sub="Total del período"           color={C.verde}   icon="💰" />
-        <KpiCard label="Ticket promedio"   value={fmt(kpis.ticket_promedio)}   sub="Por transacción"             color={C.azul}    icon="🧾" />
-        <KpiCard label="Total ventas"      value={kpis.total_ventas}           sub="POS + online"                color={C.violeta} icon="📦" />
-        <KpiCard label="Clientes activos"  value={kpis.clientes_activos}       sub="Compraron en este período"   color={C.naranja} icon="👥" />
+        <KpiCard label="Ingresos totales"  value={fmt(kpis.ingresos)}         sub="Total del período"         color={C.azul} icon={<DollarSign size={16} />} />
+        <KpiCard label="Ticket promedio"   value={fmt(kpis.ticket_promedio)}   sub="Por transacción"           color={C.azul} icon={<Receipt size={16} />} />
+        <KpiCard label="Total ventas"      value={kpis.total_ventas}           sub="POS + online"              color={C.azul} icon={<Package size={16} />} />
+        <KpiCard label="Clientes activos"  value={kpis.clientes_activos}       sub="Compraron en este período" color={C.azul} icon={<Users size={16} />} />
       </div>
 
       {/* Línea de ingresos */}
@@ -223,16 +230,12 @@ function TabResumen({ periodo }) {
         {filledVentasPorDia.length === 0 ? <Empty /> : (
           <ResponsiveContainer width="100%" height={210}>
             <LineChart data={filledVentasPorDia} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gLine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={C.verde} /><stop offset="100%" stopColor={C.azul} />
-                </linearGradient>
-              </defs>
+              <defs />
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="dia" tickFormatter={fmtDia} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={fmtShort} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={52} />
               <Tooltip content={<TooltipDark />} />
-              <Line type="monotone" dataKey="total" stroke="url(#gLine)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: C.verde }} />
+              <Line type="monotone" dataKey="total" stroke={C.azul} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: C.azul }} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -250,7 +253,7 @@ function TabResumen({ periodo }) {
                   <div key={i}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: PALETTE[i % PALETTE.length], flexShrink: 0 }} />
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.azul, flexShrink: 0 }} />
                         <span style={{ fontSize: 13, fontWeight: 500, color: "#0f172a" }}>{p.nombre}</span>
                       </div>
                       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -259,7 +262,7 @@ function TabResumen({ periodo }) {
                       </div>
                     </div>
                     <div style={{ height: 5, borderRadius: 999, background: "#f1f5f9" }}>
-                      <div style={{ height: "100%", borderRadius: 999, width: `${pct}%`, background: PALETTE[i % PALETTE.length], transition: "width 0.4s" }} />
+                      <div style={{ height: "100%", borderRadius: 999, width: `${pct}%`, background: C.azul, transition: "width 0.4s" }} />
                     </div>
                   </div>
                 );
@@ -389,23 +392,24 @@ function TabRentabilidad({ periodo }) {
 
       {/* Botones exportar */}
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
-        <button onClick={exportarCSV} style={sBtn}>📥 CSV</button>
-        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
+        <button onClick={exportarCSV} style={sBtn}><Download size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />CSV</button>
+        <button onClick={() => window.print()} style={sBtn}><Printer size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />Imprimir</button>
       </div>
 
       {/* Alerta si hay productos sin costo cargado */}
       {sinCosto > 0 && (
         <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: "10px 16px", fontSize: 13, color: "#92400e", display: "flex", alignItems: "center", gap: 8 }}>
-          ⚠️ <span><strong>{sinCosto} producto{sinCosto > 1 ? "s" : ""}</strong> no tiene precio de costo cargado — el margen puede estar inflado. Cárgalo desde la sección de Productos.</span>
+          <AlertTriangle size={15} style={{ flexShrink: 0 }} />
+          <span><strong>{sinCosto} producto{sinCosto > 1 ? "s" : ""}</strong> no tiene precio de costo cargado — el margen puede estar inflado. Cárgalo desde la sección de Productos.</span>
         </div>
       )}
 
       {/* KPIs globales */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }} className="rep-kpi-grid">
-        <KpiCard label="Ingresos brutos"   value={fmtShort(totales.ingresos)}  sub="Total vendido"             color={C.azul}    icon="💵" />
-        <KpiCard label="Costo total"        value={fmtShort(totales.costo)}     sub="Costo de lo vendido"       color={C.rojo}    icon="🏭" />
-        <KpiCard label="Ganancia bruta"     value={fmtShort(totales.ganancia)}  sub="Ingresos − Costos"         color={C.verde}   icon="💰" />
-        <KpiCard label="Margen promedio"    value={`${totales.margen_pct}%`}    sub="Sobre ingresos totales"    color={C.violeta} icon="📊" />
+        <KpiCard label="Ingresos brutos"   value={fmtShort(totales.ingresos)}  sub="Total vendido"          color={C.azul} icon={<Banknote size={16} />} />
+        <KpiCard label="Costo total"        value={fmtShort(totales.costo)}     sub="Costo de lo vendido"    color={C.azul} icon={<Layers size={16} />} />
+        <KpiCard label="Ganancia bruta"     value={fmtShort(totales.ganancia)}  sub="Ingresos − Costos"      color={C.azul} icon={<TrendingUp size={16} />} />
+        <KpiCard label="Margen promedio"    value={`${totales.margen_pct}%`}    sub="Sobre ingresos totales" color={C.azul} icon={<BarChart2 size={16} />} />
       </div>
 
       {/* Barra global ingresos vs costo vs ganancia */}
@@ -437,13 +441,13 @@ function TabRentabilidad({ periodo }) {
               <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 80px 80px 70px", gap: 12, alignItems: "center" }}>
                 {/* Nombre */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: PALETTE[i % PALETTE.length], flexShrink: 0 }} />
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.azul, flexShrink: 0 }} />
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.nombre}>{p.nombre}</span>
                 </div>
                 {/* Barra doble: ingreso gris, ganancia coloreada */}
                 <div style={{ position: "relative", height: 10, borderRadius: 999, background: "#f1f5f9" }}>
                   <div style={{ position:"absolute", top:0, left:0, height:"100%", borderRadius:999, width:`${Math.min(100, ingresos / maxGanancia * 100)}%`, background:"#e2e8f0" }} />
-                  <div style={{ position:"absolute", top:0, left:0, height:"100%", borderRadius:999, width:`${Math.max(0, barPct)}%`, background: ganancia >= 0 ? PALETTE[i % PALETTE.length] : C.rojo, transition:"width 0.4s" }} />
+                  <div style={{ position:"absolute", top:0, left:0, height:"100%", borderRadius:999, width:`${Math.max(0, barPct)}%`, background: ganancia >= 0 ? C.azul : C.rojo, transition:"width 0.4s" }} />
                 </div>
                 {/* Ingresos */}
                 <span style={{ fontSize: 12, color: "#64748b", textAlign: "right" }}>{fmtShort(ingresos)}</span>
@@ -549,10 +553,10 @@ function TabComparativa({ periodo }) {
   }));
 
   const kpisMeta = [
-    { key: "ingresos",         label: "Ingresos",        fmt: fmt,    icon: "💰" },
-    { key: "total_ventas",     label: "Ventas",           fmt: v => v, icon: "📦" },
-    { key: "ticket_promedio",  label: "Ticket promedio",  fmt: fmt,    icon: "🧾" },
-    { key: "clientes_activos", label: "Clientes activos", fmt: v => v, icon: "👥" },
+    { key: "ingresos",         label: "Ingresos",         fmt: fmt,    Icon: DollarSign },
+    { key: "total_ventas",     label: "Ventas",            fmt: v => v, Icon: Package },
+    { key: "ticket_promedio",  label: "Ticket promedio",   fmt: fmt,    Icon: Receipt },
+    { key: "clientes_activos", label: "Clientes activos",  fmt: v => v, Icon: Users },
   ];
 
   return (
@@ -560,8 +564,8 @@ function TabComparativa({ periodo }) {
 
       {/* Botones exportar */}
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }} className="rep-export-btns">
-        <button onClick={exportarCSV} style={sBtn}>📥 CSV</button>
-        <button onClick={() => window.print()} style={sBtn}>🖨️ PDF</button>
+        <button onClick={exportarCSV} style={sBtn}><Download size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />CSV</button>
+        <button onClick={() => window.print()} style={sBtn}><Printer size={12} style={{ marginRight: 5, verticalAlign: "middle" }} />Imprimir</button>
       </div>
 
       {/* KPIs comparativos */}
@@ -572,7 +576,7 @@ function TabComparativa({ periodo }) {
             <div key={m.key} style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "16px 20px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>{m.label}</span>
-                <span style={{ fontSize: 16 }}>{m.icon}</span>
+                <m.Icon size={16} color={C.azul} />
               </div>
               {/* Período actual */}
               <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 6 }}>
@@ -640,7 +644,7 @@ function TabComparativa({ periodo }) {
               const delta = cambios[m.key];
               return (
                 <tr key={m.key} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={{ ...sTd, fontWeight: 500 }}>{m.icon} {m.label}</td>
+                  <td style={{ ...sTd, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}><m.Icon size={13} style={{ color: "#94a3b8" }} /> {m.label}</td>
                   <td style={{ ...sTd, fontWeight: 700, color: "#0f172a" }}>{m.fmt(actual[m.key])}</td>
                   <td style={{ ...sTd, color: "#94a3b8" }}>{m.fmt(anterior[m.key])}</td>
                   <td style={sTd}>
@@ -731,10 +735,10 @@ function TabPronostico() {
   const maxDow = dowData[0]?.promedio || 1;
 
   if (sinDatos) return (
-    <div style={{ ...sCard, textAlign: "center", padding: "48px 24px", color: "#94a3b8" }}>
-      <p style={{ fontSize: 32, margin: "0 0 12px" }}>📈</p>
-      <p style={{ fontSize: 14, fontWeight: 600 }}>Aún no hay suficientes datos para generar un pronóstico.</p>
-      <p style={{ fontSize: 12 }}>Registra ventas durante al menos una semana y vuelve aquí.</p>
+    <div style={{ ...sCard, textAlign: "center", padding: "48px 24px", color: "#94a3b8", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      <TrendingUp size={36} color="#e2e8f0" />
+      <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>Aún no hay suficientes datos para generar un pronóstico.</p>
+      <p style={{ fontSize: 12, margin: 0 }}>Registra ventas durante al menos una semana y vuelve aquí.</p>
     </div>
   );
 
@@ -862,7 +866,7 @@ function TabPronostico() {
               <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? C.verde : "#334155", minWidth: 90, textAlign: "right" }}>
                 ${Number(d.promedio).toLocaleString("es-CO")}
               </span>
-              {i === 0 && <span style={{ fontSize: 10, color: C.verde, fontWeight: 800 }}>⭐ mejor</span>}
+              {i === 0 && <span style={{ fontSize: 10, color: C.verde, fontWeight: 800, display: "flex", alignItems: "center", gap: 3 }}><Star size={10} fill={C.verde} /> mejor</span>}
             </div>
           ))}
         </div>
@@ -922,11 +926,18 @@ function TabPronostico() {
 // COMPONENTE RAÍZ
 // ══════════════════════════════════════════════════════════════════════════════
 const TABS = [
-  { key: "resumen",      label: "Resumen",       icon: "📊" },
-  { key: "rentabilidad", label: "Rentabilidad",  icon: "💰" },
-  { key: "comparativa",  label: "Comparativa",   icon: "📈" },
-  { key: "pronostico",   label: "Pronóstico",    icon: "🔮" },
+  { key: "resumen",      label: "Resumen",        Icon: LayoutDashboard },
+  { key: "rentabilidad", label: "Rentabilidad",   Icon: TrendingUp },
+  { key: "comparativa",  label: "Comparativa",    Icon: ArrowLeftRight },
+  { key: "pronostico",   label: "Pronóstico",     Icon: Sparkles },
+  { key: "meta",         label: "Meta de ventas", Icon: Target },
 ];
+
+function TabMeta() {
+  const { ventasMes, loading } = useMetaVentas();
+  if (loading) return null;
+  return <MetaVentas ventasMes={ventasMes} />;
+}
 
 export default function Reportes() {
   const [tab,     setTab]     = useState("resumen");
@@ -976,7 +987,7 @@ export default function Reportes() {
             borderBottom: `2px solid ${tab === t.key ? C.azul : "transparent"}`,
             marginBottom: -2, transition: "color 0.15s, border-color 0.15s",
           }}>
-            <span>{t.icon}</span>
+            <t.Icon size={14} />
             {t.label}
           </button>
         ))}
@@ -987,6 +998,7 @@ export default function Reportes() {
       {tab === "rentabilidad" && <TabRentabilidad periodo={periodo} />}
       {tab === "comparativa"  && <TabComparativa  periodo={periodo} />}
       {tab === "pronostico"   && <TabPronostico />}
+      {tab === "meta"         && <TabMeta />}
 
     </div>
   );

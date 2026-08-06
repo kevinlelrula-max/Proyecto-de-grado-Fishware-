@@ -1,16 +1,11 @@
-export default function StatCard({ icon, label, valor, descripcion, color, bg, alerta }) {
+export default function StatCard({ label, valor, descripcion, alerta, color }) {
   return (
-    <div style={{
-      ...s.card,
-      borderTop: `3px solid ${alerta ? "#ef4444" : color}`,
-    }}>
+    <div style={s.card}>
       <div style={s.top}>
-        <div style={{ ...s.iconWrap, backgroundColor: alerta ? "#fef2f2" : bg }}>
-          <span style={s.icon}>{icon}</span>
-        </div>
-        <p style={s.label}>{label}</p>
+        <span style={s.label}>{label}</span>
+        {alerta && <span style={s.dot} />}
       </div>
-      <p style={{ ...s.valor, color: alerta ? "#ef4444" : color }}>{valor}</p>
+      <p style={{ ...s.valor, color: alerta ? "#ef4444" : "#0f172a" }}>{valor}</p>
       {descripcion && <p style={s.descripcion}>{descripcion}</p>}
     </div>
   );
@@ -19,44 +14,42 @@ export default function StatCard({ icon, label, valor, descripcion, color, bg, a
 const s = {
   card: {
     backgroundColor: "white",
-    borderRadius: "16px",
+    borderRadius: 12,
     border: "1px solid #e2e8f0",
-    padding: "20px",
+    padding: "20px 20px 18px",
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
-    transition: "box-shadow 0.2s",
+    gap: 4,
   },
   top: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 8,
   },
-  iconWrap: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "20px",
-  },
-  icon: { lineHeight: 1 },
   label: {
-    fontSize: "12px",
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: 600,
     color: "#94a3b8",
     textTransform: "uppercase",
-    letterSpacing: "0.06em",
+    letterSpacing: "0.07em",
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: "50%",
+    backgroundColor: "#ef4444",
+    flexShrink: 0,
   },
   valor: {
-    fontSize: "32px",
-    fontWeight: "800",
+    fontSize: 30,
+    fontWeight: 700,
     letterSpacing: "-0.03em",
     lineHeight: 1,
   },
   descripcion: {
-    fontSize: "12px",
+    fontSize: 12,
     color: "#94a3b8",
+    marginTop: 4,
   },
 };

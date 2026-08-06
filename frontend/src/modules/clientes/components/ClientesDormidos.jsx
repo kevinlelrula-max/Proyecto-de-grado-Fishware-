@@ -1,10 +1,9 @@
-export default function ClientesDormidos({ clientes = [], onIrA }) {
+export default function ClientesDormidos({ clientes = [] }) {
   if (!clientes.length) return null;
 
   const diasDesde = (fecha) => {
     if (!fecha || fecha === "2000-01-01") return null;
-    const diff = Date.now() - new Date(fecha).getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
+    return Math.floor((Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60 * 24));
   };
 
   return (
@@ -31,21 +30,11 @@ export default function ClientesDormidos({ clientes = [], onIrA }) {
                   {dias ? `Hace ${dias} días` : "Sin compras aún"}
                 </span>
               </div>
-              <button
-                style={s.btnCupon}
-                onClick={() => onIrA("cupones")}
-                title="Crear cupón para reactivar"
-              >
-                🎫 Cupón
-              </button>
+              <span style={s.pillInactivo}>Inactivo</span>
             </div>
           );
         })}
       </div>
-
-      <button style={s.btnVer} onClick={() => onIrA("clientes")}>
-        Ver todos los clientes →
-      </button>
     </div>
   );
 }
@@ -62,6 +51,5 @@ const s = {
   info:   { flex: 1, display: "flex", flexDirection: "column", gap: 2 },
   nombre: { fontSize: 13, fontWeight: 600, color: "#0f172a" },
   dias:   { fontSize: 11, color: "#f59e0b", fontWeight: 600 },
-  btnCupon: { padding: "5px 10px", fontSize: 11, fontWeight: 700, backgroundColor: "#fffbeb", color: "#b45309", border: "1px solid #fcd34d", borderRadius: 7, cursor: "pointer", whiteSpace: "nowrap" },
-  btnVer: { background: "none", border: "none", color: "#2563eb", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0, textAlign: "left" },
+  pillInactivo: { padding: "3px 8px", fontSize: 11, fontWeight: 600, backgroundColor: "#fef9f0", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 6, flexShrink: 0 },
 };

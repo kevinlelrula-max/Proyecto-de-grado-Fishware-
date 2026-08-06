@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Bot, Globe, Terminal, Key, AlertTriangle } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const MCP_SSE_URL = `${BASE_URL}/api/mcp/sse`;
@@ -9,7 +10,7 @@ export default function ConectorIA() {
   const [cargando, setCargando] = useState(false);
   const [copiado, setCopiado]   = useState("");
   const [error, setError]       = useState(null);
-  const [tab, setTab]           = useState("claudeai"); // "claudeai" | "claudecode"
+  const [tab, setTab]           = useState("claudeai");
 
   const generarToken = async () => {
     setCargando(true);
@@ -43,10 +44,12 @@ export default function ConectorIA() {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
-          background: "linear-gradient(135deg,#0B1628,#1e3a5f)",
+          background: "#eff6ff",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20,
-        }}>🤖</div>
+          color: "#2563eb",
+        }}>
+          <Bot size={20} />
+        </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>Conector Claude AI</div>
           <div style={{ fontSize: 13, color: "#6b7280" }}>Consulta los datos de tu negocio con lenguaje natural</div>
@@ -70,7 +73,7 @@ export default function ConectorIA() {
           href={`${BASE_URL}/api/mcp`}
           target="_blank"
           rel="noreferrer"
-          style={{ fontSize: 12, color: "#00C9A7", textDecoration: "none", fontWeight: 500 }}
+          style={{ fontSize: 12, color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
         >
           Ver documentación MCP →
         </a>
@@ -78,30 +81,29 @@ export default function ConectorIA() {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8 }}>
-        <button
-          onClick={() => setTab("claudeai")}
-          style={{
-            padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-            cursor: "pointer", border: "1.5px solid",
-            background: tab === "claudeai" ? "#0B1628" : "#fff",
-            color: tab === "claudeai" ? "#fff" : "#6b7280",
-            borderColor: tab === "claudeai" ? "#0B1628" : "#e5e7eb",
-          }}
-        >
-          🌐 Claude.ai
-        </button>
-        <button
-          onClick={() => { setTab("claudecode"); setToken(null); setComando(""); }}
-          style={{
-            padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-            cursor: "pointer", border: "1.5px solid",
-            background: tab === "claudecode" ? "#0B1628" : "#fff",
-            color: tab === "claudecode" ? "#fff" : "#6b7280",
-            borderColor: tab === "claudecode" ? "#0B1628" : "#e5e7eb",
-          }}
-        >
-          💻 Claude Code
-        </button>
+        {[
+          { key: "claudeai",   label: "Claude.ai",   Icon: Globe },
+          { key: "claudecode", label: "Claude Code", Icon: Terminal },
+        ].map(t => (
+          <button
+            key={t.key}
+            onClick={() => {
+              setTab(t.key);
+              if (t.key === "claudecode") { setToken(null); setComando(""); }
+            }}
+            style={{
+              display: "flex", alignItems: "center", gap: 7,
+              padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+              cursor: "pointer", border: "1.5px solid",
+              background: tab === t.key ? "#2563eb" : "#fff",
+              color:      tab === t.key ? "#fff"    : "#6b7280",
+              borderColor: tab === t.key ? "#2563eb" : "#e5e7eb",
+            }}
+          >
+            <t.Icon size={14} />
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* ── TAB: Claude.ai ── */}
@@ -121,7 +123,7 @@ export default function ConectorIA() {
             <div style={{ ...codeBoxStyle, position: "relative", paddingRight: 90 }}>
               {MCP_SSE_URL}
               <button onClick={() => copiar(MCP_SSE_URL, "url")} style={btnCopiarStyle}>
-                {copiado === "url" ? "✓ copiado" : "copiar"}
+                {copiado === "url" ? "Copiado" : "Copiar"}
               </button>
             </div>
           </div>
@@ -131,11 +133,13 @@ export default function ConectorIA() {
             {[
               ["01", <>Abre <strong>claude.ai</strong> → Settings → Conectores → Agregar</>],
               ["02", <>Pegá la URL de arriba y hacé clic en <strong>Agregar</strong></>],
-              ["03", <>Te redirige al login de Merkai → iniciá sesión → <strong style={{ color: "#166534" }}>Conectado</strong></>],
+              ["03", <>Te redirige al login → iniciá sesión → <strong style={{ color: "#166534" }}>Conectado</strong></>],
             ].map(([n, txt]) => (
               <div key={n} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: "#374151" }}>
-                <span style={{ color: "#00C9A7", fontWeight: 700, flexShrink: 0, fontSize: 11,
-                  background: "rgba(0,201,167,0.1)", padding: "2px 8px", borderRadius: 4 }}>[{n}]</span>
+                <span style={{
+                  color: "#2563eb", fontWeight: 700, flexShrink: 0, fontSize: 11,
+                  background: "#eff6ff", padding: "2px 8px", borderRadius: 4,
+                }}>[{n}]</span>
                 {txt}
               </div>
             ))}
@@ -143,7 +147,7 @@ export default function ConectorIA() {
         </div>
       )}
 
-      {/* ── TAB: Claude Code terminal ── */}
+      {/* ── TAB: Claude Code ── */}
       {tab === "claudecode" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
@@ -156,8 +160,9 @@ export default function ConectorIA() {
               onClick={generarToken}
               disabled={cargando}
               style={{
+                display: "flex", alignItems: "center", gap: 8,
                 padding: "12px 24px",
-                background: cargando ? "#e5e7eb" : "#0B1628",
+                background: cargando ? "#e5e7eb" : "#2563eb",
                 color: cargando ? "#9ca3af" : "white",
                 border: "none", borderRadius: 10,
                 fontSize: 14, fontWeight: 600,
@@ -165,7 +170,8 @@ export default function ConectorIA() {
                 alignSelf: "flex-start",
               }}
             >
-              {cargando ? "Generando..." : "🔑 Generar token de conexión"}
+              {!cargando && <Key size={15} />}
+              {cargando ? "Generando..." : "Generar token de conexión"}
             </button>
           )}
 
@@ -184,7 +190,7 @@ export default function ConectorIA() {
                 <div style={{ ...codeBoxStyle, position: "relative", paddingRight: 90 }}>
                   {token}
                   <button onClick={() => copiar(token, "token")} style={btnCopiarStyle}>
-                    {copiado === "token" ? "✓ copiado" : "copiar"}
+                    {copiado === "token" ? "Copiado" : "Copiar"}
                   </button>
                 </div>
               </div>
@@ -193,24 +199,25 @@ export default function ConectorIA() {
               <div>
                 <div style={labelStyle}>Comando · pegar en el terminal</div>
                 <div style={{
-                  background: "#0B1628", border: "1px solid #1e3a5f",
+                  background: "#1e293b", border: "1px solid #334155",
                   borderRadius: 8, padding: "12px 100px 12px 14px",
                   fontFamily: "monospace", fontSize: 11,
-                  color: "#5eead4", wordBreak: "break-all",
+                  color: "#7dd3fc", wordBreak: "break-all",
                   lineHeight: 1.6, position: "relative",
                 }}>
                   {comando}
                   <button
                     onClick={() => copiar(comando, "cmd")}
-                    style={{ ...btnCopiarStyle, background: "rgba(94,234,212,0.15)", borderColor: "rgba(94,234,212,0.3)", color: "#5eead4" }}
+                    style={{ ...btnCopiarStyle, background: "rgba(125,211,252,0.15)", borderColor: "rgba(125,211,252,0.3)", color: "#7dd3fc" }}
                   >
-                    {copiado === "cmd" ? "✓ copiado" : "copiar"}
+                    {copiado === "cmd" ? "Copiado" : "Copiar"}
                   </button>
                 </div>
               </div>
 
-              <div style={{ fontSize: 12, color: "#9ca3af", textAlign: "center" }}>
-                ⚠️ Guarda este token. Expira en 30 días. Puedes generar uno nuevo cuando quieras.
+              <div style={{ fontSize: 12, color: "#9ca3af", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <AlertTriangle size={12} />
+                Guarda este token. Expira en 30 días. Puedes generar uno nuevo cuando quieras.
               </div>
 
               <button

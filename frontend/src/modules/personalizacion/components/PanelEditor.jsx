@@ -4,31 +4,30 @@ import ModalDisenoIA from "./ModalDisenoIA";
 import { imgUrl } from "../../../utils/imgUrl";
 
 const TIPOS_INFO = {
-  hero:        { label: "Portada",          emoji: "🖼️", fija: true,  desc: "Banner y título principal" },
-  catalogo:    { label: "Catálogo",         emoji: "🛒", fija: true,  desc: "Productos disponibles" },
-  nosotros:    { label: "Sobre nosotros",   emoji: "🏢", fija: false, desc: "Historia de tu negocio" },
-  contacto:    { label: "Contacto & Redes", emoji: "📱", fija: true,  desc: "Info y redes sociales" },
-  texto_libre: { label: "Bloque de texto",  emoji: "📝", fija: false, desc: "Texto personalizable" },
-  faq:          { label: "Preguntas frecuentes", emoji: "❓", fija: false, desc: "Responde dudas comunes" },
-  galeria:      { label: "Galería",          emoji: "🖼️", fija: false, desc: "Imágenes de tu negocio" },
-  testimonios:  { label: "Testimonios",      emoji: "⭐", fija: false, desc: "Reseñas de tus clientes" },
-  promociones:  { label: "Promociones",      emoji: "🎫", fija: false, desc: "Cupones activos" },
+  hero:        { label: "Portada",               icon: "▣", fija: true,  desc: "Banner y título principal" },
+  catalogo:    { label: "Catálogo",              icon: "⊞", fija: true,  desc: "Productos disponibles" },
+  nosotros:    { label: "Sobre nosotros",        icon: "◎", fija: false, desc: "Historia de tu negocio" },
+  contacto:    { label: "Contacto & Redes",      icon: "◈", fija: true,  desc: "Info y redes sociales" },
+  texto_libre: { label: "Bloque de texto",       icon: "❑", fija: false, desc: "Texto personalizable" },
+  faq:         { label: "Preguntas frecuentes",  icon: "◉", fija: false, desc: "Responde dudas comunes" },
+  galeria:     { label: "Galería",               icon: "▦", fija: false, desc: "Imágenes de tu negocio" },
+  testimonios: { label: "Testimonios",           icon: "◈", fija: false, desc: "Reseñas de tus clientes" },
+  promociones: { label: "Promociones",           icon: "◇", fija: false, desc: "Cupones activos" },
 };
 
 const FUENTES = [
-  { value: "Inter",       label: "Inter (Moderna)" },
-  { value: "Poppins",     label: "Poppins (Redondeada)" },
-  { value: "Montserrat",  label: "Montserrat (Elegante)" },
-  { value: "Playfair Display", label: "Playfair (Clásica)" },
+  { value: "Inter",             label: "Inter (Moderna)" },
+  { value: "Poppins",           label: "Poppins (Redondeada)" },
+  { value: "Montserrat",        label: "Montserrat (Elegante)" },
+  { value: "Playfair Display",  label: "Playfair (Clásica)" },
 ];
 
 const TIPOS_AGREGABLES = [
-  { tipo: "texto_libre", label: "Bloque de texto", emoji: "📝", desc: "Título + texto libre, color de fondo personalizable" },
-  { tipo: "nosotros",    label: "Sobre nosotros",  emoji: "🏢", desc: "Presenta tu negocio a los clientes" },
-  { tipo: "faq",         label: "Preguntas frecuentes", emoji: "❓", desc: "Preguntas y respuestas de tus clientes" },
-  { tipo: "galeria",     label: "Galería de imágenes",  emoji: "🖼️", desc: "Muestra fotos de tu negocio o productos" },
-  { tipo: "testimonios", label: "Testimonios",          emoji: "⭐", desc: "Muestra reseñas destacadas de clientes" },
-  { tipo: "promociones", label: "Promociones",          emoji: "🎫", desc: "Cupones y descuentos activos" },
+  { tipo: "texto_libre", label: "Bloque de texto",       desc: "Título + texto libre, color de fondo personalizable" },
+  { tipo: "nosotros",    label: "Sobre nosotros",        desc: "Presenta tu negocio a los clientes" },
+  { tipo: "faq",         label: "Preguntas frecuentes",  desc: "Preguntas y respuestas de tus clientes" },
+  { tipo: "galeria",     label: "Galería de imágenes",   desc: "Muestra fotos de tu negocio o productos" },
+  { tipo: "promociones", label: "Promociones",           desc: "Cupones y descuentos activos" },
 ];
 
 export default function PanelEditor({
@@ -69,7 +68,6 @@ export default function PanelEditor({
   return (
     <div style={s.panel}>
 
-      {/* Header — se oculta cuando está en modo fullscreen (el topbar del editor lo reemplaza) */}
       {!ocultarHeader && (
         <div style={s.header}>
           <div>
@@ -81,7 +79,11 @@ export default function PanelEditor({
             disabled={guardando}
             style={{
               ...s.btnGuardar,
-              background: exito ? "#10b981" : guardando ? "#64748b" : "linear-gradient(135deg,#00C9A7,#0099FF)",
+              background: exito
+                ? "#10b981"
+                : guardando
+                ? "#94a3b8"
+                : "linear-gradient(135deg,#0F6E56,#0e9b7a)",
               cursor: guardando ? "not-allowed" : "pointer",
             }}
           >
@@ -95,7 +97,7 @@ export default function PanelEditor({
       {/* IA + Plantillas */}
       <div style={{ padding: "10px 14px 6px", display: "flex", flexDirection: "column", gap: 8 }}>
         <button style={s.btnDisenoIA} onClick={() => setShowDisenoIA(true)}>
-          <span style={{ fontSize: 15 }}>✦</span>
+          <span style={{ fontSize: 14 }}>✦</span>
           Diseñar con IA
         </button>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -125,10 +127,11 @@ export default function PanelEditor({
           }}
         />
       )}
+
       <div style={s.lista}>
         {layout.map((sec, idx) => {
-          const info     = TIPOS_INFO[sec.tipo] || TIPOS_INFO.texto_libre;
-          const activo   = seccionActiva === sec.id;
+          const info      = TIPOS_INFO[sec.tipo] || TIPOS_INFO.texto_libre;
+          const activo    = seccionActiva === sec.id;
           const isDragging = draggingIdx === idx;
           const isDragOver = dragOverIdx === idx;
           return (
@@ -142,25 +145,35 @@ export default function PanelEditor({
               style={{
                 ...s.seccionItem,
                 opacity: isDragging ? 0.4 : 1,
-                borderColor: isDragOver ? "#00C9A7" : activo ? "rgba(0,201,167,0.4)" : "rgba(255,255,255,0.06)",
-                background: isDragOver ? "rgba(0,201,167,0.08)" : activo ? "rgba(0,201,167,0.06)" : "transparent",
+                borderColor: isDragOver
+                  ? "#2563eb"
+                  : activo
+                  ? "rgba(37,99,235,0.35)"
+                  : "#e2e8f0",
+                background: isDragOver
+                  ? "rgba(37,99,235,0.06)"
+                  : activo
+                  ? "#eff6ff"
+                  : "white",
               }}
             >
-              <div style={s.dragHandle} title="Arrastra para mover">⋮⋮</div>
+              <div style={s.dragHandle} title="Arrastra para mover">⠿</div>
               <button
                 onClick={() => onToggleSeccion(sec.id)}
-                style={{ ...s.eyeBtn, opacity: sec.visible ? 1 : 0.35 }}
+                style={{ ...s.eyeBtn, opacity: sec.visible ? 1 : 0.4 }}
                 title={sec.visible ? "Ocultar sección" : "Mostrar sección"}
               >
-                {sec.visible ? "👁" : "🙈"}
+                {sec.visible ? "◉" : "◌"}
               </button>
               <button
                 onClick={() => setSeccionActiva(activo ? null : sec.id)}
                 style={s.seccionNombreBtn}
               >
-                <span style={s.seccionEmoji}>{info.emoji}</span>
+                <span style={{ ...s.seccionIconWrap, background: activo ? "rgba(37,99,235,0.1)" : "#f1f5f9", color: activo ? "#2563eb" : "#64748b" }}>
+                  {info.icon}
+                </span>
                 <div>
-                  <div style={{ ...s.seccionLabel, color: activo ? "#00C9A7" : "#e2e8f0" }}>
+                  <div style={{ ...s.seccionLabel, color: activo ? "#2563eb" : "#0f172a" }}>
                     {info.label}
                   </div>
                   {!sec.visible && <div style={s.ocultaTag}>Oculta</div>}
@@ -168,7 +181,7 @@ export default function PanelEditor({
               </button>
               <button
                 onClick={() => setSeccionActiva(activo ? null : sec.id)}
-                style={{ ...s.chevronBtn, color: activo ? "#00C9A7" : "#2D4060" }}
+                style={{ ...s.chevronBtn, color: activo ? "#2563eb" : "#94a3b8" }}
               >
                 {activo ? "▲" : "▾"}
               </button>
@@ -194,6 +207,7 @@ export default function PanelEditor({
         {showAgregar && (
           <div style={s.agregarMenu}>
             {TIPOS_AGREGABLES.map(op => {
+              const info     = TIPOS_INFO[op.tipo];
               const yaExiste = op.tipo !== "texto_libre" && layout.some(s => s.tipo === op.tipo);
               return (
                 <button
@@ -208,11 +222,11 @@ export default function PanelEditor({
                   }}
                   style={{ ...s.agregarItem, opacity: yaExiste ? 0.4 : 1, cursor: yaExiste ? "not-allowed" : "pointer" }}
                 >
-                  <span style={{ fontSize: 20 }}>{op.emoji}</span>
+                  <span style={{ fontSize: 16, lineHeight: 1, color: "#64748b", fontFamily: "monospace" }}>{info?.icon}</span>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{op.label}</div>
-                    <div style={{ fontSize: 11, color: "#4A6080" }}>{op.desc}</div>
-                    {yaExiste && <div style={{ fontSize: 10, color: "#f59e0b" }}>Ya existe en tu tienda</div>}
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{op.label}</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>{op.desc}</div>
+                    {yaExiste && <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 2 }}>Ya existe en tu tienda</div>}
                   </div>
                 </button>
               );
@@ -227,7 +241,8 @@ export default function PanelEditor({
       {seccionSeleccionada ? (
         <div style={s.configArea}>
           <div style={s.configTitulo}>
-            {TIPOS_INFO[seccionSeleccionada.tipo]?.emoji} Configurar: {TIPOS_INFO[seccionSeleccionada.tipo]?.label}
+            <span style={{ color: "#2563eb", marginRight: 6 }}>{TIPOS_INFO[seccionSeleccionada.tipo]?.icon}</span>
+            {TIPOS_INFO[seccionSeleccionada.tipo]?.label}
           </div>
           <ConfigSeccion
             seccion={seccionSeleccionada}
@@ -248,8 +263,10 @@ export default function PanelEditor({
         </div>
       ) : (
         <div style={s.emptyConfig}>
-          <span style={{ fontSize: 24, opacity: 0.4 }}>👆</span>
-          <span style={{ fontSize: 12, color: "#2D4060" }}>Selecciona una sección para editarla</span>
+          <span style={{ fontSize: 22, opacity: 0.3 }}>↑</span>
+          <span style={{ fontSize: 12, color: "#94a3b8", textAlign: "center" }}>
+            Selecciona una sección para editarla
+          </span>
         </div>
       )}
     </div>
@@ -264,12 +281,12 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
     <div style={f.wrap}>
       <Field label="Variante de diseño">
         <select value={seccion.config?.variante || "oscuro"} onChange={e => cfg("variante", e.target.value)} style={f.input}>
-          <option value="oscuro">Oscuro — fondo oscuro con banner</option>
-          <option value="lateral">Lateral — panel dividido en dos</option>
-          <option value="minimalista">Minimalista — limpio y centrado</option>
-          <option value="revista">Revista — imagen full con texto abajo</option>
-          <option value="negrita">Negrita — tipografía XXL impactante</option>
-          <option value="gradiente">Gradiente — fondo degradado moderno</option>
+          <option value="oscuro">Oscuro</option>
+          <option value="lateral">Imagen a un lado</option>
+          <option value="minimalista">Minimalista</option>
+          <option value="revista">Estilo revista</option>
+          <option value="negrita">Tipografía en grande</option>
+          <option value="gradiente">Con gradiente</option>
         </select>
       </Field>
       <Field label="Color principal">
@@ -287,19 +304,24 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
           <input type="text" value={datos.color_secundario || ""} placeholder="#0B1628"
             onChange={e => onChange("color_secundario", e.target.value)} style={f.input} />
         </div>
-        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se usa en navbar, footer y elementos secundarios</div>
+        <div style={f.hint}>Para el navbar y el footer de la tienda</div>
       </Field>
       <Field label="Banner de fondo">
-        <div onClick={() => bannerRef.current?.click()} style={{ ...f.bannerUpload, overflow: "hidden" }}>
+        <div onClick={() => bannerRef.current?.click()} style={f.bannerUpload}>
           {bannerSrc
             ? <img src={bannerSrc} alt="" style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 8 }} />
-            : <><span style={{ fontSize: 20 }}>🖼️</span><span style={{ fontSize: 11, color: "#4A6080" }}>Clic para subir (1200×400px)</span></>
+            : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 24, lineHeight: 1, color: "#cbd5e1" }}>▣</span>
+                <span style={{ fontSize: 11, color: "#94a3b8" }}>Clic para subir (1200 × 400 px)</span>
+              </div>
+            )
           }
         </div>
       </Field>
       <Field label="Descripción breve">
         <textarea value={datos.descripcion || ""} onChange={e => onChange("descripcion", e.target.value)}
-          placeholder="Productos frescos a tu puerta..." rows={2} style={f.textarea} />
+          placeholder="Una línea que describe tu negocio..." rows={2} style={f.textarea} />
       </Field>
       <Field label="Título principal">
         <input type="text" value={datos.hero_titulo || ""} onChange={e => onChange("hero_titulo", e.target.value)}
@@ -317,7 +339,7 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
         <select value={datos.fuente || "Inter"} onChange={e => onChange("fuente", e.target.value)} style={f.input}>
           {FUENTES.map(ft => <option key={ft.value} value={ft.value}>{ft.label}</option>)}
         </select>
-        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se aplica en toda la tienda</div>
+        <div style={f.hint}>Se usa en todos los textos de tu tienda</div>
       </Field>
       <Field label="Horario de atención">
         <input type="text" value={datos.horario || ""} onChange={e => onChange("horario", e.target.value)}
@@ -329,17 +351,17 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
   if (seccion.tipo === "catalogo") return (
     <div style={f.wrap}>
       <div style={f.infoBox}>
-        Los productos se gestionan desde la sección <strong style={{ color: "#00C9A7" }}>Productos</strong> del dashboard.
+        Tus productos aparecen aquí automáticamente. Para editarlos ve a <strong style={{ color: "#2563eb" }}>Productos</strong>.
       </div>
       <Field label="Estilo de tarjetas">
         <select value={seccion.config?.estilo_tarjeta || "estandar"} onChange={e => cfg("estilo_tarjeta", e.target.value)} style={f.input}>
-          <option value="estandar">Estándar — imagen arriba, botón abajo</option>
-          <option value="minimalista">Minimalista — limpia, sin bordes</option>
-          <option value="oscuro">Oscuro — fondo oscuro, precio destacado</option>
-          <option value="boutique">Boutique — imagen full con overlay</option>
-          <option value="horizontal">Horizontal — imagen + info en fila</option>
+          <option value="estandar">Estándar</option>
+          <option value="minimalista">Minimalista</option>
+          <option value="oscuro">Fondo oscuro</option>
+          <option value="boutique">Boutique</option>
+          <option value="horizontal">Horizontal</option>
         </select>
-        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Se aplica en el inicio y en el catálogo completo</div>
+        <div style={f.hint}>Aplica en inicio y catálogo</div>
       </Field>
       <Field label="Productos destacados en inicio">
         <select value={datos.productos_destacados_cantidad || 4} onChange={e => onChange("productos_destacados_cantidad", Number(e.target.value))} style={f.input}>
@@ -347,7 +369,7 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
           <option value={6}>6 productos</option>
           <option value={8}>8 productos</option>
         </select>
-        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Cantidad que se muestran en la página de inicio</div>
+        <div style={f.hint}>Aparecen en la portada de tu tienda</div>
       </Field>
     </div>
   );
@@ -360,7 +382,7 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
       </Field>
       <Field label="Contenido">
         <textarea value={datos.nosotros_contenido || ""} onChange={e => onChange("nosotros_contenido", e.target.value)}
-          placeholder="Cuéntale a tus clientes sobre tu negocio..." rows={5} style={f.textarea} />
+          placeholder="Cuénta quiénes son, qué los hace especiales..." rows={5} style={f.textarea} />
       </Field>
     </div>
   );
@@ -397,9 +419,9 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
             <button key={al} onClick={() => cfg("alineacion", al)}
               style={{
                 ...f.alineBtn,
-                background: (seccion.config?.alineacion || "center") === al ? "rgba(0,201,167,0.2)" : "rgba(255,255,255,0.05)",
-                border: `1px solid ${(seccion.config?.alineacion || "center") === al ? "#00C9A7" : "rgba(255,255,255,0.1)"}`,
-                color: (seccion.config?.alineacion || "center") === al ? "#00C9A7" : "#4A6080",
+                background: (seccion.config?.alineacion || "center") === al ? "#f0fdf9" : "#f8fafc",
+                border: `1px solid ${(seccion.config?.alineacion || "center") === al ? "#0F6E56" : "#e2e8f0"}`,
+                color: (seccion.config?.alineacion || "center") === al ? "#0F6E56" : "#64748b",
               }}>
               {{ left: "←", center: "↔", right: "→" }[al]}
             </button>
@@ -421,16 +443,16 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
     return (
       <div style={f.wrap}>
         {preguntas.map((p, i) => (
-          <div key={i} style={{ padding: "10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: "#4A6080", fontWeight: 700 }}>PREGUNTA {i + 1}</span>
-              <button onClick={() => removePregunta(i)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>✕</button>
+          <div key={i} style={f.itemCard}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={f.itemLabel}>Pregunta {i + 1}</span>
+              <button onClick={() => removePregunta(i)} style={f.removeBtn}>✕</button>
             </div>
-            <input style={f.input} placeholder="¿Cuál es la pregunta?" value={p.pregunta} onChange={e => updatePregunta(i, "pregunta", e.target.value)} />
+            <input style={{ ...f.input, marginBottom: 6 }} placeholder="¿Cuál es la pregunta?" value={p.pregunta} onChange={e => updatePregunta(i, "pregunta", e.target.value)} />
             <textarea style={f.textarea} placeholder="Escribe la respuesta..." value={p.respuesta} onChange={e => updatePregunta(i, "respuesta", e.target.value)} rows={2} />
           </div>
         ))}
-        <button onClick={addPregunta} style={{ ...f.input, textAlign: "center", cursor: "pointer", color: "#00C9A7", border: "1px dashed rgba(0,201,167,0.3)" }}>
+        <button onClick={addPregunta} style={f.addRowBtn}>
           + Agregar pregunta
         </button>
       </div>
@@ -449,19 +471,19 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
     return (
       <div style={f.wrap}>
         <div style={f.infoBox}>
-          Agrega URLs de imágenes que quieras mostrar. Pueden ser de tus productos, local o equipo.
+          Muestra fotos de tu local, equipo o productos. Pega la URL de cada imagen.
         </div>
         {imagenes.map((img, i) => (
-          <div key={i} style={{ padding: "10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: "#4A6080", fontWeight: 700 }}>IMAGEN {i + 1}</span>
-              <button onClick={() => removeImagen(i)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12 }}>✕</button>
+          <div key={i} style={f.itemCard}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={f.itemLabel}>Imagen {i + 1}</span>
+              <button onClick={() => removeImagen(i)} style={f.removeBtn}>✕</button>
             </div>
-            <input style={f.input} placeholder="URL de la imagen" value={img.url} onChange={e => updateImagen(i, "url", e.target.value)} />
+            <input style={{ ...f.input, marginBottom: 6 }} placeholder="URL de la imagen" value={img.url} onChange={e => updateImagen(i, "url", e.target.value)} />
             <input style={f.input} placeholder="Título (opcional)" value={img.titulo} onChange={e => updateImagen(i, "titulo", e.target.value)} />
           </div>
         ))}
-        <button onClick={addImagen} style={{ ...f.input, textAlign: "center", cursor: "pointer", color: "#00C9A7", border: "1px dashed rgba(0,201,167,0.3)" }}>
+        <button onClick={addImagen} style={f.addRowBtn}>
           + Agregar imagen
         </button>
       </div>
@@ -471,7 +493,7 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
   if (seccion.tipo === "testimonios") return (
     <div style={f.wrap}>
       <div style={f.infoBox}>
-        Se muestran automáticamente las mejores reseñas (4-5 estrellas) de tus productos. Gestiónalas desde la sección <strong style={{ color: "#00C9A7" }}>Reseñas</strong> del dashboard.
+        Las mejores reseñas de tus clientes aparecen aquí solas. Gestiónalas desde <strong style={{ color: "#2563eb" }}>Reseñas</strong>.
       </div>
     </div>
   );
@@ -479,7 +501,7 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
   if (seccion.tipo === "promociones") return (
     <div style={f.wrap}>
       <div style={f.infoBox}>
-        Se muestran automáticamente los cupones activos y vigentes. Gestiónalos desde la sección <strong style={{ color: "#00C9A7" }}>Cupones</strong> del dashboard.
+        Tus cupones activos aparecen aquí solos. Créalos o edítalos desde <strong style={{ color: "#2563eb" }}>Cupones</strong>.
       </div>
     </div>
   );
@@ -498,28 +520,24 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
         <input type="text" value={datos.direccion || ""} onChange={e => onChange("direccion", e.target.value)}
           placeholder="Cra. 5 #12-30, Bogotá" style={f.input} />
       </Field>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.08em", margin: "10px 0 8px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
-        Redes sociales
-      </div>
-      <Field label="📱 WhatsApp">
+      <div style={f.sectionDivider}>Redes sociales</div>
+      <Field label="WhatsApp">
         <input type="text" value={datos.whatsapp || ""} onChange={e => onChange("whatsapp", e.target.value)}
-          placeholder="573001234567" style={f.input} />
+          placeholder="57 300 123 4567" style={f.input} />
       </Field>
-      <Field label="📸 Instagram">
+      <Field label="Instagram">
         <input type="text" value={datos.instagram || ""} onChange={e => onChange("instagram", e.target.value)}
-          placeholder="@mitienda" style={f.input} />
+          placeholder="@tupesquera" style={f.input} />
       </Field>
-      <Field label="👍 Facebook">
+      <Field label="Facebook">
         <input type="text" value={datos.facebook || ""} onChange={e => onChange("facebook", e.target.value)}
-          placeholder="mitienda" style={f.input} />
+          placeholder="tupesquera" style={f.input} />
       </Field>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.08em", margin: "10px 0 8px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
-        Footer
-      </div>
+      <div style={f.sectionDivider}>Footer</div>
       <Field label="Texto personalizado del footer">
         <input type="text" value={datos.footer_texto || ""} onChange={e => onChange("footer_texto", e.target.value)}
           placeholder="Ej: Todos los derechos reservados" style={f.input} maxLength={200} />
-        <div style={{ fontSize: 10, color: "#4A6080", marginTop: 4 }}>Reemplaza "Powered by Merkai" en el pie de página</div>
+        <div style={f.hint}>Aparece al final de tu tienda</div>
       </Field>
     </div>
   );
@@ -529,8 +547,8 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
 
 function Field({ label, children }) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#4A6080", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em" }}>
         {label}
       </div>
       {children}
@@ -539,42 +557,62 @@ function Field({ label, children }) {
 }
 
 const s = {
-  panel: { width: "100%", background: "#0B1628", display: "flex", flexDirection: "column", overflowY: "auto", height: "100%" },
-  header: { padding: "16px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexShrink: 0 },
-  headerTitle: { fontSize: 14, fontWeight: 700, color: "#e2e8f0" },
-  headerSub: { fontSize: 11, color: "#2D4060", marginTop: 2 },
-  btnGuardar: { padding: "8px 16px", border: "none", borderRadius: 9, color: "white", fontSize: 12, fontWeight: 700, flexShrink: 0, transition: "all 0.2s" },
-  errorMsg: { margin: "0 14px 8px", padding: "8px 12px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, fontSize: 12, color: "#fca5a5" },
-  seccionesLabel: { padding: "12px 14px 6px", fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.1em" },
-  plantillasRow:  { padding: "12px 14px 6px", display: "flex", alignItems: "center", justifyContent: "space-between" },
-  seccionesLabel2: { fontSize: 10, fontWeight: 700, color: "#2D4060", textTransform: "uppercase", letterSpacing: "0.1em" },
-  plantillasBtn:  { fontSize: 11, fontWeight: 600, color: "#00C9A7", background: "rgba(0,201,167,0.08)", border: "1px solid rgba(0,201,167,0.2)", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
-  btnDisenoIA:    { width: "100%", padding: "10px 0", background: "linear-gradient(135deg,#00C9A7,#0099FF)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, letterSpacing: "0.01em" },
-  lista: { padding: "0 10px", display: "flex", flexDirection: "column", gap: 3 },
-  seccionItem: { display: "flex", alignItems: "center", gap: 6, padding: "8px 8px", borderRadius: 10, border: "1px solid", cursor: "default", transition: "all 0.15s", userSelect: "none" },
-  dragHandle: { color: "#2D4060", fontSize: 14, cursor: "grab", flexShrink: 0, lineHeight: 1, letterSpacing: "-2px" },
-  eyeBtn: { background: "none", border: "none", cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0, lineHeight: 1 },
+  panel: {
+    width: "100%",
+    background: "white",
+    borderRight: "1px solid #f1f5f9",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
+    height: "100%",
+  },
+  header: {
+    padding: "16px 14px",
+    borderBottom: "1px solid #f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    flexShrink: 0,
+  },
+  headerTitle:  { fontSize: 14, fontWeight: 700, color: "#0f172a" },
+  headerSub:    { fontSize: 11, color: "#94a3b8", marginTop: 2 },
+  btnGuardar:   { padding: "8px 16px", border: "none", borderRadius: 9, color: "white", fontSize: 12, fontWeight: 700, flexShrink: 0, transition: "all 0.2s" },
+  errorMsg:     { margin: "0 14px 8px", padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 12, color: "#b91c1c" },
+  seccionesLabel2: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" },
+  plantillasBtn: { fontSize: 11, fontWeight: 600, color: "#0F6E56", background: "#f0fdf9", border: "1px solid #bbf7d0", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
+  btnDisenoIA:  { width: "100%", padding: "10px 0", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, letterSpacing: "0.01em" },
+  lista:        { padding: "0 10px", display: "flex", flexDirection: "column", gap: 3 },
+  seccionItem:  { display: "flex", alignItems: "center", gap: 6, padding: "7px 8px", borderRadius: 10, border: "1px solid", cursor: "default", transition: "all 0.15s", userSelect: "none" },
+  dragHandle:   { color: "#cbd5e1", fontSize: 16, cursor: "grab", flexShrink: 0, lineHeight: 1 },
+  eyeBtn:       { background: "none", border: "none", cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0, lineHeight: 1, color: "#94a3b8" },
   seccionNombreBtn: { flex: 1, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, textAlign: "left", padding: 0, minWidth: 0 },
-  seccionEmoji: { fontSize: 16, flexShrink: 0 },
+  seccionIconWrap:  { fontSize: 14, width: 28, height: 28, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s", fontFamily: "monospace" },
   seccionLabel: { fontSize: 12, fontWeight: 600, lineHeight: 1.3 },
-  ocultaTag: { fontSize: 10, color: "#f59e0b", marginTop: 2 },
-  chevronBtn: { background: "none", border: "none", cursor: "pointer", fontSize: 13, padding: "0 4px", flexShrink: 0 },
-  deleteBtn: { background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#ef4444", padding: "2px 4px", flexShrink: 0, opacity: 0.7, lineHeight: 1 },
-  btnAgregar: { width: "100%", padding: "9px 0", background: "rgba(0,201,167,0.08)", border: "1px dashed rgba(0,201,167,0.25)", borderRadius: 9, color: "#00C9A7", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-  agregarMenu: { position: "absolute", top: "calc(100% - 4px)", left: 14, right: 14, background: "#0f2137", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.4)", zIndex: 50, overflow: "hidden" },
-  agregarItem: { display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", background: "none", border: "none", width: "100%", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.06)" },
-  divider: { height: 1, background: "rgba(255,255,255,0.06)", margin: "6px 0", flexShrink: 0 },
-  configArea: { padding: "0 14px 24px", flex: 1, overflowY: "auto" },
-  configTitulo: { fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", padding: "10px 0 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 14 },
-  emptyConfig: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 30 },
+  ocultaTag:    { fontSize: 10, color: "#f59e0b", marginTop: 2 },
+  chevronBtn:   { background: "none", border: "none", cursor: "pointer", fontSize: 13, padding: "0 4px", flexShrink: 0 },
+  deleteBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "#ef4444", padding: "2px 4px", flexShrink: 0, opacity: 0.6, lineHeight: 1 },
+  btnAgregar:   { width: "100%", padding: "9px 0", background: "#f8fafc", border: "1px dashed #d1fae5", borderRadius: 9, color: "#0F6E56", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  agregarMenu:  { position: "absolute", top: "calc(100% - 4px)", left: 14, right: 14, background: "white", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", zIndex: 50, overflow: "hidden" },
+  agregarItem:  { display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", background: "none", border: "none", width: "100%", textAlign: "left", borderBottom: "1px solid #f1f5f9" },
+  divider:      { height: 1, background: "#f1f5f9", margin: "6px 0", flexShrink: 0 },
+  configArea:   { padding: "0 14px 24px", flex: 1, overflowY: "auto" },
+  configTitulo: { fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 0 10px", borderBottom: "1px solid #f1f5f9", marginBottom: 16, display: "flex", alignItems: "center" },
+  emptyConfig:  { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 30 },
 };
 
 const f = {
-  wrap: { display: "flex", flexDirection: "column" },
-  input: { width: "100%", background: "#0d1e35", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
-  textarea: { width: "100%", background: "#0d1e35", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#e2e8f0", outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: 1.5 },
-  colorInput: { width: 36, height: 32, borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", padding: 2, cursor: "pointer", background: "none", flexShrink: 0 },
-  bannerUpload: { border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 9, padding: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer" },
-  alineBtn: { flex: 1, padding: "6px 0", border: "none", borderRadius: 7, fontSize: 16, cursor: "pointer", transition: "all 0.15s", fontFamily: "inherit" },
-  infoBox: { background: "rgba(0,201,167,0.06)", border: "1px solid rgba(0,201,167,0.15)", borderRadius: 10, padding: "12px 14px", fontSize: 12, color: "#7A8BA0", lineHeight: 1.6 },
+  wrap:       { display: "flex", flexDirection: "column" },
+  input:      { width: "100%", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "#0f172a", outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
+  textarea:   { width: "100%", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 10px", fontSize: 13, color: "#0f172a", outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit", lineHeight: 1.5 },
+  colorInput: { width: 36, height: 32, borderRadius: 7, border: "1px solid #e2e8f0", padding: 2, cursor: "pointer", background: "none", flexShrink: 0 },
+  bannerUpload: { border: "2px dashed #e2e8f0", borderRadius: 9, padding: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", background: "#fafafa", transition: "border-color 0.15s" },
+  alineBtn:   { flex: 1, padding: "6px 0", borderRadius: 7, fontSize: 16, cursor: "pointer", transition: "all 0.15s", fontFamily: "inherit" },
+  infoBox:    { background: "#f0fdf9", border: "1px solid #d1fae5", borderRadius: 10, padding: "12px 14px", fontSize: 12, color: "#64748b", lineHeight: 1.6, marginBottom: 14 },
+  hint:       { fontSize: 10, color: "#94a3b8", marginTop: 4 },
+  sectionDivider: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: "14px 0 10px", borderTop: "1px solid #f1f5f9", paddingTop: 12 },
+  itemCard:   { padding: "12px", background: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", marginBottom: 8 },
+  itemLabel:  { fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" },
+  removeBtn:  { background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, opacity: 0.7 },
+  addRowBtn:  { width: "100%", padding: "9px 0", background: "white", border: "1px dashed #d1fae5", borderRadius: 8, color: "#0F6E56", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "center" },
 };

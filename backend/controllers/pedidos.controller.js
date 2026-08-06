@@ -281,7 +281,7 @@ export const actualizarEstadoPedido = async (req, res) => {
         const clienteRes = await pool.query(
           `SELECT p.nombre, p.usuario AS email, e.nombre AS empresa_nombre
            FROM pedidos_online po
-           JOIN personas p ON p.id = po.cliente_id
+           JOIN persona p ON p.id = po.cliente_id
            JOIN empresas e ON e.id = po.empresa_id
            WHERE po.id = $1`,
           [id]

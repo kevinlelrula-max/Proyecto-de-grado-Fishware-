@@ -9,10 +9,19 @@ export function registerResumenTools(server, pool, empresa_id) {
       const [ventas, pedidos, stockBajo] = await Promise.all([
         pool.query(
           `SELECT
-            COALESCE(SUM(total), 0) AS ingresos,
-            COUNT(*) AS transacciones
-           FROM ventas
-           WHERE empresa_id = $1 AND DATE(fecha) = CURRENT_DATE`,
+            COALESCE(SUM(ingresos), 0) AS ingresos,
+            COALESCE(SUM(transacciones), 0) AS transacciones
+           FROM (
+             SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones
+             FROM ventas
+             WHERE empresa_id = $1 AND DATE(fecha) = CURRENT_DATE
+             UNION ALL
+             SELECT SUM(total) AS ingresos, COUNT(*) AS transacciones
+             FROM pedidos_online
+             WHERE empresa_id = $1
+               AND estado IN ('entregado', 'confirmado', 'en_preparacion', 'enviado')
+               AND DATE(fecha_pedido) = CURRENT_DATE
+           ) src`,
           [empresa_id]
         ),
         pool.query(

@@ -1,3 +1,5 @@
+import { X, AlertTriangle } from "lucide-react";
+
 export default function NivelForm({ form, editandoId, guardando, error, onChange, onGuardar, onCancelar }) {
   return (
     <div style={s.overlay}>
@@ -8,12 +10,17 @@ export default function NivelForm({ form, editandoId, guardando, error, onChange
           <h3 style={s.title}>
             {editandoId ? "Editar nivel" : "Nuevo nivel de lealtad"}
           </h3>
-          <button style={s.closeBtn} onClick={onCancelar}>✕</button>
+          <button style={s.closeBtn} onClick={onCancelar}>
+            <X size={16} />
+          </button>
         </div>
 
         {/* Error */}
         {error && (
-          <div style={s.errorBox}>⚠️ {error}</div>
+          <div style={s.errorBox}>
+            <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+            {error}
+          </div>
         )}
 
         {/* Campos */}
@@ -137,10 +144,12 @@ const s = {
   closeBtn: {
     background: "none",
     border: "none",
-    fontSize: "16px",
     cursor: "pointer",
     color: "#94a3b8",
     padding: "4px 8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   errorBox: {
     backgroundColor: "#fef2f2",
@@ -149,6 +158,9 @@ const s = {
     padding: "10px 14px",
     fontSize: "13px",
     color: "#b91c1c",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   fields: {
     display: "flex",
@@ -208,7 +220,7 @@ const s = {
   previewTitle: {
     fontSize: "11px",
     fontWeight: "700",
-    color: "#0F6E56",
+    color: "#2563eb",
     textTransform: "uppercase",
     letterSpacing: "0.05em",
     marginBottom: "6px",

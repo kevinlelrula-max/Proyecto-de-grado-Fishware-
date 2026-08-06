@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { ImageIcon } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -40,7 +41,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
                 value={empresa.color_primario || "#0F6E56"}
                 onChange={(e) => onChange("color_primario", e.target.value)}
                 placeholder="#0F6E56"
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -53,7 +54,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               value={empresa.horario || ""}
               onChange={(e) => onChange("horario", e.target.value)}
               placeholder="Lun – Sáb: 7am – 6pm"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -65,7 +66,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               onChange={(e) => onChange("descripcion", e.target.value)}
               placeholder="Ej: Productos frescos directo del campo a tu mesa..."
               rows={2}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent resize-none"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
           </div>
         </div>
@@ -91,7 +92,9 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 py-8">
-                <span className="text-3xl">🖼️</span>
+                <span className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                  <ImageIcon size={20} />
+                </span>
                 <p className="text-sm text-gray-500">Haz clic para subir el banner</p>
                 <p className="text-xs text-gray-400">PNG, JPG · máx. 5 MB · Recomendado 1200×400px</p>
               </div>
@@ -120,7 +123,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               value={empresa.hero_titulo || ""}
               onChange={(e) => onChange("hero_titulo", e.target.value)}
               placeholder="Ej: Productos frescos a tu puerta"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="col-span-2">
@@ -130,7 +133,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               value={empresa.hero_subtitulo || ""}
               onChange={(e) => onChange("hero_subtitulo", e.target.value)}
               placeholder="Ej: Calidad garantizada y entrega rápida"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="col-span-1">
@@ -140,7 +143,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               value={empresa.hero_btn_texto || ""}
               onChange={(e) => onChange("hero_btn_texto", e.target.value)}
               placeholder="Ej: Ver catálogo"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -159,7 +162,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               value={empresa.nosotros_titulo || ""}
               onChange={(e) => onChange("nosotros_titulo", e.target.value)}
               placeholder="Ej: ¿Quiénes somos?"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
@@ -169,7 +172,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
               onChange={(e) => onChange("nosotros_contenido", e.target.value)}
               placeholder="Cuéntale a tus clientes sobre tu negocio, tu historia y tus valores..."
               rows={4}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent resize-none"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
           </div>
         </div>
@@ -190,7 +193,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
                 value={empresa.whatsapp || ""}
                 onChange={(e) => onChange("whatsapp", e.target.value)}
                 placeholder="573001234567 (sin + ni espacios)"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -204,7 +207,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
                 value={empresa.instagram || ""}
                 onChange={(e) => onChange("instagram", e.target.value)}
                 placeholder="@minegocio"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -218,7 +221,7 @@ export default function TiendaForm({ empresa, bannerPreview, onChange, onBannerC
                 value={empresa.facebook || ""}
                 onChange={(e) => onChange("facebook", e.target.value)}
                 placeholder="minegocio"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
