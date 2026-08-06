@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, Eye, EyeOff, Shield, CheckCircle, AlertTriangle, Phone, MapPin, Mail, ArrowLeft } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Shield, CheckCircle, AlertTriangle, Camera, ArrowLeft } from "lucide-react";
 import usePerfil from "./hooks/usePerfil";
 import { cambiarContrasena } from "./services/perfil.api";
 
 export default function Perfil() {
   const navigate = useNavigate();
   const { perfil, guardarPerfil } = usePerfil();
+  const fileInputRef = useRef(null);
 
-  const [form, setForm]           = useState({});
-  const [passwords, setPasswords] = useState({ actual: "", nueva: "" });
+  const [form, setForm]             = useState({});
+  const [photoUrl, setPhotoUrl]     = useState(null);
+  const [hoverAvatar, setHoverAvatar] = useState(false);
+  const [passwords, setPasswords]   = useState({ actual: "", nueva: "" });
   const [showActual, setShowActual] = useState(false);
   const [showNueva, setShowNueva]   = useState(false);
-  const [savedMsg, setSavedMsg]   = useState("");
-  const [passError, setPassError] = useState("");
+  const [savedMsg, setSavedMsg]     = useState("");
+  const [passError, setPassError]   = useState("");
 
   useEffect(() => { setForm(perfil); }, [perfil]);
 
@@ -26,14 +29,8 @@ export default function Perfil() {
 
   const handlePassword = async () => {
     setPassError("");
-    if (!passwords.actual || !passwords.nueva) {
-      setPassError("Completa ambos campos.");
-      return;
-    }
-    if (passwords.nueva.length < 6) {
-      setPassError("La nueva contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
+    if (!passwords.actual || !passwords.nueva) { setPassError("Completa ambos campos."); return; }
+    if (passwords.nueva.length < 6) { setPassError("La nueva contraseña debe tener al menos 6 caracteres."); return; }
     const token = localStorage.getItem("token");
     try {
       await cambiarContrasena(passwords.actual, passwords.nueva, token);
@@ -43,6 +40,11 @@ export default function Perfil() {
     } catch (err) {
       setPassError(err.response?.data?.error || "Error al cambiar contraseña.");
     }
+  };
+
+  const handlePhoto = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setPhotoUrl(URL.createObjectURL(file));
   };
 
   const iniciales = `${form.nombre?.charAt(0) || ""}${form.apellido?.charAt(0) || ""}`.toUpperCase() || "U";
@@ -58,10 +60,25 @@ export default function Perfil() {
             Volver al panel
           </button>
 
-          <div style={s.avatarWrap}>
-            <div style={s.avatar}>{iniciales}</div>
+          {/* Avatar con upload */}
+          <div
+            style={s.avatarWrap}
+            onMouseEnter={() => setHoverAvatar(true)}
+            onMouseLeave={() => setHoverAvatar(false)}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {photoUrl
+              ? <img src={photoUrl} alt="Foto de perfil" style={s.avatarImg} />
+              : <div style={s.avatar}>{iniciales}</div>
+            }
             <div style={s.avatarRing} />
+            {hoverAvatar && (
+              <div style={s.avatarOverlay}>
+                <Camera size={18} color="white" />
+              </div>
+            )}
           </div>
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhoto} />
 
           <div style={s.sidebarMeta}>
             <h2 style={s.sidebarName}>{form.nombre} {form.apellido}</h2>
@@ -75,33 +92,28 @@ export default function Perfil() {
 
           <div style={s.sidebarDivider} />
 
-          <div style={s.sidebarInfo}>
-            {form.telefono && (
-              <div style={s.sidebarInfoRow}>
-                <Phone size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
-                <span style={s.sidebarInfoText}>{form.telefono}</span>
-              </div>
-            )}
-            {form.usuario && (
-              <div style={s.sidebarInfoRow}>
-                <Mail size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
-                <span style={s.sidebarInfoText}>{form.usuario}</span>
-              </div>
-            )}
-            {form.direccion && (
-              <div style={s.sidebarInfoRow}>
-                <MapPin size={14} color="#94a3b8" style={{ flexShrink: 0 }} />
-                <span style={s.sidebarInfoText}>{form.direccion}</span>
-              </div>
-            )}
-          </div>
+          {form.rol_nombre && (
+            <div style={s.sidebarSection}>
+              <p style={s.sidebarSectionLabel}>Rol</p>
+              <p style={s.sidebarSectionValue}>{form.rol_nombre}</p>
+            </div>
+          )}
 
-          <div style={s.sidebarDivider} />
+          {form.empresa_nombre && (
+            <div style={{ ...s.sidebarSection, marginTop: "16px" }}>
+              <p style={s.sidebarSectionLabel}>Empresa</p>
+              <p style={s.sidebarSectionValue}>{form.empresa_nombre}</p>
+            </div>
+          )}
 
-          <div style={s.sidebarSection}>
-            <p style={s.sidebarSectionLabel}>Número de documento</p>
-            <p style={s.sidebarSectionValue}>{form.numero_documento || "—"}</p>
-          </div>
+          {form.fecha_registro && (
+            <div style={{ ...s.sidebarSection, marginTop: "16px" }}>
+              <p style={s.sidebarSectionLabel}>Miembro desde</p>
+              <p style={s.sidebarSectionValue}>
+                {new Date(form.fecha_registro).toLocaleDateString("es-CO", { year: "numeric", month: "long" })}
+              </p>
+            </div>
+          )}
         </aside>
 
         {/* ── CONTENT ── */}
@@ -116,9 +128,7 @@ export default function Perfil() {
             {/* INFORMACIÓN PERSONAL */}
             <div style={s.card}>
               <div style={s.cardHeader}>
-                <div style={s.cardIconWrap}>
-                  <User size={16} color="#2563eb" />
-                </div>
+                <div style={s.cardIconWrap}><User size={16} color="#2563eb" /></div>
                 <div>
                   <h3 style={s.cardTitle}>Información personal</h3>
                   <p style={s.cardSubtitle}>Actualiza tus datos de perfil</p>
@@ -146,22 +156,20 @@ export default function Perfil() {
                   <input style={s.input} value={form.telefono || ""} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="+57 300 000 0000" />
                 </Field>
                 <Field label="Número de documento">
-                  <input style={{ ...s.input, ...s.inputDisabled }} value={form.numero_documento || ""} disabled placeholder="—" />
+                  <input style={s.input} value={form.numero_documento || ""} onChange={(e) => setForm({ ...form, numero_documento: e.target.value })} placeholder="—" />
                 </Field>
                 <Field label="Dirección" full>
                   <input style={s.input} value={form.direccion || ""} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle 123 #45-67" />
                 </Field>
               </div>
 
-              <button style={s.btnPrimary} onClick={handleSubmit}>Guardar cambios</button>
+              <button style={{ ...s.btnPrimary, marginTop: "auto" }} onClick={handleSubmit}>Guardar cambios</button>
             </div>
 
             {/* SEGURIDAD */}
             <div style={s.card}>
               <div style={s.cardHeader}>
-                <div style={s.cardIconWrap}>
-                  <Lock size={16} color="#2563eb" />
-                </div>
+                <div style={s.cardIconWrap}><Lock size={16} color="#2563eb" /></div>
                 <div>
                   <h3 style={s.cardTitle}>Seguridad</h3>
                   <p style={s.cardSubtitle}>Cambia tu contraseña de acceso</p>
@@ -181,7 +189,7 @@ export default function Perfil() {
                 </div>
               )}
 
-              <div style={s.secFields}>
+              <div style={{ ...s.secFields, flex: 1 }}>
                 <Field label="Contraseña actual">
                   <div style={s.passWrap}>
                     <input style={{ ...s.input, paddingRight: "40px" }} type={showActual ? "text" : "password"} placeholder="••••••••" value={passwords.actual} onChange={(e) => setPasswords({ ...passwords, actual: e.target.value })} />
@@ -262,13 +270,14 @@ function getStrengthLabel(pwd) {
 
 const s = {
   page: {
-    minHeight: "100vh",
     backgroundColor: "#f0f4f8",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
+    height: "100vh",
+    overflow: "hidden",
   },
   layout: {
     display: "flex",
-    minHeight: "100vh",
+    height: "100vh",
   },
 
   // ── Sidebar ──
@@ -278,7 +287,7 @@ const s = {
     background: "none", border: "1px solid #e2e8f0",
     borderRadius: "9px", cursor: "pointer",
     fontSize: "13px", fontWeight: "600", color: "#475569",
-    marginBottom: "28px",
+    marginBottom: "28px", flexShrink: 0,
   },
   sidebar: {
     width: "260px",
@@ -289,19 +298,32 @@ const s = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "0px",
+    overflowY: "auto",
   },
-  avatarWrap: { position: "relative", flexShrink: 0, marginBottom: "16px" },
+  avatarWrap: {
+    position: "relative", flexShrink: 0,
+    marginBottom: "16px", cursor: "pointer",
+    width: "80px", height: "80px",
+  },
   avatar: {
     width: "80px", height: "80px", borderRadius: "50%",
     backgroundColor: "#2563eb", color: "white",
     fontSize: "26px", fontWeight: "800",
     display: "flex", alignItems: "center", justifyContent: "center",
   },
+  avatarImg: {
+    width: "80px", height: "80px", borderRadius: "50%",
+    objectFit: "cover",
+  },
   avatarRing: {
     position: "absolute", inset: "-4px",
     borderRadius: "50%", border: "2px solid #bfdbfe",
     pointerEvents: "none",
+  },
+  avatarOverlay: {
+    position: "absolute", inset: 0, borderRadius: "50%",
+    backgroundColor: "rgba(37,99,235,0.6)",
+    display: "flex", alignItems: "center", justifyContent: "center",
   },
   sidebarMeta: { textAlign: "center", marginBottom: "12px" },
   sidebarName: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: "0 0 4px" },
@@ -318,21 +340,9 @@ const s = {
     backgroundColor: "#f1f5f9",
     margin: "0 0 20px",
   },
-  sidebarInfo: {
-    width: "100%",
-    display: "flex", flexDirection: "column", gap: "12px",
-    marginBottom: "24px",
-  },
-  sidebarInfoRow: {
-    display: "flex", alignItems: "flex-start", gap: "10px",
-  },
-  sidebarInfoText: {
-    fontSize: "13px", color: "#475569", lineHeight: "1.4",
-    wordBreak: "break-all",
-  },
   sidebarSection: { width: "100%", textAlign: "left" },
   sidebarSectionLabel: { fontSize: "11px", fontWeight: "600", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" },
-  sidebarSectionValue: { fontSize: "14px", color: "#0f172a", fontWeight: "500" },
+  sidebarSectionValue: { fontSize: "14px", color: "#0f172a", fontWeight: "500", margin: 0 },
 
   // ── Content ──
   content: {
@@ -342,8 +352,9 @@ const s = {
     flexDirection: "column",
     gap: "24px",
     minWidth: 0,
+    overflowY: "auto",
   },
-  contentHeader: { marginBottom: "4px" },
+  contentHeader: { flexShrink: 0 },
   contentTitle: { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", margin: "0 0 4px" },
   contentSub: { fontSize: "13px", color: "#64748b", margin: 0 },
 
@@ -351,7 +362,8 @@ const s = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "24px",
-    alignItems: "start",
+    flex: 1,
+    minHeight: 0,
   },
 
   // ── Cards ──
@@ -360,7 +372,7 @@ const s = {
     border: "1px solid #e2e8f0", padding: "24px",
     display: "flex", flexDirection: "column", gap: "20px",
   },
-  cardHeader: { display: "flex", alignItems: "center", gap: "12px" },
+  cardHeader: { display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 },
   cardIconWrap: {
     width: "38px", height: "38px", borderRadius: "10px",
     backgroundColor: "#eff6ff",
@@ -375,15 +387,17 @@ const s = {
     backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#15803d", fontWeight: "500",
+    flexShrink: 0,
   },
   errorBox: {
     display: "flex", alignItems: "center", gap: "8px",
     backgroundColor: "#fef2f2", border: "1px solid #fecaca",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#b91c1c", fontWeight: "500",
+    flexShrink: 0,
   },
 
-  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" },
+  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", flex: 1, alignContent: "start" },
   secFields: { display: "flex", flexDirection: "column", gap: "14px" },
   input: {
     width: "100%", padding: "10px 12px",
@@ -391,7 +405,6 @@ const s = {
     fontSize: "14px", color: "#0f172a", backgroundColor: "white",
     outline: "none", boxSizing: "border-box",
   },
-  inputDisabled: { backgroundColor: "#f8fafc", color: "#94a3b8", cursor: "not-allowed" },
 
   passWrap: { position: "relative" },
   eyeBtn: {
@@ -411,12 +424,14 @@ const s = {
     backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "14px", fontWeight: "700", cursor: "pointer",
+    flexShrink: 0,
   },
 
   sessionInfo: {
     display: "flex", alignItems: "center", gap: "8px",
     padding: "10px 14px", borderRadius: "10px",
     backgroundColor: "#eff6ff", border: "1px solid #bfdbfe",
+    flexShrink: 0,
   },
   sessionText: { fontSize: "12px", color: "#2563eb" },
 };

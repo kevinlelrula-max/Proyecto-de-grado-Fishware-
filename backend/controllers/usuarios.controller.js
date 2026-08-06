@@ -292,7 +292,14 @@ export const getPerfil = async (req, res) => {
   try {
     const id = req.user.id;
     const result = await pool.query(
-      `SELECT id, nombre, apellido, usuario, telefono, direccion FROM persona WHERE id = $1`,
+      `SELECT p.id, p.nombre, p.apellido, p.usuario, p.telefono, p.direccion,
+              p.numero_documento, p.fecha_registro,
+              r.nombre AS rol_nombre,
+              e.nombre AS empresa_nombre
+       FROM persona p
+       JOIN roles r ON r.id = p.rol_id
+       JOIN empresas e ON e.id = p.empresa_id
+       WHERE p.id = $1`,
       [id]
     );
     res.json(result.rows[0]);
@@ -308,14 +315,14 @@ export const getPerfil = async (req, res) => {
 export const actualizarPerfil = async (req, res) => {
   try {
     const id = req.user.id;
-    const { nombre, apellido, telefono, direccion } = req.body;
+    const { nombre, apellido, telefono, direccion, numero_documento } = req.body;
 
     const result = await pool.query(
       `UPDATE persona
-       SET nombre=$1, apellido=$2, telefono=$3, direccion=$4
-       WHERE id=$5
+       SET nombre=$1, apellido=$2, telefono=$3, direccion=$4, numero_documento=$5
+       WHERE id=$6
        RETURNING *`,
-      [nombre, apellido, telefono, direccion, id]
+      [nombre, apellido, telefono, direccion, numero_documento, id]
     );
 
     res.json(result.rows[0]);
