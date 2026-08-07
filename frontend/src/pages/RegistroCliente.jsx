@@ -54,19 +54,23 @@ export default function RegistroCliente() {
     }
   };
 
+  const emailValido = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
   // Validaciones paso 1
   const paso1Valido =
     form.nombre &&
     form.apellido &&
-    form.usuario &&
-    form.contrasena &&
+    form.usuario && emailValido(form.usuario) &&
+    form.contrasena && form.contrasena.length >= 6 &&
     form.contrasena === form.confirmar &&
     form.telefono;
 
   const paso1Error = () => {
     if (!form.nombre || !form.apellido) return "Ingresa tu nombre completo.";
     if (!form.usuario) return "Ingresa tu correo electrónico.";
+    if (!emailValido(form.usuario)) return "El correo electrónico no es válido.";
     if (!form.contrasena) return "Ingresa una contraseña.";
+    if (form.contrasena.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
     if (form.contrasena !== form.confirmar) return "Las contraseñas no coinciden.";
     if (!form.telefono) return "Ingresa tu número de teléfono.";
     return "";

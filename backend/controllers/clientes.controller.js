@@ -465,9 +465,15 @@ export const registrarClientePublico = async (req, res) => {
       }
     }
 
+    const token = generarToken(nuevoCliente);
+
     res.json({
       message:         "Cliente registrado correctamente",
+      token,
+      cliente_id:      nuevoCliente.id,
       usuario:         nuevoCliente.usuario,
+      nombre:          nuevoCliente.nombre,
+      rol_id:          nuevoCliente.rol_id,
       codigo_referido: codigoPropio,
     });
 
