@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { RefreshCw } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -8,8 +9,11 @@ export default function InsightWidget() {
   const [error, setError]       = useState(null);
   const [generatedAt, setAt]    = useState(null);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/api/insight`, {
+  const fetchInsight = useCallback((force = false) => {
+    setLoading(true);
+    setError(null);
+    const url = force ? `${BASE_URL}/api/insight?force=1` : `${BASE_URL}/api/insight`;
+    fetch(url, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((r) => r.json())
@@ -22,6 +26,8 @@ export default function InsightWidget() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => { fetchInsight(); }, [fetchInsight]);
+
   const hora = generatedAt
     ? new Date(generatedAt).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })
     : null;
@@ -30,10 +36,18 @@ export default function InsightWidget() {
     <div style={s.card}>
       <div style={s.header}>
         <div style={s.iconWrap}>✦</div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={s.title}>Análisis del día</div>
           <div style={s.sub}>Generado con IA · {hora ? `Actualizado a las ${hora}` : "Hoy"}</div>
         </div>
+        <button
+          onClick={() => fetchInsight(true)}
+          disabled={loading}
+          title="Regenerar análisis"
+          style={s.refreshBtn}
+        >
+          <RefreshCw size={13} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
+        </button>
       </div>
 
       <div style={s.body}>
@@ -64,6 +78,7 @@ export default function InsightWidget() {
           0%, 100% { opacity: .2; transform: scale(.8); }
           50%       { opacity: 1;  transform: scale(1);  }
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
@@ -104,6 +119,13 @@ const s = {
     animation: "blink 1.2s ease-in-out infinite",
   },
   loadingText: { fontSize: 13, color: "#94a3b8" },
+  refreshBtn: {
+    width: 28, height: 28, borderRadius: 7,
+    background: "transparent", border: "1px solid #e2e8f0",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", color: "#94a3b8", flexShrink: 0,
+    transition: "all 0.15s",
+  },
   error: {
     fontSize: 13, color: "#b91c1c",
     background: "#fef2f2",

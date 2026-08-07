@@ -6,7 +6,7 @@ const gemini = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Cache por empresa: empresa_id -> { generatedAt, content }
 const cache = new Map();
-const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_TTL = 60 * 60 * 1000; // 1 hora — se regenera para reflejar ventas del día
 
 export const analizarReseñas = async (req, res) => {
   const empresa_id = req.user.empresa_id;
@@ -130,9 +130,10 @@ Reglas de diseño:
 
 export const getInsight = async (req, res) => {
   const empresa_id = req.user.empresa_id;
+  const force = req.query.force === "1";
 
   const cached = cache.get(empresa_id);
-  if (cached && Date.now() - cached.generatedAt < CACHE_TTL) {
+  if (!force && cached && Date.now() - cached.generatedAt < CACHE_TTL) {
     return res.json({ insight: cached.content, cached: true, generatedAt: cached.generatedAt });
   }
 
