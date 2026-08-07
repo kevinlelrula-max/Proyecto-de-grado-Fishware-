@@ -131,9 +131,11 @@ export const getMiReferido = async (req, res) => {
 
     // Todas las configs de la empresa (para mostrar la tabla al cliente)
     const { rows: todasConfigs } = await pool.query(
-      `SELECT rca.*, nl.nombre AS nivel_nombre_real, nl.monto_minimo
+      `SELECT rca.*, nl.nombre AS nivel_nombre_real, nl.monto_minimo,
+              nlh.nombre AS nivel_heredado_nombre
        FROM referidos_config_amigo rca
-       LEFT JOIN niveles_lealtad nl ON nl.id = rca.nivel_id
+       LEFT JOIN niveles_lealtad nl  ON nl.id  = rca.nivel_id
+       LEFT JOIN niveles_lealtad nlh ON nlh.id = rca.nivel_heredado_id
        WHERE rca.empresa_id=$1 AND rca.activo=true
        ORDER BY COALESCE(nl.monto_minimo, -1) ASC`,
       [empresa_id]
@@ -265,9 +267,11 @@ export const getConfigReferidos = async (req, res) => {
 
     const [configAmigo, configRef, niveles] = await Promise.all([
       pool.query(
-        `SELECT rca.*, nl.nombre AS nivel_nombre_real, nl.monto_minimo
+        `SELECT rca.*, nl.nombre AS nivel_nombre_real, nl.monto_minimo,
+                nlh.nombre AS nivel_heredado_nombre
          FROM referidos_config_amigo rca
-         LEFT JOIN niveles_lealtad nl ON nl.id = rca.nivel_id
+         LEFT JOIN niveles_lealtad nl  ON nl.id  = rca.nivel_id
+         LEFT JOIN niveles_lealtad nlh ON nlh.id = rca.nivel_heredado_id
          WHERE rca.empresa_id=$1
          ORDER BY COALESCE(nl.monto_minimo, -1) ASC`,
         [empresa_id]
@@ -309,17 +313,19 @@ export const guardarConfigReferidos = async (req, res) => {
     for (const e of config_amigo) {
       await client.query(
         `INSERT INTO referidos_config_amigo
-           (empresa_id, nivel_id, nivel_nombre, descuento_pct, envio_gratis, descripcion, activo)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)
+           (empresa_id, nivel_id, nivel_nombre, descuento_pct, envio_gratis, descripcion, activo, nivel_heredado_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
          ON CONFLICT (empresa_id, nivel_id) DO UPDATE SET
-           nivel_nombre  = EXCLUDED.nivel_nombre,
-           descuento_pct = EXCLUDED.descuento_pct,
-           envio_gratis  = EXCLUDED.envio_gratis,
-           descripcion   = EXCLUDED.descripcion,
-           activo        = EXCLUDED.activo`,
+           nivel_nombre      = EXCLUDED.nivel_nombre,
+           descuento_pct     = EXCLUDED.descuento_pct,
+           envio_gratis      = EXCLUDED.envio_gratis,
+           descripcion       = EXCLUDED.descripcion,
+           activo            = EXCLUDED.activo,
+           nivel_heredado_id = EXCLUDED.nivel_heredado_id`,
         [empresa_id, e.nivel_id ?? null, e.nivel_nombre,
          e.descuento_pct, e.envio_gratis || false,
-         e.descripcion || null, e.activo !== false]
+         e.descripcion || null, e.activo !== false,
+         e.nivel_heredado_id ?? null]
       );
     }
 
