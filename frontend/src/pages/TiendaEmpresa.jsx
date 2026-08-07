@@ -179,7 +179,7 @@ export default function TiendaEmpresa() {
                   onClick={() => {
                     const refCode = new URLSearchParams(location.search).get("ref");
                     navigate("/tienda/registro", {
-                      state: { empresa_id: empresa?.id, codigo_referido: refCode || undefined }
+                      state: { empresa_id: empresa?.id, empresa_slug: empresaSlug, codigo_referido: refCode || undefined }
                     });
                   }}>
                   Registrarse

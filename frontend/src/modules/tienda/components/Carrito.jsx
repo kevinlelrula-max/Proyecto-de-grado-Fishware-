@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useCheckout }  from "../hooks/useCheckout";
 import CheckoutModal    from "./CheckoutModal";
 import EnvioForm        from "../../envio/components/EnvioForm";
 import { validarCupon } from "../../cupones/services/cuponesService";
+import { getMiDescuentoActivo } from "../../referidos/services/referidosService";
 
 export default function Carrito({
   carrito,
@@ -33,6 +34,21 @@ export default function Carrito({
   // 2️⃣ Estado del costo de envío — se actualiza desde EnvioForm
   const [costoEnvio, setCostoEnvio] = useState(0);
   const handleCostoEnvio = useCallback((costo) => setCostoEnvio(costo), []);
+
+  // Descuento de referido
+  const [descuentoReferido, setDescuentoReferido] = useState(null);
+  useEffect(() => {
+    if (!carritoAbierto || !estaLogueado || !empresaId) return;
+    const token = localStorage.getItem("cliente_token");
+    if (!token) return;
+    getMiDescuentoActivo(token, empresaId).then(setDescuentoReferido).catch(() => {});
+  }, [carritoAbierto, estaLogueado, empresaId]);
+
+  const tieneDescuentoRef = descuentoReferido?.tiene_descuento;
+  const descuentoRefPct   = tieneDescuentoRef ? (descuentoReferido.descuento_pct || 0) : 0;
+  const envioGratisRef    = tieneDescuentoRef && descuentoReferido.envio_gratis;
+  const descuentoRefMonto = tieneDescuentoRef ? Math.round(totalPrecio * descuentoRefPct / 100) : 0;
+  const costoEnvioEfectivo = envioGratisRef ? 0 : costoEnvio;
 
   // 3️⃣ Estado de cupón
   const [codigoCupon,   setCodigoCupon]   = useState("");
@@ -71,7 +87,7 @@ export default function Carrito({
   };
 
   const descuentoCupon = cuponAplicado?.descuento || 0;
-  const totalConEnvio  = totalPrecio + costoEnvio - descuentoCupon;
+  const totalConEnvio  = totalPrecio + costoEnvioEfectivo - descuentoCupon - descuentoRefMonto;
 
   // ── Checkout con pasarela ─────────────────────────────────────────────────
   const metodoSeleccionado = metodosPago.find(m => m.id === metodoPagoId);
@@ -89,12 +105,12 @@ export default function Carrito({
   } = useCheckout({
     empresaId,
     carrito,
-    totalPrecio:    totalConEnvio,
+    totalPrecio:     totalConEnvio,
     direccion,
     notas,
     metodoPagoId,
     cuponId:         cuponAplicado?.cupon_id  || null,
-    descuentoCupon:  descuentoCupon,
+    descuentoCupon:  descuentoCupon + descuentoRefMonto,
     onPedidoCreado,
   });
 
@@ -196,18 +212,34 @@ export default function Carrito({
                 {errorCupon && <p style={s.cuponError}>{errorCupon}</p>}
               </div>
 
-              {/* Total con envío y cupón */}
+              {/* Total con envío, referido y cupón */}
               <div style={s.totalWrap}>
-                {(costoEnvio > 0 || descuentoCupon > 0) && (
+                {(costoEnvio > 0 || descuentoCupon > 0 || tieneDescuentoRef) && (
                   <div style={s.subtotalRow}>
                     <span style={s.subtotalLabel}>Subtotal productos</span>
                     <span style={s.subtotalValor}>${totalPrecio.toLocaleString("es-CO")}</span>
                   </div>
                 )}
-                {costoEnvio > 0 && (
+                {costoEnvio > 0 && !envioGratisRef && (
                   <div style={s.subtotalRow}>
                     <span style={s.subtotalLabel}>Envío</span>
                     <span style={s.subtotalValor}>+ ${costoEnvio.toLocaleString("es-CO")}</span>
+                  </div>
+                )}
+                {envioGratisRef && costoEnvio > 0 && (
+                  <div style={s.subtotalRow}>
+                    <span style={{ ...s.subtotalLabel, color: "#0F6E56" }}>Envío</span>
+                    <span style={{ ...s.subtotalValor, color: "#0F6E56", fontWeight: "700" }}>Gratis 🎁</span>
+                  </div>
+                )}
+                {tieneDescuentoRef && descuentoRefMonto > 0 && (
+                  <div style={s.subtotalRow}>
+                    <span style={{ ...s.subtotalLabel, color: "#2563eb" }}>
+                      🤝 Descuento referido ({descuentoRefPct}%)
+                    </span>
+                    <span style={{ ...s.subtotalValor, color: "#2563eb", fontWeight: "700" }}>
+                      −${descuentoRefMonto.toLocaleString("es-CO")}
+                    </span>
                   </div>
                 )}
                 {descuentoCupon > 0 && (
@@ -293,7 +325,7 @@ export default function Carrito({
                 ) : (
                   <button
                     style={{ ...s.btnConfirmar, opacity: loadingPedido ? 0.75 : 1, cursor: loadingPedido ? "not-allowed" : "pointer" }}
-                    onClick={() => confirmarPedido(totalConEnvio, cuponAplicado?.cupon_id || null, descuentoCupon)}
+                    onClick={() => confirmarPedido(totalConEnvio, cuponAplicado?.cupon_id || null, descuentoCupon + descuentoRefMonto)}
                     disabled={loadingPedido}
                   >
                     {loadingPedido

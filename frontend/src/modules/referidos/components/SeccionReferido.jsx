@@ -8,8 +8,10 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
   const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
-    if (!token || !empresaId) return;
-    getMiReferido(token, empresaId).then(d => { setData(d); setLoad(false); });
+    if (!token || !empresaId) { setLoad(false); return; }
+    getMiReferido(token, empresaId)
+      .then(d => { setData(d); setLoad(false); })
+      .catch(() => setLoad(false));
   }, [token, empresaId]);
 
   if (!token) return null;

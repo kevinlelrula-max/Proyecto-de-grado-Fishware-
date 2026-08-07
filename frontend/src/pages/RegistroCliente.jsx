@@ -7,6 +7,7 @@ export default function RegistroCliente() {
   const navigate  = useNavigate();
   const location  = useLocation();
   const empresaIdFromState      = location.state?.empresa_id || null;
+  const empresaSlugFromState    = location.state?.empresa_slug || null;
   const codigoReferidoFromUrl   = new URLSearchParams(location.search).get("ref")
                                   || location.state?.codigo_referido
                                   || null;
@@ -93,7 +94,10 @@ export default function RegistroCliente() {
         localStorage.setItem("cliente_token",  res.token);
         localStorage.setItem("cliente_id",     res.cliente_id);
         localStorage.setItem("cliente_nombre", res.nombre);
-        navigate("/tienda");
+        const destino = empresaSlugFromState
+          ? `/tienda/${empresaSlugFromState}`
+          : "/tienda";
+        navigate(destino);
       } else {
         setError(res.error || "Error al registrar. Verifica los datos.");
       }
@@ -180,6 +184,12 @@ export default function RegistroCliente() {
                 : "Tu dirección de entrega predeterminada"}
             </p>
           </div>
+
+          {codigoReferidoFromUrl && (
+            <div style={s.referidoBanner}>
+              🎁 Estás registrándote con el código de referido <strong style={{ fontFamily: "monospace", letterSpacing: 1 }}>{codigoReferidoFromUrl}</strong> — ¡obtendrás un descuento en tu primera compra!
+            </div>
+          )}
 
           {error && <div style={s.errorBox}>⚠️ {error}</div>}
 
@@ -365,6 +375,7 @@ const s = {
   formTitle: { fontSize: "24px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "6px" },
   formSubtitle: { fontSize: "14px", color: "#64748b" },
 
+  referidoBanner: { backgroundColor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#1e40af", marginBottom: "16px", lineHeight: "1.5" },
   errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" },
 
   fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" },

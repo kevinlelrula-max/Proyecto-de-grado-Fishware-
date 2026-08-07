@@ -35,7 +35,9 @@ function TabEstadisticas() {
   const [loading, setLoad]  = useState(true);
 
   useEffect(() => {
-    getEstadisticasReferidos(token()).then(d => { setData(d); setLoad(false); });
+    getEstadisticasReferidos(token())
+      .then(d => { setData(d); setLoad(false); })
+      .catch(() => setLoad(false));
   }, []);
 
   if (loading) return <div style={{ padding: 24 }}><SkeletonTable rows={4} /></div>;
@@ -224,37 +226,44 @@ function TabConfiguracion() {
 
   const cargar = useCallback(() => {
     setLoad(true);
-    getConfigReferidos(token()).then(d => {
-      if (d) {
-        setNiveles(d.niveles || []);
-        const nivelesConNull = [{ id: null, nombre: "Sin nivel", monto_minimo: -1 }, ...(d.niveles || [])];
-        setCfgAmigo(nivelesConNull.map(n => {
-          const existing = d.config_amigo.find(c => (c.nivel_id ?? null) === (n.id ?? null));
-          return existing || {
-            nivel_id: n.id, nivel_nombre: n.nombre,
-            descuento_pct: n.id === null ? 5 : 10,
-            envio_gratis: false, descripcion: "", activo: true,
-          };
-        }));
-        setCfgRef(d.config_referidor.length > 0 ? d.config_referidor : [
-          { rango_desde: 1,  rango_hasta: 4,   tipo_premio: "puntos",       valor: 50,  descripcion: "50 puntos de lealtad" },
-          { rango_desde: 5,  rango_hasta: 14,  tipo_premio: "descuento_pct", valor: 5,  descripcion: "5% de descuento en tu próxima compra" },
-          { rango_desde: 15, rango_hasta: 29,  tipo_premio: "descuento_pct", valor: 10, descripcion: "10% de descuento en tu próxima compra" },
-          { rango_desde: 30, rango_hasta: null, tipo_premio: "personalizado", valor: null, descripcion: "Premio especial — contáctanos" },
-        ]);
-      }
-      setLoad(false);
-    });
+    getConfigReferidos(token())
+      .then(d => {
+        if (d) {
+          setNiveles(d.niveles || []);
+          const nivelesConNull = [{ id: null, nombre: "Sin nivel", monto_minimo: -1 }, ...(d.niveles || [])];
+          setCfgAmigo(nivelesConNull.map(n => {
+            const existing = d.config_amigo.find(c => (c.nivel_id ?? null) === (n.id ?? null));
+            return existing || {
+              nivel_id: n.id, nivel_nombre: n.nombre,
+              descuento_pct: n.id === null ? 5 : 10,
+              envio_gratis: false, descripcion: "", nivel_heredado_id: null, activo: true,
+            };
+          }));
+          setCfgRef(d.config_referidor.length > 0 ? d.config_referidor : [
+            { rango_desde: 1,  rango_hasta: 4,   tipo_premio: "puntos",        valor: 50,   descripcion: "50 puntos de lealtad" },
+            { rango_desde: 5,  rango_hasta: 14,  tipo_premio: "descuento_pct", valor: 5,    descripcion: "5% de descuento en tu próxima compra" },
+            { rango_desde: 15, rango_hasta: 29,  tipo_premio: "descuento_pct", valor: 10,   descripcion: "10% de descuento en tu próxima compra" },
+            { rango_desde: 30, rango_hasta: null, tipo_premio: "personalizado", valor: null, descripcion: "Premio especial — contáctanos" },
+          ]);
+        }
+        setLoad(false);
+      })
+      .catch(() => setLoad(false));
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   const guardar = async () => {
     setGuardar(true); setError("");
-    const res = await guardarConfigReferidos(token(), { config_amigo: cfgAmigo, config_referidor: cfgRef });
-    setGuardar(false);
-    if (res.ok) { setExito("Configuración guardada"); setTimeout(() => setExito(""), 2500); }
-    else setError("Error al guardar");
+    try {
+      const res = await guardarConfigReferidos(token(), { config_amigo: cfgAmigo, config_referidor: cfgRef });
+      if (res.ok) { setExito("Configuración guardada"); setTimeout(() => setExito(""), 2500); }
+      else setError(res.error || "Error al guardar");
+    } catch {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setGuardar(false);
+    }
   };
 
   const updateAmigo = (i, campo, val) =>
