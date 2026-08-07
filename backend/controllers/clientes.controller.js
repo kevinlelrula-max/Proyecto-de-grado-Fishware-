@@ -473,6 +473,9 @@ export const registrarClientePublico = async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    if (error.code === "23505") {
+      return res.status(400).json({ error: "El nombre de usuario ya está en uso. Elegí otro." });
+    }
     res.status(500).json({ error: "Error al registrar cliente" });
   }
 };
