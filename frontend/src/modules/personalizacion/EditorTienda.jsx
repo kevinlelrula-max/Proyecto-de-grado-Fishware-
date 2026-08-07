@@ -13,7 +13,7 @@ export default function EditorTienda() {
       {!editorAbierto && (
         <div className="flex items-center justify-center h-full p-10">
           <div className="flex flex-col items-center gap-5 text-center max-w-sm">
-            <span className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <span style={{ display:"flex", width:64, height:64, alignItems:"center", justifyContent:"center", borderRadius:16, backgroundColor:"#eff6ff", color:"#2563eb" }}>
               <Store size={28} />
             </span>
             <div>
@@ -26,7 +26,7 @@ export default function EditorTienda() {
             </div>
             <button
               onClick={() => setEditorAbierto(true)}
-              className="mt-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ marginTop:4, padding:"10px 24px", backgroundColor:"#2563eb", color:"white", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer" }}
             >
               Abrir editor
             </button>
@@ -160,7 +160,7 @@ function EditorFullscreen({ onCerrar }) {
 
       {cargando ? (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#0F6E56", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#2563eb", animation: "spin 0.8s linear infinite" }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           <span style={{ fontSize: 13, color: "#94a3b8" }}>Cargando editor...</span>
         </div>
@@ -246,7 +246,7 @@ const fs = {
     width: 7,
     height: 7,
     borderRadius: "50%",
-    background: "linear-gradient(135deg,#0F6E56,#0e9b7a)",
+    background: "#2563eb",
     flexShrink: 0,
   },
   topTitle: {
