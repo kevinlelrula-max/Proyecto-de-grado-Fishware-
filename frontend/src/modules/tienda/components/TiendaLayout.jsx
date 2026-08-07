@@ -21,6 +21,21 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
   const logoUrl         = empresa?.logo_url || null;
   const fuente          = empresa?.fuente   || "Inter";
 
+  // Cuando se abre con código de referido: guardar y cerrar sesión activa (el link es para nuevos usuarios)
+  useEffect(() => {
+    const refCode = new URLSearchParams(location.search).get("ref");
+    if (!refCode) return;
+    localStorage.setItem("ultima_ref_codigo", refCode);
+    if (localStorage.getItem("cliente_token")) {
+      localStorage.removeItem("cliente_token");
+      localStorage.removeItem("cliente_id");
+      localStorage.removeItem("cliente_nombre");
+      localStorage.removeItem("cliente_rol");
+      localStorage.removeItem("cliente_empresa_id");
+      window.location.reload();
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (!logoUrl) return;
     const fullUrl = logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`;
@@ -132,7 +147,12 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
                 </button>
                 <button
                   style={{ ...s.navBtnPrimary, backgroundColor: colorMarca }}
-                  onClick={() => navigate("/tienda/registro")}
+                  onClick={() => {
+                    const refCode = new URLSearchParams(location.search).get("ref") || localStorage.getItem("ultima_ref_codigo");
+                    navigate(`/tienda/registro${refCode ? `?ref=${refCode}` : ""}`, {
+                      state: { empresa_id: empresa?.id, empresa_slug: empresaSlug }
+                    });
+                  }}
                 >
                   Registrarse
                 </button>

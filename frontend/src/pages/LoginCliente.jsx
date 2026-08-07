@@ -188,7 +188,10 @@ export default function LoginCliente() {
 
           <button
             style={s.btnRegister}
-            onClick={() => navigate("/tienda/registro")}
+            onClick={() => {
+              const refCode = localStorage.getItem("ultima_ref_codigo");
+              navigate(`/tienda/registro${refCode ? `?ref=${refCode}` : ""}`);
+            }}
           >
             Crear cuenta gratis
           </button>

@@ -43,6 +43,21 @@ export default function TiendaEmpresa() {
       .catch(() => {});
   }, [empresaSlug]);
 
+  // Cuando se abre con código de referido: guardar y cerrar sesión activa (el link es para nuevos usuarios)
+  useEffect(() => {
+    const refCode = new URLSearchParams(location.search).get("ref");
+    if (!refCode) return;
+    localStorage.setItem("ultima_ref_codigo", refCode);
+    if (localStorage.getItem("cliente_token")) {
+      localStorage.removeItem("cliente_token");
+      localStorage.removeItem("cliente_id");
+      localStorage.removeItem("cliente_nombre");
+      localStorage.removeItem("cliente_rol");
+      localStorage.removeItem("cliente_empresa_id");
+      window.location.reload();
+    }
+  }, [location.search]);
+
   const empresa       = empresaFull || empresaInicial;
   const empresaNombre = empresa?.nombre || empresaSlug;
   const colorMarca    = empresa?.color_primario || "#0F6E56";
@@ -177,9 +192,9 @@ export default function TiendaEmpresa() {
                 </button>
                 <button style={{ ...s.navBtnPrimary, backgroundColor: colorMarca }}
                   onClick={() => {
-                    const refCode = new URLSearchParams(location.search).get("ref");
-                    navigate("/tienda/registro", {
-                      state: { empresa_id: empresa?.id, empresa_slug: empresaSlug, codigo_referido: refCode || undefined }
+                    const refCode = new URLSearchParams(location.search).get("ref") || localStorage.getItem("ultima_ref_codigo");
+                    navigate(`/tienda/registro${refCode ? `?ref=${refCode}` : ""}`, {
+                      state: { empresa_id: empresa?.id, empresa_slug: empresaSlug }
                     });
                   }}>
                   Registrarse

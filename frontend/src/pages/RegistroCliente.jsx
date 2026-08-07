@@ -6,10 +6,12 @@ import { getDepartamentos, getMunicipios } from "../modules/ubicacion/services/u
 export default function RegistroCliente() {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const empresaIdFromState      = location.state?.empresa_id || null;
-  const empresaSlugFromState    = location.state?.empresa_slug || null;
+  const empresaFromStorage       = (() => { try { return JSON.parse(localStorage.getItem("ultima_empresa") || "null"); } catch { return null; } })();
+  const empresaIdFromState      = location.state?.empresa_id || empresaFromStorage?.id || null;
+  const empresaSlugFromState    = location.state?.empresa_slug || localStorage.getItem("ultima_empresa_slug") || null;
   const codigoReferidoFromUrl   = new URLSearchParams(location.search).get("ref")
                                   || location.state?.codigo_referido
+                                  || localStorage.getItem("ultima_ref_codigo")
                                   || null;
   const [step, setStep]       = useState(1); // 1: cuenta, 2: ubicación
   const [loading, setLoading] = useState(false);
@@ -94,6 +96,7 @@ export default function RegistroCliente() {
         localStorage.setItem("cliente_token",  res.token);
         localStorage.setItem("cliente_id",     res.cliente_id);
         localStorage.setItem("cliente_nombre", res.nombre);
+        localStorage.removeItem("ultima_ref_codigo"); // ya se procesó en el backend
         const destino = empresaSlugFromState
           ? `/tienda/${empresaSlugFromState}`
           : "/tienda";
