@@ -27,6 +27,8 @@ import carritosRoutes       from "./routes/carritos.routes.js";
 import mcpRoutes            from "./routes/mcp.routes.js";
 import oauthRoutes          from "./routes/oauth.routes.js";
 import insightRoutes        from "./routes/insight.routes.js";
+import devolucionesRoutes   from "./routes/devoluciones.routes.js";
+import cajaRoutes           from "./routes/caja.routes.js";
 const app = express();
 
 // =========================
@@ -114,6 +116,8 @@ app.use("/api/carritos",        carritosRoutes);
 app.use("/api/mcp",             mcpRoutes);
 app.use("/oauth",               oauthRoutes);
 app.use("/api/insight",         insightRoutes);
+app.use("/api/devoluciones",    devolucionesRoutes);
+app.use("/api/caja",            cajaRoutes);
 
 // =========================
 // 🔹 404 HANDLER

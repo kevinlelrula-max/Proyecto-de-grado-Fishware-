@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { CreditCard, MapPin, Phone, FileText, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { CreditCard, MapPin, Phone, FileText, ChevronDown, ChevronUp, CheckCircle, RotateCcw } from "lucide-react";
 import { ESTADOS, SIGUIENTE_ESTADO } from "../hooks/usePedidosAdmin";
+import ModalDevolucion from "../../devoluciones/ModalDevolucion";
 
 function getBadge(estado) {
   const e = ESTADOS.find(e => e.key === estado) || ESTADOS[0];
@@ -19,6 +20,7 @@ function getBadge(estado) {
 
 export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) {
   const [expandido, setExpandido] = useState(false);
+  const [modalDevolucion, setModalDevolucion] = useState(false);
   const siguienteEstado = SIGUIENTE_ESTADO[pedido.estado];
   const estaActivo = cambiando === pedido.id;
 
@@ -142,9 +144,35 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
                 Cancelar pedido
               </button>
             )}
+            {(pedido.estado === "entregado" || pedido.estado === "confirmado") && (
+              <button
+                style={s.btnDevolucion}
+                onClick={() => setModalDevolucion(true)}
+              >
+                <RotateCcw size={13} style={{ marginRight: 5 }} />
+                Devolución
+              </button>
+            )}
           </div>
 
         </div>
+      )}
+
+      {modalDevolucion && (
+        <ModalDevolucion
+          pedido={{
+            ...pedido,
+            items: (pedido.detalle || []).map(d => ({
+              producto_id:    d.producto_id,
+              nombre:         d.nombre,
+              cantidad:       Number(d.cantidad),
+              precio_unitario:Number(d.precio_unitario || d.subtotal / d.cantidad || 0),
+            })),
+          }}
+          tipo="pedido"
+          onCerrar={() => setModalDevolucion(false)}
+          onExito={() => setModalDevolucion(false)}
+        />
       )}
     </div>
   );
@@ -208,6 +236,12 @@ const s = {
   btnCancelar: {
     padding: "10px 16px", backgroundColor: "white",
     color: "#ef4444", border: "1.5px solid #fecaca",
+    borderRadius: "9px", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+  },
+  btnDevolucion: {
+    display: "inline-flex", alignItems: "center",
+    padding: "10px 16px", backgroundColor: "white",
+    color: "#2563eb", border: "1.5px solid #bfdbfe",
     borderRadius: "9px", fontSize: "13px", fontWeight: "600", cursor: "pointer",
   },
 };

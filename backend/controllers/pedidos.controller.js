@@ -272,6 +272,18 @@ export const actualizarEstadoPedido = async (req, res) => {
         seccion: "pedidos",
         referencia_id: Number(id),
       });
+
+      // Restaurar stock de cada producto del pedido cancelado
+      const detalles = await pool.query(
+        `SELECT producto_id, cantidad FROM detalle_pedido_online WHERE pedido_id = $1`,
+        [id]
+      );
+      for (const item of detalles.rows) {
+        await pool.query(
+          `UPDATE productos SET stock = stock + $1 WHERE id = $2`,
+          [item.cantidad, item.producto_id]
+        );
+      }
     }
 
     // 📧 Email al cliente cuando el estado es relevante

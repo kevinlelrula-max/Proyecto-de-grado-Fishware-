@@ -26,7 +26,7 @@ export const getConfiguracion = async (req, res) => {
               hero_titulo, hero_subtitulo, hero_btn_texto,
               nosotros_titulo, nosotros_contenido,
               unidad_predeterminada, fuente, productos_destacados_cantidad,
-              footer_texto
+              footer_texto, COALESCE(iva_porcentaje, 0) AS iva_porcentaje
        FROM empresas WHERE id = $1`,
       [empresa_id]
     );
@@ -75,6 +75,7 @@ export const getConfiguracion = async (req, res) => {
       fuente:                        empresa.fuente                        || "Inter",
       productos_destacados_cantidad: empresa.productos_destacados_cantidad || 4,
       footer_texto:                  empresa.footer_texto                  || "",
+      iva_porcentaje:                Number(empresa.iva_porcentaje)         || 0,
       metodosPago:                   metodosResult.rows,
     });
   } catch (error) {
@@ -96,7 +97,7 @@ export const updateDatosEmpresa = async (req, res) => {
       hero_titulo, hero_subtitulo, hero_btn_texto,
       nosotros_titulo, nosotros_contenido,
       unidad_predeterminada, fuente, productos_destacados_cantidad,
-      footer_texto,
+      footer_texto, iva_porcentaje,
     } = req.body;
 
     if (!nombre) {
@@ -111,15 +112,16 @@ export const updateDatosEmpresa = async (req, res) => {
            hero_titulo=$13, hero_subtitulo=$14, hero_btn_texto=$15,
            nosotros_titulo=$16, nosotros_contenido=$17,
            unidad_predeterminada=$18, fuente=$19,
-           productos_destacados_cantidad=$20, footer_texto=$21
-       WHERE id=$22
+           productos_destacados_cantidad=$20, footer_texto=$21,
+           iva_porcentaje=$22
+       WHERE id=$23
        RETURNING id, nombre, nit, email, telefono, direccion, logo_url,
                  slug, descripcion, color_primario, color_secundario, banner_url,
                  instagram, whatsapp, facebook, horario,
                  hero_titulo, hero_subtitulo, hero_btn_texto,
                  nosotros_titulo, nosotros_contenido,
                  unidad_predeterminada, fuente, productos_destacados_cantidad,
-                 footer_texto`,
+                 footer_texto, COALESCE(iva_porcentaje, 0) AS iva_porcentaje`,
       [
         nombre, nit, email, telefono, direccion,
         descripcion           || null,
@@ -138,6 +140,7 @@ export const updateDatosEmpresa = async (req, res) => {
         fuente                || "Inter",
         productos_destacados_cantidad || 4,
         footer_texto          || null,
+        Number(iva_porcentaje) || 0,
         empresa_id,
       ]
     );

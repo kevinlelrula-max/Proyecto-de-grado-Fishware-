@@ -20,15 +20,14 @@ const METODOS_INICIALES = [
 const EMPRESA_INICIAL = {
   nombre: "", nit: "", telefono: "", email: "",
   direccion: "", logoUrl: null, slug: "",
-  // ✅ Personalización
   descripcion: "", color_primario: "#0F6E56", color_secundario: "#0B1628",
   banner_url: null, instagram: "", whatsapp: "",
   facebook: "", horario: "",
-  // ✅ Hero y nosotros
   hero_titulo: "", hero_subtitulo: "", hero_btn_texto: "",
   nosotros_titulo: "", nosotros_contenido: "",
   unidad_predeterminada: "unidad",
   fuente: "Inter", productos_destacados_cantidad: 4, footer_texto: "",
+  iva_porcentaje: 0,
 };
 
 function cargarDesdeStorage() {
@@ -89,6 +88,7 @@ export function useConfiguracion() {
   fuente:                        data.fuente                        || "Inter",
   productos_destacados_cantidad: data.productos_destacados_cantidad || 4,
   footer_texto:                  data.footer_texto                  || "",
+  iva_porcentaje:                Number(data.iva_porcentaje)        || 0,
 };
 
       // Mezcla los metodos del backend con los labels del frontend
@@ -168,6 +168,7 @@ export function useConfiguracion() {
         fuente:                        empresa.fuente,
         productos_destacados_cantidad: empresa.productos_destacados_cantidad,
         footer_texto:                  empresa.footer_texto,
+        iva_porcentaje:                empresa.iva_porcentaje,
       });
 
       await updateMetodosPago(

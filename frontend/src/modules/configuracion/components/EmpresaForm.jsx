@@ -115,6 +115,25 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
               Se usará como valor por defecto al crear un nuevo producto. Cada producto puede cambiarse individualmente.
             </p>
           </div>
+
+          {/* IVA */}
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              IVA / Impuesto (%)
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              value={empresa.iva_porcentaje ?? 0}
+              onChange={(e) => onChange("iva_porcentaje", Number(e.target.value))}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Ej: 19 para Colombia. Se aplica al subtotal en ventas y tienda. Usa 0 para desactivar.
+            </p>
+          </div>
         </div>
       </div>
 
