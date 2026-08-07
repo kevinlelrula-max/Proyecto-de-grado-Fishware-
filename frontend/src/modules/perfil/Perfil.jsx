@@ -163,7 +163,7 @@ export default function Perfil() {
                 </Field>
               </div>
 
-              <button style={{ ...s.btnPrimary, marginTop: "auto" }} onClick={handleSubmit}>Guardar cambios</button>
+              <button style={s.btnPrimary} onClick={handleSubmit}>Guardar cambios</button>
             </div>
 
             {/* SEGURIDAD */}
@@ -270,14 +270,13 @@ function getStrengthLabel(pwd) {
 
 const s = {
   page: {
+    minHeight: "100vh",
     backgroundColor: "#f0f4f8",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    height: "100vh",
-    overflow: "hidden",
   },
   layout: {
     display: "flex",
-    height: "100vh",
+    minHeight: "100vh",
   },
 
   // ── Sidebar ──
@@ -352,9 +351,8 @@ const s = {
     flexDirection: "column",
     gap: "24px",
     minWidth: 0,
-    overflowY: "auto",
   },
-  contentHeader: { flexShrink: 0 },
+  contentHeader: {},
   contentTitle: { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", margin: "0 0 4px" },
   contentSub: { fontSize: "13px", color: "#64748b", margin: 0 },
 
@@ -362,8 +360,7 @@ const s = {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "24px",
-    flex: 1,
-    minHeight: 0,
+    alignItems: "start",
   },
 
   // ── Cards ──
@@ -397,7 +394,7 @@ const s = {
     flexShrink: 0,
   },
 
-  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", flex: 1, alignContent: "start" },
+  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" },
   secFields: { display: "flex", flexDirection: "column", gap: "14px" },
   input: {
     width: "100%", padding: "10px 12px",

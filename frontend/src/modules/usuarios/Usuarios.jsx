@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Users, KeyRound, Search, Shield, Briefcase, Tag } from "lucide-react";
 import useUsuarios from "./hooks/useUsuarios.js";
 import TablaUsuarios from "./components/TablaUsuarios";
 import FormUsuario from "./components/FormUsuario";
@@ -7,40 +8,27 @@ import Gestionroles from "./components/Gestionroles";
 export default function Usuarios() {
   const { usuarios, agregarUsuario, actualizarUsuario, toggleUsuario, eliminarUsuario } = useUsuarios();
 
-  const [pestana, setPestana] = useState("usuarios"); // "usuarios" | "roles"
+  const [pestana, setPestana]         = useState("usuarios");
   const [mostrarForm, setMostrarForm] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
+  const [busqueda, setBusqueda]       = useState("");
 
   const usuariosFiltrados = usuarios.filter((u) =>
     `${u.nombre} ${u.apellido} ${u.usuario}`.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  // Stats por roles reales
   const admins    = usuarios.filter((u) => u.rol_id === 2).length;
   const empleados = usuarios.filter((u) => u.rol_id === 3).length;
   const otros     = usuarios.filter((u) => u.rol_id !== 2 && u.rol_id !== 3).length;
 
-  const handleNuevo = () => { setUsuarioEditar(null); setMostrarForm(true); };
+  const handleNuevo  = () => { setUsuarioEditar(null); setMostrarForm(true); };
   const handleEditar = (u) => { setUsuarioEditar(u); setMostrarForm(true); };
 
   const handleGuardar = async (data) => {
-    if (usuarioEditar) {
-      await actualizarUsuario(usuarioEditar.id, data);
-    } else {
-      await agregarUsuario(data);
-    }
+    if (usuarioEditar) await actualizarUsuario(usuarioEditar.id, data);
+    else await agregarUsuario(data);
     setMostrarForm(false);
     setUsuarioEditar(null);
-  };
-
-  const handleToggle = async (id) => {
-    await toggleUsuario(id);
-  };
-
-  const handleEliminar = async (id) => {
-    if (!confirm("¿Eliminar este usuario?")) return;
-    await eliminarUsuario(id);
   };
 
   return (
@@ -48,13 +36,12 @@ export default function Usuarios() {
 
       {/* HEADER */}
       <div style={s.header}>
-        <div style={s.headerLeft}>
+        <div>
           <h2 style={s.headerTitle}>Usuarios y Roles</h2>
+          <p style={s.headerSub}>Gestiona los miembros y permisos de tu empresa</p>
         </div>
         {pestana === "usuarios" && (
-          <button style={s.btnNew} onClick={handleNuevo}>
-            + Nuevo Usuario
-          </button>
+          <button style={s.btnNew} onClick={handleNuevo}>+ Nuevo usuario</button>
         )}
       </div>
 
@@ -64,13 +51,15 @@ export default function Usuarios() {
           style={{ ...s.tab, ...(pestana === "usuarios" ? s.tabActive : {}) }}
           onClick={() => setPestana("usuarios")}
         >
-          🧑‍💼 Usuarios
+          <Users size={14} />
+          Usuarios
         </button>
         <button
           style={{ ...s.tab, ...(pestana === "roles" ? s.tabActive : {}) }}
           onClick={() => setPestana("roles")}
         >
-          🔑 Roles
+          <KeyRound size={14} />
+          Roles
         </button>
       </div>
 
@@ -79,28 +68,16 @@ export default function Usuarios() {
         <>
           {/* STAT CARDS */}
           <div style={s.statsRow}>
-            <div style={s.statCard}>
-              <span style={s.statLabel}>Total usuarios</span>
-              <span style={{ ...s.statValue, color: "#2563eb" }}>{usuarios.length}</span>
-            </div>
-            <div style={s.statCard}>
-              <span style={s.statLabel}>Administradores</span>
-              <span style={s.statValue}>{admins}</span>
-            </div>
-            <div style={s.statCard}>
-              <span style={s.statLabel}>Empleados</span>
-              <span style={s.statValue}>{empleados}</span>
-            </div>
-            <div style={s.statCard}>
-              <span style={s.statLabel}>Otros roles</span>
-              <span style={s.statValue}>{otros}</span>
-            </div>
+            <StatCard icon={<Users size={16} color="#2563eb" />} bg="#eff6ff" label="Total usuarios" value={usuarios.length} valueColor="#2563eb" />
+            <StatCard icon={<Shield size={16} color="#7c3aed" />} bg="#f5f3ff" label="Administradores" value={admins} valueColor="#7c3aed" />
+            <StatCard icon={<Briefcase size={16} color="#0891b2" />} bg="#ecfeff" label="Empleados" value={empleados} valueColor="#0891b2" />
+            <StatCard icon={<Tag size={16} color="#b45309" />} bg="#fffbeb" label="Otros roles" value={otros} valueColor="#b45309" />
           </div>
 
           {/* BUSCADOR */}
           <div style={s.controls}>
             <div style={s.searchWrap}>
-              <span style={s.searchIcon}>🔍</span>
+              <Search size={15} color="#94a3b8" style={{ position: "absolute", left: "12px" }} />
               <input
                 style={s.searchInput}
                 placeholder="Buscar usuario por nombre, apellido o usuario..."
@@ -117,8 +94,11 @@ export default function Usuarios() {
           <TablaUsuarios
             usuarios={usuariosFiltrados}
             onEditar={handleEditar}
-            onToggle={handleToggle}
-            onEliminar={handleEliminar}
+            onToggle={toggleUsuario}
+            onEliminar={async (id) => {
+              if (!confirm("¿Eliminar este usuario?")) return;
+              await eliminarUsuario(id);
+            }}
           />
         </>
       )}
@@ -148,15 +128,27 @@ export default function Usuarios() {
   );
 }
 
+function StatCard({ icon, bg, label, value, valueColor }) {
+  return (
+    <div style={s.statCard}>
+      <div style={{ ...s.statIconWrap, backgroundColor: bg }}>{icon}</div>
+      <div>
+        <div style={s.statLabel}>{label}</div>
+        <div style={{ ...s.statValue, color: valueColor }}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
 const s = {
   page: { padding: "24px" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" },
-  headerLeft: { display: "flex", alignItems: "center", gap: "10px" },
-  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" },
+  headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
+  headerSub: { fontSize: "13px", color: "#94a3b8", margin: 0 },
   btnNew: {
     padding: "9px 20px", backgroundColor: "#2563eb",
     color: "white", border: "none", borderRadius: "10px",
-    cursor: "pointer", fontSize: "14px", fontWeight: "600",
+    cursor: "pointer", fontSize: "14px", fontWeight: "600", flexShrink: 0,
   },
 
   tabs: { display: "flex", borderBottom: "2px solid #f0f0f0", marginBottom: "20px" },
@@ -171,20 +163,24 @@ const s = {
 
   statsRow: { display: "flex", gap: "12px", marginBottom: "20px" },
   statCard: {
-    flex: 1, backgroundColor: "#f8fafc", borderRadius: "12px",
-    padding: "12px 16px", display: "flex", flexDirection: "column", gap: "4px",
+    flex: 1, backgroundColor: "white", borderRadius: "14px",
+    padding: "16px", display: "flex", alignItems: "center", gap: "14px",
     border: "1px solid #e2e8f0",
   },
-  statLabel: { fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" },
-  statValue: { fontSize: "22px", fontWeight: "700", color: "#0f172a" },
+  statIconWrap: {
+    width: "40px", height: "40px", borderRadius: "10px",
+    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+  },
+  statLabel: { fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" },
+  statValue: { fontSize: "22px", fontWeight: "700" },
 
   controls: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" },
   searchWrap: { flex: 1, position: "relative", display: "flex", alignItems: "center" },
-  searchIcon: { position: "absolute", left: "12px", fontSize: "14px" },
   searchInput: {
-    width: "100%", padding: "9px 12px 9px 34px",
+    width: "100%", padding: "9px 12px 9px 36px",
     borderRadius: "10px", border: "1px solid #e2e8f0",
     fontSize: "14px", color: "#0f172a", outline: "none", backgroundColor: "#fff",
+    boxSizing: "border-box",
   },
   resultCount: { fontSize: "13px", color: "#94a3b8", whiteSpace: "nowrap" },
 
