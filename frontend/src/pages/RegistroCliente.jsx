@@ -1,399 +1,321 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { registroCliente } from "../services/api"; // ajusta la ruta según tu proyecto
-import { getDepartamentos, getMunicipios } from "../modules/ubicacion/services/ubicacion.api";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, AlertCircle, CheckCircle2, XCircle, Loader2, Check } from "lucide-react";
+import { useRegistroCliente, STR_LABELS, STR_BAR_COLORS, STR_TXT_COLORS } from "../modules/tienda/hooks/useRegistroCliente";
+import { MerkaiLogo } from "../modules/tienda/components/MerkaiLogo";
 
-export default function RegistroCliente() {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const empresaFromStorage       = (() => { try { return JSON.parse(localStorage.getItem("ultima_empresa") || "null"); } catch { return null; } })();
-  const empresaIdFromState      = location.state?.empresa_id || empresaFromStorage?.id || null;
-  const empresaSlugFromState    = location.state?.empresa_slug || localStorage.getItem("ultima_empresa_slug") || null;
-  const codigoReferidoFromUrl   = new URLSearchParams(location.search).get("ref")
-                                  || location.state?.codigo_referido
-                                  || localStorage.getItem("ultima_ref_codigo")
-                                  || null;
-  const [step, setStep]       = useState(1); // 1: cuenta, 2: ubicación
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState("");
-  const [showPass, setShowPass] = useState(false);
+const INPUT_BASE = "w-full px-3 py-2.5 rounded-[9px] border text-sm text-slate-900 bg-white outline-none transition-all";
+const INPUT_CLS  = `${INPUT_BASE} border-slate-200 focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/10 hover:border-slate-300`;
 
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios]       = useState([]);
-
-  const [form, setForm] = useState({
-    nombre:           "",
-    apellido:         "",
-    usuario:          "",   // email
-    contrasena:       "",
-    confirmar:        "",   // solo validación frontend, no se envía
-    telefono:         "",
-    direccion:        "",
-    tipo_documento:   "Cédula de ciudadanía",
-    numero_documento: "",
-    _departamento:    "",
-    id_municipio:     "",
-    rol_id:           4,    // cliente
-    empresa_id:                empresaIdFromState,
-    codigo_referido_invitante: codigoReferidoFromUrl, // código de quien refirió
-  });
-
-  useEffect(() => {
-    getDepartamentos(null).then(setDepartamentos).catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (!form._departamento) { setMunicipios([]); return; }
-    getMunicipios(form._departamento, null).then(setMunicipios).catch(console.error);
-  }, [form._departamento]);
-
-  const handleChange = (e) => {
-    setError("");
-    const { name, value } = e.target;
-    if (name === "_departamento") {
-      setForm((prev) => ({ ...prev, _departamento: value, id_municipio: "" }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const emailValido = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-
-  // Validaciones paso 1
-  const paso1Valido =
-    form.nombre &&
-    form.apellido &&
-    form.usuario && emailValido(form.usuario) &&
-    form.contrasena && form.contrasena.length >= 6 &&
-    form.contrasena === form.confirmar &&
-    form.telefono;
-
-  const paso1Error = () => {
-    if (!form.nombre || !form.apellido) return "Ingresa tu nombre completo.";
-    if (!form.usuario) return "Ingresa tu correo electrónico.";
-    if (!emailValido(form.usuario)) return "El correo electrónico no es válido.";
-    if (!form.contrasena) return "Ingresa una contraseña.";
-    if (form.contrasena.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
-    if (form.contrasena !== form.confirmar) return "Las contraseñas no coinciden.";
-    if (!form.telefono) return "Ingresa tu número de teléfono.";
-    return "";
-  };
-
-  const handleSiguiente = () => {
-    const err = paso1Error();
-    if (err) { setError(err); return; }
-    setStep(2);
-  };
-
-  const handleRegistro = async () => {
-    setLoading(true);
-    try {
-      const { _departamento, confirmar, ...payload } = form;
-      payload.id_municipio = payload.id_municipio ? Number(payload.id_municipio) : null;
-
-      const res = await registroCliente(payload);
-      if (res.token) {
-        localStorage.setItem("cliente_token",  res.token);
-        localStorage.setItem("cliente_id",     res.cliente_id);
-        localStorage.setItem("cliente_nombre", res.nombre);
-        localStorage.removeItem("ultima_ref_codigo"); // ya se procesó en el backend
-        const destino = empresaSlugFromState
-          ? `/tienda/${empresaSlugFromState}`
-          : "/tienda";
-        navigate(destino);
-      } else {
-        setError(res.error || "Error al registrar. Verifica los datos.");
-      }
-    } catch {
-      setError("No se pudo conectar con el servidor.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+function Field({ id, label, children, full }) {
   return (
-    <div style={s.page}>
-
-      {/* ── Panel izquierdo ── */}
-      <div style={s.left}>
-        <div style={s.leftContent}>
-
-          {/* Logo */}
-          <div style={s.logo}>
-            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.15)"/>
-              <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-              <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="14" cy="15" r="1.5" fill="white"/>
-            </svg>
-            <span style={s.logoText}>Merkai · Tienda</span>
-          </div>
-
-          {/* Hero */}
-          <div>
-            <h2 style={s.leftTitle}>Crea tu cuenta y empieza a comprar</h2>
-            <p style={s.leftSubtitle}>
-              Regístrate gratis y accede al catálogo de tus tiendas favoritas en la región.
-            </p>
-          </div>
-
-          {/* Indicador de pasos */}
-          <div style={s.stepsIndicator}>
-            {[
-              { n: 1, label: "Tu cuenta" },
-              { n: 2, label: "Tu ubicación" },
-            ].map((st) => (
-              <div key={st.n} style={s.stepRow}>
-                <div style={{
-                  ...s.stepCircle,
-                  backgroundColor: step >= st.n ? "white" : "rgba(255,255,255,0.15)",
-                  color: step >= st.n ? "#0F6E56" : "rgba(255,255,255,0.4)",
-                }}>
-                  {step > st.n ? "✓" : st.n}
-                </div>
-                <span style={{
-                  ...s.stepLabel,
-                  color: step >= st.n ? "white" : "rgba(255,255,255,0.4)",
-                }}>
-                  {st.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Footer */}
-          <div style={s.leftFooter}>
-            <p style={s.leftFooterText}>¿Ya tienes cuenta?</p>
-            <button style={s.leftBtn} onClick={() => navigate("/tienda/login")}>
-              Iniciar sesión →
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      {/* ── Panel derecho — formulario ── */}
-      <div style={s.right}>
-        <div style={s.formWrap}>
-
-          <div style={s.formHeader}>
-            <div style={s.stepTag}>Paso {step} de 2</div>
-            <h2 style={s.formTitle}>
-              {step === 1 ? "Datos de tu cuenta" : "¿Dónde te enviamos?"}
-            </h2>
-            <p style={s.formSubtitle}>
-              {step === 1
-                ? "Información básica para crear tu perfil"
-                : "Tu dirección de entrega predeterminada"}
-            </p>
-          </div>
-
-          {codigoReferidoFromUrl && (
-            <div style={s.referidoBanner}>
-              🎁 Estás registrándote con el código de referido <strong style={{ fontFamily: "monospace", letterSpacing: 1 }}>{codigoReferidoFromUrl}</strong> — ¡obtendrás un descuento en tu primera compra!
-            </div>
-          )}
-
-          {error && <div style={s.errorBox}>⚠️ {error}</div>}
-
-          {/* ── PASO 1: cuenta ── */}
-          {step === 1 && (
-            <div style={s.fieldsGrid}>
-              <Field label="Nombre" icon="👤">
-                <input style={s.input} name="nombre" placeholder="Juan" value={form.nombre} onChange={handleChange}/>
-              </Field>
-              <Field label="Apellido" icon="👤">
-                <input style={s.input} name="apellido" placeholder="García" value={form.apellido} onChange={handleChange}/>
-              </Field>
-
-              <Field label="Correo electrónico" icon="✉️" full>
-                <input style={s.input} name="usuario" type="email" placeholder="tucorreo@gmail.com" value={form.usuario} onChange={handleChange}/>
-              </Field>
-
-              <Field label="Teléfono" icon="📞" full>
-                <input style={s.input} name="telefono" placeholder="+57 300 000 0000" value={form.telefono} onChange={handleChange}/>
-              </Field>
-
-              <Field label="Contraseña" icon="🔒" full>
-                <div style={s.inputWrap}>
-                  <input
-                    style={{ ...s.input, paddingLeft: "12px" }}
-                    name="contrasena"
-                    type={showPass ? "text" : "password"}
-                    placeholder="Mínimo 6 caracteres"
-                    value={form.contrasena}
-                    onChange={handleChange}
-                  />
-                  <button style={s.eyeBtn} onClick={() => setShowPass(!showPass)} type="button" tabIndex={-1}>
-                    {showPass ? "🙈" : "👁️"}
-                  </button>
-                </div>
-              </Field>
-
-              <Field label="Confirmar contraseña" icon="🔒" full>
-                <input
-                  style={{
-                    ...s.input,
-                    borderColor: form.confirmar && form.contrasena !== form.confirmar ? "#fca5a5" : "#e2e8f0",
-                  }}
-                  name="confirmar"
-                  type="password"
-                  placeholder="Repite tu contraseña"
-                  value={form.confirmar}
-                  onChange={handleChange}
-                />
-                {form.confirmar && form.contrasena !== form.confirmar && (
-                  <span style={s.fieldError}>Las contraseñas no coinciden</span>
-                )}
-              </Field>
-            </div>
-          )}
-
-          {/* ── PASO 2: ubicación ── */}
-          {step === 2 && (
-            <div style={s.fieldsGrid}>
-              <Field label="Tipo de documento" icon="🪪" full>
-                <select style={s.input} name="tipo_documento" value={form.tipo_documento} onChange={handleChange}>
-                  <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
-                  <option value="Tarjeta de identidad">Tarjeta de identidad</option>
-                  <option value="Cédula de extranjería">Cédula de extranjería</option>
-                  <option value="Pasaporte">Pasaporte</option>
-                </select>
-              </Field>
-
-              <Field label="Número de documento" icon="🔢" full>
-                <input style={s.input} name="numero_documento" placeholder="1234567890" value={form.numero_documento} onChange={handleChange}/>
-              </Field>
-
-              <Field label="Departamento" icon="🗺️">
-                <select style={s.input} name="_departamento" value={form._departamento} onChange={handleChange}>
-                  <option value="">-- Selecciona --</option>
-                  {departamentos.map((d) => (
-                    <option key={d.id} value={d.id}>{d.nombre}</option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Municipio" icon="🏙️">
-                <select
-                  style={{ ...s.input, color: form._departamento ? "#0f172a" : "#94a3b8" }}
-                  name="id_municipio"
-                  value={form.id_municipio}
-                  onChange={handleChange}
-                  disabled={!form._departamento}
-                >
-                  <option value="">
-                    {form._departamento ? "-- Selecciona --" : "Primero elige departamento"}
-                  </option>
-                  {municipios.map((m) => (
-                    <option key={m.id} value={m.id}>{m.nombre}</option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Dirección de entrega" icon="📍" full>
-                <input style={s.input} name="direccion" placeholder="Calle 123 #45-67, Apto 201" value={form.direccion} onChange={handleChange}/>
-              </Field>
-
-              <div style={{ gridColumn: "1 / -1" }}>
-                <p style={s.hint}>
-                  💡 Estos datos son opcionales pero nos ayudan a calcular el costo de envío. Podrás actualizarlos luego desde tu perfil.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Botones */}
-          <div style={s.btnRow}>
-            {step === 2 && (
-              <button style={s.btnBack} onClick={() => { setError(""); setStep(1); }}>
-                ← Atrás
-              </button>
-            )}
-            {step === 1 ? (
-              <button style={s.btnNext} onClick={handleSiguiente}>
-                Continuar →
-              </button>
-            ) : (
-              <button
-                style={{ ...s.btnNext, opacity: loading ? 0.75 : 1 }}
-                disabled={loading}
-                onClick={handleRegistro}
-              >
-                {loading ? "Creando cuenta..." : "Crear cuenta gratis"}
-              </button>
-            )}
-          </div>
-
-          {/* Saltar ubicación */}
-          {step === 2 && (
-            <p style={s.skipText}>
-              <button style={s.skipBtn} onClick={handleRegistro} disabled={loading}>
-                Omitir por ahora y entrar a la tienda
-              </button>
-            </p>
-          )}
-
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, icon, children, full }) {
-  return (
-    <div style={{ gridColumn: full ? "1 / -1" : "span 1" }}>
-      <label style={s.label}>
-        <span>{icon}</span> {label}
+    <div className={full ? "col-span-2" : "col-span-1"}>
+      <label htmlFor={id} className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-wide">
+        {label}
       </label>
       {children}
     </div>
   );
 }
 
-/* ─── ESTILOS ─── */
-const s = {
-  page: { minHeight: "100vh", display: "flex", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
+export default function RegistroCliente() {
+  const navigate = useNavigate();
+  const {
+    form, step, loading, error, showPass, setShowPass,
+    departamentos, municipios, codigoReferidoFromUrl,
+    strength, pwdsMatch, pwdsMismatch,
+    handleChange, handleSiguiente, handleRegistro, goBack,
+  } = useRegistroCliente();
 
-  // Izquierdo
-  left: { flex: "0 0 360px", background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 55%, #0f1f2e 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px" },
-  leftContent: { display: "flex", flexDirection: "column", gap: "36px", width: "100%" },
-  logo: { display: "flex", alignItems: "center", gap: "10px" },
-  logoText: { fontSize: "18px", fontWeight: "700", color: "white" },
-  leftTitle: { fontSize: "26px", fontWeight: "800", color: "white", letterSpacing: "-0.02em", marginBottom: "12px", lineHeight: "1.25" },
-  leftSubtitle: { fontSize: "14px", color: "rgba(255,255,255,0.6)", lineHeight: "1.7" },
-  stepsIndicator: { display: "flex", flexDirection: "column", gap: "16px" },
-  stepRow: { display: "flex", alignItems: "center", gap: "12px" },
-  stepCircle: { width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", flexShrink: 0, transition: "all 0.2s" },
-  stepLabel: { fontSize: "14px", fontWeight: "500", transition: "color 0.2s" },
-  leftFooter: { borderTop: "1px solid rgba(255,255,255,0.15)", paddingTop: "24px" },
-  leftFooterText: { fontSize: "13px", color: "rgba(255,255,255,0.45)", marginBottom: "8px" },
-  leftBtn: { background: "transparent", border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.8)", borderRadius: "8px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontWeight: "500" },
+  const confirmBorder = pwdsMismatch
+    ? "border-red-300 focus:border-red-400 focus:ring-red-100/50"
+    : pwdsMatch
+    ? "border-emerald-400 focus:border-emerald-400 focus:ring-emerald-50"
+    : "border-slate-200 focus:border-[#0F6E56] focus:ring-[#0F6E56]/10 hover:border-slate-300";
 
-  // Derecho
-  right: { flex: 1, backgroundColor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px", overflowY: "auto" },
-  formWrap: { width: "100%", maxWidth: "520px" },
-  formHeader: { marginBottom: "28px" },
-  stepTag: { display: "inline-block", fontSize: "11px", fontWeight: "700", color: "#0F6E56", backgroundColor: "#E1F5EE", padding: "3px 10px", borderRadius: "999px", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "12px" },
-  formTitle: { fontSize: "24px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "6px" },
-  formSubtitle: { fontSize: "14px", color: "#64748b" },
+  return (
+    <div className="min-h-screen flex font-sans">
 
-  referidoBanner: { backgroundColor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#1e40af", marginBottom: "16px", lineHeight: "1.5" },
-  errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" },
+      {/* ── Panel izquierdo (solo desktop) ── */}
+      <div
+        className="hidden lg:flex flex-col w-[320px] flex-shrink-0 items-center justify-center p-10 relative overflow-hidden"
+        style={{ background: "linear-gradient(145deg, #0a1628 0%, #0e2a42 55%, #0f1f35 100%)" }}
+      >
+        <div
+          className="absolute -top-20 -right-28 w-[380px] h-[380px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.22) 0%, transparent 65%)" }}
+        />
 
-  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" },
-  label: { display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
-  inputWrap: { position: "relative", display: "flex", alignItems: "center" },
-  input: { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" },
-  eyeBtn: { position: "absolute", right: "12px", background: "none", border: "none", cursor: "pointer", fontSize: "14px", padding: "0", lineHeight: 1 },
-  fieldError: { fontSize: "11px", color: "#ef4444", marginTop: "4px", display: "block" },
+        <div className="relative z-10 w-full flex flex-col gap-8">
+          <div className="flex items-center gap-2.5">
+            <MerkaiLogo size={32} />
+            <span className="text-white font-bold text-base">Merkai · Tienda</span>
+          </div>
 
-  hint: { fontSize: "12px", color: "#94a3b8", backgroundColor: "#f1f5f9", padding: "10px 14px", borderRadius: "8px", lineHeight: "1.6" },
+          <div>
+            <p className="text-green-400 text-[10px] font-bold uppercase tracking-widest mb-2.5">Registro gratuito</p>
+            <h2 className="text-white text-xl font-extrabold tracking-tight leading-snug mb-3">
+              Crea tu cuenta y empieza a comprar
+            </h2>
+            <p className="text-white/55 text-sm leading-relaxed">
+              Accede al catálogo de tus tiendas favoritas y gestiona tus pedidos en un solo lugar.
+            </p>
+          </div>
 
-  btnRow: { display: "flex", gap: "10px" },
-  btnBack: { padding: "12px 20px", background: "transparent", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "14px", color: "#64748b", cursor: "pointer", fontWeight: "500" },
-  btnNext: { flex: 1, padding: "13px", backgroundColor: "#0F6E56", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "opacity 0.2s" },
+          <div className="flex flex-col gap-5">
+            {[
+              { n: 1, label: "Tu cuenta",    desc: "Datos básicos y contraseña" },
+              { n: 2, label: "Tu ubicación", desc: "Para calcular el envío" },
+            ].map((st) => (
+              <div key={st.n} className="flex items-start gap-3.5">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 transition-all duration-300 ${
+                  step > st.n   ? "bg-[#0F6E56] text-white" :
+                  step === st.n ? "bg-white text-[#0F6E56]" :
+                                  "bg-white/10 text-white/30"
+                }`}>
+                  {step > st.n ? <Check className="w-4 h-4" strokeWidth={2.5} /> : st.n}
+                </div>
+                <div>
+                  <p className={`text-sm font-semibold leading-tight mb-0.5 transition-colors duration-300 ${step >= st.n ? "text-white" : "text-white/30"}`}>
+                    {st.label}
+                  </p>
+                  <p className={`text-xs leading-snug transition-colors duration-300 ${step >= st.n ? "text-white/50" : "text-white/20"}`}>
+                    {st.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-  skipText: { textAlign: "center", marginTop: "14px" },
-  skipBtn: { background: "none", border: "none", color: "#94a3b8", fontSize: "13px", cursor: "pointer", textDecoration: "underline" },
-};
+          <div className="border-t border-white/10 pt-5 flex flex-col gap-2">
+            <p className="text-white/40 text-xs">¿Ya tienes cuenta?</p>
+            <button
+              onClick={() => navigate("/tienda/login")}
+              className="self-start text-white/75 text-xs font-medium border border-white/20 rounded-lg px-3.5 py-1.5 hover:bg-white/10 transition-colors"
+            >
+              Iniciar sesión →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Panel derecho — formulario ── */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-slate-50 overflow-y-auto">
+        <div className="w-full max-w-lg">
+
+          {/* Barra de progreso */}
+          <div className="mb-7">
+            <div className="flex justify-between text-xs text-slate-400 font-medium mb-2">
+              <span>Paso {step} de 2</span>
+              <span>{step === 1 ? "50%" : "100%"}</span>
+            </div>
+            <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#0F6E56] rounded-full transition-all duration-500"
+                style={{ width: step === 1 ? "50%" : "100%" }}
+              />
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mb-1.5">
+              {step === 1 ? "Datos de tu cuenta" : "¿Dónde te enviamos?"}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {step === 1 ? "Información básica para crear tu perfil" : "Tu dirección de entrega predeterminada"}
+            </p>
+          </div>
+
+          {codigoReferidoFromUrl && (
+            <div className="flex gap-3 items-start bg-blue-50 border border-blue-200 text-blue-800 rounded-xl px-4 py-3 text-sm mb-4 leading-snug">
+              <span className="text-lg flex-shrink-0">🎁</span>
+              <div>
+                <strong className="block mb-0.5">¡Código de referido aplicado!</strong>
+                Recibirás un descuento en tu primera compra — código:{" "}
+                <code className="font-mono bg-blue-100 px-1.5 py-0.5 rounded text-xs tracking-wider">
+                  {codigoReferidoFromUrl}
+                </code>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div role="alert" className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* ── PASO 1 ── */}
+          {step === 1 && (
+            <form onSubmit={handleSiguiente} noValidate>
+              <div className="grid grid-cols-2 gap-3.5 mb-6">
+
+                <Field id="nombre" label="Nombre">
+                  <input id="nombre" name="nombre" className={INPUT_CLS}
+                    placeholder="Juan" value={form.nombre} onChange={handleChange} autoComplete="given-name" />
+                </Field>
+
+                <Field id="apellido" label="Apellido">
+                  <input id="apellido" name="apellido" className={INPUT_CLS}
+                    placeholder="García" value={form.apellido} onChange={handleChange} autoComplete="family-name" />
+                </Field>
+
+                <Field id="usuario" label="Correo electrónico" full>
+                  <input id="usuario" name="usuario" type="email" className={INPUT_CLS}
+                    placeholder="tucorreo@gmail.com" value={form.usuario} onChange={handleChange} autoComplete="email" />
+                </Field>
+
+                <Field id="telefono" label="Teléfono" full>
+                  <input id="telefono" name="telefono" type="tel" className={INPUT_CLS}
+                    placeholder="+57 300 000 0000" value={form.telefono} onChange={handleChange} autoComplete="tel" />
+                </Field>
+
+                <Field id="contrasena" label="Contraseña" full>
+                  <div className="relative">
+                    <input
+                      id="contrasena" name="contrasena"
+                      type={showPass ? "text" : "password"}
+                      className={`${INPUT_CLS} pr-11`}
+                      placeholder="Mínimo 6 caracteres"
+                      value={form.contrasena}
+                      onChange={handleChange}
+                      autoComplete="new-password"
+                    />
+                    <button type="button" tabIndex={-1} onClick={() => setShowPass(!showPass)}
+                      aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1">
+                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {form.contrasena && (
+                    <div className="mt-2">
+                      <div className="flex gap-1 mb-1">
+                        {[1,2,3,4].map((i) => (
+                          <div key={i} className={`flex-1 h-1 rounded-full transition-colors duration-200 ${i <= strength ? STR_BAR_COLORS[strength] : "bg-slate-200"}`} />
+                        ))}
+                      </div>
+                      <span className={`text-[11px] font-semibold ${STR_TXT_COLORS[strength]}`}>
+                        {STR_LABELS[strength]}
+                      </span>
+                    </div>
+                  )}
+                </Field>
+
+                <Field id="confirmar" label="Confirmar contraseña" full>
+                  <div className="relative">
+                    <input
+                      id="confirmar" name="confirmar" type="password"
+                      className={`${INPUT_BASE} pr-11 ${confirmBorder}`}
+                      placeholder="Repite tu contraseña"
+                      value={form.confirmar}
+                      onChange={handleChange}
+                      autoComplete="new-password"
+                      aria-invalid={pwdsMismatch}
+                      aria-describedby={pwdsMismatch ? "confirmar-error" : undefined}
+                    />
+                    {form.confirmar && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        {pwdsMatch
+                          ? <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          : <XCircle      className="w-4 h-4 text-red-400" />}
+                      </span>
+                    )}
+                  </div>
+                  {pwdsMismatch && (
+                    <p id="confirmar-error" role="alert" className="text-xs text-red-500 font-medium mt-1.5">
+                      Las contraseñas no coinciden
+                    </p>
+                  )}
+                </Field>
+
+              </div>
+
+              <button type="submit"
+                className="w-full py-3.5 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all">
+                Continuar →
+              </button>
+            </form>
+          )}
+
+          {/* ── PASO 2 ── */}
+          {step === 2 && (
+            <form onSubmit={handleRegistro} noValidate>
+              <div className="grid grid-cols-2 gap-3.5 mb-6">
+
+                <Field id="tipo_documento" label="Tipo de documento" full>
+                  <select id="tipo_documento" name="tipo_documento"
+                    className={`${INPUT_CLS} cursor-pointer`}
+                    value={form.tipo_documento} onChange={handleChange}>
+                    <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
+                    <option value="Tarjeta de identidad">Tarjeta de identidad</option>
+                    <option value="Cédula de extranjería">Cédula de extranjería</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                  </select>
+                </Field>
+
+                <Field id="numero_documento" label="Número de documento" full>
+                  <input id="numero_documento" name="numero_documento" className={INPUT_CLS}
+                    placeholder="1234567890" value={form.numero_documento} onChange={handleChange} />
+                </Field>
+
+                <Field id="_departamento" label="Departamento">
+                  <select id="_departamento" name="_departamento"
+                    className={`${INPUT_CLS} cursor-pointer`}
+                    value={form._departamento} onChange={handleChange}>
+                    <option value="">Selecciona</option>
+                    {departamentos.map((d) => <option key={d.id} value={d.id}>{d.nombre}</option>)}
+                  </select>
+                </Field>
+
+                <Field id="id_municipio" label="Municipio">
+                  <select id="id_municipio" name="id_municipio"
+                    className={`${INPUT_CLS} cursor-pointer ${!form._departamento ? "text-slate-400" : ""}`}
+                    value={form.id_municipio} onChange={handleChange} disabled={!form._departamento}>
+                    <option value="">{form._departamento ? "Selecciona" : "Elige depto. primero"}</option>
+                    {municipios.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                  </select>
+                </Field>
+
+                <Field id="direccion" label="Dirección de entrega" full>
+                  <input id="direccion" name="direccion" className={INPUT_CLS}
+                    placeholder="Calle 123 #45-67, Apto 201"
+                    value={form.direccion} onChange={handleChange} autoComplete="street-address" />
+                </Field>
+
+                <div className="col-span-2">
+                  <p className="text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-lg px-3.5 py-2.5 leading-relaxed">
+                    Estos datos son opcionales y te ayudan a calcular el costo de envío.
+                    Puedes completarlos desde tu perfil en cualquier momento.
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="flex gap-2.5">
+                <button type="button" onClick={goBack}
+                  className="px-5 py-3 bg-white border border-slate-200 text-slate-600 font-medium rounded-xl text-sm hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  ← Atrás
+                </button>
+                <button type="submit" disabled={loading}
+                  className="flex-1 py-3 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2">
+                  {loading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />Creando cuenta...</>
+                  ) : "Crear cuenta gratis"}
+                </button>
+              </div>
+
+              <p className="text-center mt-4">
+                <button type="button" onClick={() => handleRegistro()} disabled={loading}
+                  className="text-slate-400 text-sm hover:text-slate-600 underline underline-offset-2 transition-colors">
+                  Omitir y entrar a la tienda
+                </button>
+              </p>
+            </form>
+          )}
+
+        </div>
+      </div>
+
+    </div>
+  );
+}

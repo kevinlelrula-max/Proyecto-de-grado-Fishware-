@@ -1,275 +1,184 @@
-import { useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import { loginCliente } from "../services/api"; // ajusta la ruta según tu proyecto
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useLoginCliente } from "../modules/tienda/hooks/useLoginCliente";
+import { MerkaiLogo, MerkaiLogoColor } from "../modules/tienda/components/MerkaiLogo";
+
+const FEATURES = [
+  "Catálogo completo con fotos y precios",
+  "Seguimiento de pedidos en tiempo real",
+  "Descuentos exclusivos para clientes",
+];
 
 export default function LoginCliente() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Si el cliente intentó entrar a una tienda específica, lo devolvemos ahí después del login
-  const slug = localStorage.getItem("ultima_empresa_slug");
-  const from = location.state?.from || (slug ? `/tienda/${slug}` : "/");
-
-  const [form, setForm]       = useState({ usuario: "", contrasena: "" });
-  const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
-  const [error, setError]     = useState("");
-
-  const handleChange = (e) => {
-    setError("");
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleLogin = async () => {
-    if (!form.usuario || !form.contrasena) {
-      setError("Por favor completa todos los campos.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await loginCliente(form);
-      if (res.token) {
-        localStorage.setItem("cliente_token",  res.token);
-        localStorage.setItem("cliente_id",     res.cliente_id);
-        localStorage.setItem("cliente_nombre", res.nombre);
-        navigate(from, { replace: true });
-      } else {
-        setError(res.error || "Correo o contraseña incorrectos.");
-      }
-    } catch {
-      setError("No se pudo conectar. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => { if (e.key === "Enter") handleLogin(); };
+  const { form, loading, error, showPass, setShowPass, handleChange, handleSubmit } = useLoginCliente();
 
   return (
-    <div style={s.page}>
+    <div className="min-h-screen flex font-sans">
 
-      {/* ── Panel izquierdo — branding tienda ── */}
-      <div style={s.left}>
-        <div style={s.leftContent}>
+      {/* ── Panel izquierdo (solo desktop) ── */}
+      <div
+        className="hidden lg:flex lg:w-[55%] flex-col items-center justify-center p-12 relative overflow-hidden"
+        style={{ background: "linear-gradient(145deg, #0a1628 0%, #0e2a42 55%, #0f1f35 100%)" }}
+      >
+        <div
+          className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.22) 0%, transparent 65%)" }}
+        />
+        <div
+          className="absolute -bottom-24 -left-20 w-[350px] h-[350px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.12) 0%, transparent 65%)" }}
+        />
 
-          {/* Logo */}
-          <div style={s.leftLogo}>
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="10" fill="white" fillOpacity="0.15"/>
-              <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-              <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="14" cy="15" r="1.5" fill="white"/>
-            </svg>
-            <span style={s.leftLogoText}>Merkai · Tienda</span>
+        <div className="relative z-10 max-w-md w-full flex flex-col gap-10">
+          <div className="flex items-center gap-3">
+            <MerkaiLogo />
+            <span className="text-white font-bold text-lg tracking-tight">Merkai · Tienda</span>
           </div>
 
-          {/* Hero */}
-          <div style={s.leftHero}>
-            <h2 style={s.leftTitle}>Compra en tus tiendas favoritas desde donde estés</h2>
-            <p style={s.leftSubtitle}>
-              Accede al catálogo, arma tu pedido y recíbelo en casa o retíralo en tienda.
+          <div>
+            <p className="text-green-400 text-[11px] font-bold uppercase tracking-widest mb-3">Compra online</p>
+            <h2 className="text-white text-3xl font-extrabold tracking-tight leading-snug mb-4">
+              Tu tienda favorita,<br />siempre a la mano
+            </h2>
+            <p className="text-white/60 text-[15px] leading-relaxed">
+              Explora el catálogo, arma tu pedido y recíbelo donde estés.
             </p>
           </div>
 
-          {/* Pills */}
-          <div style={s.pillsWrap}>
-            {["🛍️ Catálogo completo", "🚚 Envío a domicilio", "🏪 Múltiples tiendas", "📦 Seguimiento de pedido"].map((tag) => (
-              <span key={tag} style={s.pill}>{tag}</span>
+          <ul className="flex flex-col gap-3.5">
+            {FEATURES.map((f) => (
+              <li key={f} className="flex items-center gap-3">
+                <div className="w-[18px] h-[18px] rounded-full bg-[#0F6E56]/30 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-3 h-3 text-white" strokeWidth={2.5} />
+                </div>
+                <span className="text-white/80 text-sm">{f}</span>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          {/* Footer izquierdo */}
-          <div style={s.leftFooter}>
-            <p style={s.leftFooterText}>¿Eres una empresa?</p>
-            <button style={s.leftBtn} onClick={() => navigate("/empresa/login")}>
+          <div className="border-t border-white/10 pt-6 flex flex-col gap-2.5">
+            <p className="text-white/40 text-sm">¿Tienes un negocio?</p>
+            <button
+              onClick={() => navigate("/empresa/login")}
+              className="self-start text-white/75 text-sm font-medium border border-white/20 rounded-lg px-4 py-2 hover:bg-white/10 transition-colors"
+            >
               Acceder como empresa →
             </button>
           </div>
-
         </div>
       </div>
 
       {/* ── Panel derecho — formulario ── */}
-      <div style={s.right}>
-        <div style={s.formCard}>
+      <div className="flex-1 flex items-center justify-center p-8 bg-slate-50">
+        <div className="w-full max-w-sm">
 
-          <div style={s.formHeader}>
-            <div style={s.formLogoSmall}>
-              <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-                <rect width="36" height="36" rx="10" fill="#0F6E56"/>
-                <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-                <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="14" cy="15" r="1.5" fill="white"/>
-              </svg>
-            </div>
-            <h2 style={s.formTitle}>Bienvenido de nuevo</h2>
-            <p style={s.formSubtitle}>Inicia sesión para ver tus pedidos y comprar</p>
+          <div className="mb-8">
+            <div className="mb-5"><MerkaiLogoColor /></div>
+            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">
+              ¡Bienvenido de nuevo!
+            </h2>
+            <p className="text-slate-500 text-sm">Tus pedidos y favoritos te esperan</p>
           </div>
 
-          {/* Error */}
           {error && (
-            <div style={s.errorBox}>
-              <span>⚠️</span> {error}
+            <div role="alert" className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-5">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Email */}
-          <div style={s.fieldWrap}>
-            <label style={s.label}>Correo electrónico</label>
-            <div style={s.inputWrap}>
-              <span style={s.inputIcon}>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
-                  <rect x="2" y="4" width="16" height="13" rx="2"/>
-                  <path d="M2 7l8 5 8-5"/>
-                </svg>
-              </span>
-              <input
-                style={s.input}
-                name="usuario"
-                type="email"
-                placeholder="tucorreo@gmail.com"
-                value={form.usuario}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                autoComplete="username"
-              />
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+
+            <div>
+              <label htmlFor="usuario" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  id="usuario"
+                  name="usuario"
+                  type="email"
+                  placeholder="tucorreo@gmail.com"
+                  value={form.usuario}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  aria-invalid={!!error}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/15 hover:border-slate-300 transition-all"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Contraseña */}
-          <div style={s.fieldWrap}>
-            <label style={s.label}>Contraseña</label>
-            <div style={s.inputWrap}>
-              <span style={s.inputIcon}>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
-                  <rect x="3" y="8" width="14" height="10" rx="2"/>
-                  <path d="M7 8V6a3 3 0 0 1 6 0v2"/>
-                  <circle cx="10" cy="13" r="1.2" fill="#94a3b8" stroke="none"/>
-                </svg>
-              </span>
-              <input
-                style={s.input}
-                name="contrasena"
-                type={showPass ? "text" : "password"}
-                placeholder="••••••••"
-                value={form.contrasena}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                autoComplete="current-password"
-              />
-              <button style={s.eyeBtn} onClick={() => setShowPass(!showPass)} type="button" tabIndex={-1}>
-                {showPass ? "🙈" : "👁️"}
-              </button>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label htmlFor="contrasena" className="text-[13px] font-semibold text-slate-700">
+                  Contraseña
+                </label>
+                <Link to="/tienda/recuperar-contrasena" className="text-xs text-[#0F6E56] font-medium hover:underline">
+                  ¿La olvidaste?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  id="contrasena"
+                  name="contrasena"
+                  type={showPass ? "text" : "password"}
+                  placeholder="Tu contraseña"
+                  value={form.contrasena}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                  aria-invalid={!!error}
+                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/15 hover:border-slate-300 transition-all"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPass(!showPass)}
+                  aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Botón */}
-          <button
-            style={{ ...s.btnLogin, opacity: loading ? 0.75 : 1 }}
-            onClick={handleLogin}
-            disabled={loading}
-          >
-            {loading ? "Verificando..." : "Ingresar a la tienda"}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 mt-1 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Verificando...
+                </>
+              ) : "Ingresar a la tienda"}
+            </button>
 
-          {/* Olvidé mi contraseña */}
-          <div style={{ textAlign: "right", marginTop: "-12px", marginBottom: "8px" }}>
-            <Link to="/tienda/recuperar-contrasena" style={{ fontSize: "13px", color: "#64748b", textDecoration: "none" }}>
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
+          </form>
 
-          {/* Divider */}
-          <div style={s.divider}>
-            <span style={s.dividerLine} />
-            <span style={s.dividerText}>¿No tienes cuenta?</span>
-            <span style={s.dividerLine} />
+          <div className="flex items-center gap-3 my-5">
+            <span className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 whitespace-nowrap">¿No tienes cuenta aún?</span>
+            <span className="flex-1 h-px bg-slate-200" />
           </div>
 
           <button
-            style={s.btnRegister}
             onClick={() => {
               const refCode = localStorage.getItem("ultima_ref_codigo");
               navigate(`/tienda/registro${refCode ? `?ref=${refCode}` : ""}`);
             }}
+            className="w-full py-3 border-[1.5px] border-[#0F6E56] text-[#0F6E56] font-semibold rounded-xl text-sm hover:bg-[#0F6E56] hover:text-white transition-all"
           >
             Crear cuenta gratis
           </button>
 
         </div>
       </div>
+
     </div>
   );
 }
-
-/* ─── ESTILOS ─── */
-const s = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    fontFamily: "'Inter', 'Segoe UI', sans-serif",
-  },
-
-  // Izquierdo
-  left: {
-    flex: "1 1 55%",
-    background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 55%, #0f1f2e 100%)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "48px",
-    position: "relative",
-    overflow: "hidden",
-  },
-  leftContent: {
-    maxWidth: "440px",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    gap: "36px",
-    position: "relative",
-    zIndex: 1,
-  },
-  leftLogo: { display: "flex", alignItems: "center", gap: "12px" },
-  leftLogoText: { fontSize: "20px", fontWeight: "700", color: "white", letterSpacing: "-0.02em" },
-  leftHero: {},
-  leftTitle: { fontSize: "30px", fontWeight: "700", color: "white", lineHeight: "1.2", marginBottom: "14px", letterSpacing: "-0.02em" },
-  leftSubtitle: { fontSize: "15px", color: "rgba(255,255,255,0.65)", lineHeight: "1.6" },
-  pillsWrap: { display: "flex", flexWrap: "wrap", gap: "8px" },
-  pill: { padding: "5px 14px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.85)", fontSize: "12px", fontWeight: "500", backgroundColor: "rgba(255,255,255,0.08)" },
-  leftFooter: { borderTop: "1px solid rgba(255,255,255,0.15)", paddingTop: "24px" },
-  leftFooterText: { fontSize: "13px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" },
-  leftBtn: { background: "transparent", border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.8)", borderRadius: "8px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontWeight: "500" },
-
-  // Derecho
-  right: {
-    flex: "1 1 45%",
-    backgroundColor: "#f8fafc",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "48px 40px",
-  },
-  formCard: { width: "100%", maxWidth: "380px" },
-  formHeader: { marginBottom: "28px" },
-  formLogoSmall: { marginBottom: "20px" },
-  formTitle: { fontSize: "24px", fontWeight: "700", color: "#0f172a", marginBottom: "6px", letterSpacing: "-0.02em" },
-  formSubtitle: { fontSize: "14px", color: "#64748b" },
-
-  errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" },
-
-  fieldWrap: { marginBottom: "16px" },
-  label: { display: "block", fontSize: "13px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
-  inputWrap: { position: "relative", display: "flex", alignItems: "center" },
-  inputIcon: { position: "absolute", left: "12px", display: "flex", alignItems: "center", pointerEvents: "none" },
-  input: { width: "100%", padding: "11px 40px 11px 38px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" },
-  eyeBtn: { position: "absolute", right: "12px", background: "none", border: "none", cursor: "pointer", fontSize: "14px", padding: "0", lineHeight: 1 },
-
-  btnLogin: { width: "100%", padding: "13px", backgroundColor: "#0F6E56", color: "white", fontSize: "15px", fontWeight: "600", border: "none", borderRadius: "10px", cursor: "pointer", marginTop: "8px", marginBottom: "20px", letterSpacing: "0.01em", transition: "background 0.2s" },
-
-  divider: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" },
-  dividerLine: { flex: 1, height: "1px", backgroundColor: "#e2e8f0" },
-  dividerText: { fontSize: "12px", color: "#94a3b8", whiteSpace: "nowrap" },
-
-  btnRegister: { width: "100%", padding: "12px", backgroundColor: "transparent", color: "#0F6E56", fontSize: "14px", fontWeight: "600", border: "1.5px solid #0F6E56", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" },
-};
