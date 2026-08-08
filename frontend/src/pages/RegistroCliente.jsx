@@ -4,7 +4,7 @@ import { useRegistroCliente, STR_LABELS, STR_BAR_COLORS, STR_TXT_COLORS } from "
 import { MerkaiLogo } from "../modules/tienda/components/MerkaiLogo";
 
 const INPUT_BASE = "w-full px-3 py-2.5 rounded-[9px] border text-sm text-slate-900 bg-white outline-none transition-all";
-const INPUT_CLS  = `${INPUT_BASE} border-slate-200 focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/10 hover:border-slate-300`;
+const INPUT_CLS  = `${INPUT_BASE} border-slate-200 focus:border-[#3674B5] focus:ring-2 focus:ring-[#3674B5]/10 hover:border-slate-300`;
 
 function Field({ id, label, children, full }) {
   return (
@@ -30,7 +30,7 @@ export default function RegistroCliente() {
     ? "border-red-300 focus:border-red-400 focus:ring-red-100/50"
     : pwdsMatch
     ? "border-emerald-400 focus:border-emerald-400 focus:ring-emerald-50"
-    : "border-slate-200 focus:border-[#0F6E56] focus:ring-[#0F6E56]/10 hover:border-slate-300";
+    : "border-slate-200 focus:border-[#3674B5] focus:ring-[#3674B5]/10 hover:border-slate-300";
 
   return (
     <div className="min-h-screen flex font-sans">
@@ -42,7 +42,7 @@ export default function RegistroCliente() {
       >
         <div
           className="absolute -top-20 -right-28 w-[380px] h-[380px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.22) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(circle, rgba(54,116,181,0.22) 0%, transparent 65%)" }}
         />
 
         <div className="relative z-10 w-full flex flex-col gap-8">
@@ -52,7 +52,7 @@ export default function RegistroCliente() {
           </div>
 
           <div>
-            <p className="text-green-400 text-[10px] font-bold uppercase tracking-widest mb-2.5">Registro gratuito</p>
+            <p className="text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-2.5">Registro gratuito</p>
             <h2 className="text-white text-xl font-extrabold tracking-tight leading-snug mb-3">
               Crea tu cuenta y empieza a comprar
             </h2>
@@ -68,8 +68,8 @@ export default function RegistroCliente() {
             ].map((st) => (
               <div key={st.n} className="flex items-start gap-3.5">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold flex-shrink-0 transition-all duration-300 ${
-                  step > st.n   ? "bg-[#0F6E56] text-white" :
-                  step === st.n ? "bg-white text-[#0F6E56]" :
+                  step > st.n   ? "bg-[#3674B5] text-white" :
+                  step === st.n ? "bg-white text-[#3674B5]" :
                                   "bg-white/10 text-white/30"
                 }`}>
                   {step > st.n ? <Check className="w-4 h-4" strokeWidth={2.5} /> : st.n}
@@ -110,7 +110,7 @@ export default function RegistroCliente() {
             </div>
             <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#0F6E56] rounded-full transition-all duration-500"
+                className="h-full bg-[#3674B5] rounded-full transition-all duration-500"
                 style={{ width: step === 1 ? "50%" : "100%" }}
               />
             </div>
@@ -231,7 +231,7 @@ export default function RegistroCliente() {
               </div>
 
               <button type="submit"
-                className="w-full py-3.5 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all">
+                className="w-full py-3.5 bg-[#3674B5] text-white font-bold rounded-xl text-[15px] hover:bg-[#2d64a0] active:scale-[0.99] transition-all">
                 Continuar →
               </button>
             </form>
@@ -297,7 +297,7 @@ export default function RegistroCliente() {
                   ← Atrás
                 </button>
                 <button type="submit" disabled={loading}
-                  className="flex-1 py-3 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2">
+                  className="flex-1 py-3 bg-[#3674B5] text-white font-bold rounded-xl text-[15px] hover:bg-[#2d64a0] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2">
                   {loading ? (
                     <><Loader2 className="w-4 h-4 animate-spin" />Creando cuenta...</>
                   ) : "Crear cuenta gratis"}

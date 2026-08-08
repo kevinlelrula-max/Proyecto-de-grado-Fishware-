@@ -24,11 +24,11 @@ export default function LoginCliente() {
       >
         <div
           className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.22) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(circle, rgba(54,116,181,0.22) 0%, transparent 65%)" }}
         />
         <div
           className="absolute -bottom-24 -left-20 w-[350px] h-[350px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(15,110,86,0.12) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(circle, rgba(54,116,181,0.12) 0%, transparent 65%)" }}
         />
 
         <div className="relative z-10 max-w-md w-full flex flex-col gap-10">
@@ -38,7 +38,7 @@ export default function LoginCliente() {
           </div>
 
           <div>
-            <p className="text-green-400 text-[11px] font-bold uppercase tracking-widest mb-3">Compra online</p>
+            <p className="text-blue-300 text-[11px] font-bold uppercase tracking-widest mb-3">Compra online</p>
             <h2 className="text-white text-3xl font-extrabold tracking-tight leading-snug mb-4">
               Tu tienda favorita,<br />siempre a la mano
             </h2>
@@ -50,7 +50,7 @@ export default function LoginCliente() {
           <ul className="flex flex-col gap-3.5">
             {FEATURES.map((f) => (
               <li key={f} className="flex items-center gap-3">
-                <div className="w-[18px] h-[18px] rounded-full bg-[#0F6E56]/30 flex items-center justify-center flex-shrink-0">
+                <div className="w-[18px] h-[18px] rounded-full bg-[#3674B5]/30 flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="w-3 h-3 text-white" strokeWidth={2.5} />
                 </div>
                 <span className="text-white/80 text-sm">{f}</span>
@@ -106,7 +106,7 @@ export default function LoginCliente() {
                   onChange={handleChange}
                   autoComplete="username"
                   aria-invalid={!!error}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/15 hover:border-slate-300 transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#3674B5] focus:ring-2 focus:ring-[#3674B5]/15 hover:border-slate-300 transition-all"
                 />
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function LoginCliente() {
                 <label htmlFor="contrasena" className="text-[13px] font-semibold text-slate-700">
                   Contraseña
                 </label>
-                <Link to="/tienda/recuperar-contrasena" className="text-xs text-[#0F6E56] font-medium hover:underline">
+                <Link to="/tienda/recuperar-contrasena" className="text-xs text-[#3674B5] font-medium hover:underline">
                   ¿La olvidaste?
                 </Link>
               </div>
@@ -131,7 +131,7 @@ export default function LoginCliente() {
                   onChange={handleChange}
                   autoComplete="current-password"
                   aria-invalid={!!error}
-                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#0F6E56] focus:ring-2 focus:ring-[#0F6E56]/15 hover:border-slate-300 transition-all"
+                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 bg-white outline-none focus:border-[#3674B5] focus:ring-2 focus:ring-[#3674B5]/15 hover:border-slate-300 transition-all"
                 />
                 <button
                   type="button"
@@ -148,7 +148,7 @@ export default function LoginCliente() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 mt-1 bg-[#0F6E56] text-white font-bold rounded-xl text-[15px] hover:bg-[#0d5f4a] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2"
+              className="w-full py-3.5 mt-1 bg-[#3674B5] text-white font-bold rounded-xl text-[15px] hover:bg-[#2d64a0] active:scale-[0.99] transition-all disabled:opacity-75 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -171,7 +171,7 @@ export default function LoginCliente() {
               const refCode = localStorage.getItem("ultima_ref_codigo");
               navigate(`/tienda/registro${refCode ? `?ref=${refCode}` : ""}`);
             }}
-            className="w-full py-3 border-[1.5px] border-[#0F6E56] text-[#0F6E56] font-semibold rounded-xl text-sm hover:bg-[#0F6E56] hover:text-white transition-all"
+            className="w-full py-3 border-[1.5px] border-[#3674B5] text-[#3674B5] font-semibold rounded-xl text-sm hover:bg-[#3674B5] hover:text-white transition-all"
           >
             Crear cuenta gratis
           </button>
