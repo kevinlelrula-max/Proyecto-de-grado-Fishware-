@@ -4,7 +4,10 @@ export default function StockBajo({ productos }) {
   return (
     <div style={s.wrap}>
       <div style={s.header}>
-        <h3 style={s.title}>⚠️ Stock bajo</h3>
+        <div>
+          <h3 style={s.title}>Stock bajo</h3>
+          <p style={s.sub}>Productos por debajo del mínimo configurado</p>
+        </div>
         <span style={s.badge}>{productos.length} producto{productos.length !== 1 ? "s" : ""}</span>
       </div>
       <div style={s.list}>
@@ -49,7 +52,8 @@ const s = {
   wrap: {
     backgroundColor: "white",
     borderRadius: "16px",
-    border: "1.5px solid #fecaca",
+    border: "1px solid #e2e8f0",
+    borderLeft: "4px solid #ef4444",
     overflow: "hidden",
   },
   header: {
@@ -57,17 +61,19 @@ const s = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "16px 20px",
-    backgroundColor: "#fef2f2",
-    borderBottom: "1px solid #fecaca",
+    borderBottom: "1px solid #f1f5f9",
+    gap: 12,
   },
-  title: { fontSize: "14px", fontWeight: "700", color: "#b91c1c" },
+  title: { fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
+  sub: { fontSize: "12px", color: "#94a3b8", margin: 0 },
   badge: {
-    padding: "3px 10px",
-    backgroundColor: "#fecaca",
+    padding: "3px 12px",
+    backgroundColor: "#fee2e2",
     color: "#b91c1c",
     borderRadius: "999px",
     fontSize: "11px",
     fontWeight: "700",
+    flexShrink: 0,
   },
   list: { display: "flex", flexDirection: "column" },
   item: {
@@ -76,22 +82,22 @@ const s = {
     justifyContent: "space-between",
     gap: "14px",
     padding: "12px 20px",
-    borderBottom: "1px solid #fef2f2",
+    borderBottom: "1px solid #f8fafc",
   },
   itemInfo: { flex: 1 },
-  itemNombre: { fontSize: "13px", fontWeight: "600", color: "#0f172a" },
-  itemStock: { fontSize: "11px", color: "#94a3b8", marginTop: "2px" },
+  itemNombre: { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: "0 0 2px" },
+  itemStock: { fontSize: "11px", color: "#94a3b8", margin: 0 },
   barWrap: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    width: "100px",
+    width: "110px",
     flexShrink: 0,
   },
   bar: {
     flex: 1,
     height: "6px",
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#f1f5f9",
     borderRadius: "999px",
     overflow: "hidden",
   },

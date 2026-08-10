@@ -2,11 +2,11 @@ export default function PredictorStock({ productos }) {
   if (!productos || productos.length === 0) return null;
 
   function nivel(dias) {
-    if (dias === null || dias <= 0) return { label: "AGOTADO", color: "#7f1d1d", bg: "#fef2f2", border: "#fca5a5", barra: "#ef4444" };
-    if (dias <= 3)  return { label: "CRÍTICO",  color: "#7f1d1d", bg: "#fef2f2", border: "#fca5a5", barra: "#ef4444" };
-    if (dias <= 7)  return { label: "URGENTE",  color: "#7c2d12", bg: "#fff7ed", border: "#fdba74", barra: "#f97316" };
-    if (dias <= 15) return { label: "PRONTO",   color: "#713f12", bg: "#fffbeb", border: "#fcd34d", barra: "#f59e0b" };
-    return             { label: "VIGILAR",  color: "#1e3a5f", bg: "#eff6ff", border: "#93c5fd", barra: "#3b82f6" };
+    if (dias === null || dias <= 0) return { label: "Agotado", color: "#7f1d1d", bg: "#fef2f2", border: "#fca5a5", barra: "#ef4444" };
+    if (dias <= 3)  return { label: "Crítico",  color: "#7f1d1d", bg: "#fef2f2", border: "#fca5a5", barra: "#ef4444" };
+    if (dias <= 7)  return { label: "Urgente",  color: "#7c2d12", bg: "#fff7ed", border: "#fdba74", barra: "#f97316" };
+    if (dias <= 15) return { label: "Pronto",   color: "#713f12", bg: "#fffbeb", border: "#fcd34d", barra: "#f59e0b" };
+    return             { label: "Vigilar",  color: "#1e3a5f", bg: "#eff6ff", border: "#93c5fd", barra: "#3b82f6" };
   }
 
   const criticos = productos.filter(p => parseFloat(p.dias_hasta_agotarse) <= 3 || p.dias_hasta_agotarse === null);
@@ -15,23 +15,20 @@ export default function PredictorStock({ productos }) {
   return (
     <div style={s.wrap}>
       <div style={s.header}>
-        <div style={s.headerLeft}>
-          <span style={s.icon}>📉</span>
-          <div>
-            <h3 style={s.title}>Predictor de quiebre de stock</h3>
-            <p style={s.sub}>
-              Basado en ventas de los últimos 30 días · {productos.length} producto{productos.length !== 1 ? "s" : ""} en riesgo
-            </p>
-          </div>
+        <div>
+          <h3 style={s.title}>Predictor de quiebre de stock</h3>
+          <p style={s.sub}>
+            Basado en ventas de los últimos 30 días · {productos.length} producto{productos.length !== 1 ? "s" : ""} en riesgo
+          </p>
         </div>
         {criticos.length > 0 && (
           <span style={s.alertBadge}>
-            ⚡ {criticos.length} crítico{criticos.length !== 1 ? "s" : ""}
+            {criticos.length} crítico{criticos.length !== 1 ? "s" : ""}
           </span>
         )}
         {criticos.length === 0 && urgentes.length > 0 && (
           <span style={{ ...s.alertBadge, backgroundColor: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" }}>
-            ⚠️ {urgentes.length} urgente{urgentes.length !== 1 ? "s" : ""}
+            {urgentes.length} urgente{urgentes.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
@@ -43,11 +40,11 @@ export default function PredictorStock({ productos }) {
           const pct  = dias === null ? 100 : Math.min(100, Math.max(0, 100 - (dias / 30) * 100));
 
           return (
-            <div key={p.id} style={{ ...s.row, borderColor: n.border, backgroundColor: n.bg }}>
+            <div key={p.id} style={{ ...s.row, borderLeftColor: n.barra }}>
               <div style={s.rowLeft}>
-                <div style={{ ...s.badge, backgroundColor: n.barra, color: "white" }}>
+                <span style={{ ...s.badge, backgroundColor: n.bg, color: n.color, border: `1px solid ${n.border}` }}>
                   {n.label}
-                </div>
+                </span>
                 <div style={s.info}>
                   <p style={s.nombre}>{p.nombre}</p>
                   <p style={s.detalle}>
@@ -91,34 +88,27 @@ const s = {
   wrap: {
     backgroundColor: "white",
     borderRadius: "16px",
-    border: "1.5px solid #fca5a5",
+    border: "1px solid #e2e8f0",
     overflow: "hidden",
   },
   header: {
     padding: "16px 20px 14px",
-    backgroundColor: "#fff5f5",
-    borderBottom: "1px solid #fecaca",
+    borderBottom: "1px solid #f1f5f9",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
     flexWrap: "wrap",
   },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-  },
-  icon: { fontSize: 28, lineHeight: 1 },
   title: {
     fontSize: 14,
-    fontWeight: 800,
-    color: "#7f1d1d",
+    fontWeight: 700,
+    color: "#0f172a",
     margin: "0 0 2px",
   },
   sub: {
     fontSize: 11,
-    color: "#ef4444",
+    color: "#94a3b8",
     margin: 0,
   },
   alertBadge: {
@@ -131,21 +121,20 @@ const s = {
     border: "1px solid #fca5a5",
     borderRadius: 999,
     fontSize: 12,
-    fontWeight: 800,
+    fontWeight: 700,
     flexShrink: 0,
   },
   lista: {
     display: "flex",
     flexDirection: "column",
-    gap: 0,
   },
   row: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     padding: "12px 20px",
-    borderBottom: "1px solid #f0f0f0",
-    borderLeft: "4px solid transparent",
+    borderBottom: "1px solid #f8fafc",
+    borderLeft: "3px solid transparent",
     gap: 12,
     flexWrap: "wrap",
   },
@@ -157,18 +146,16 @@ const s = {
     minWidth: 200,
   },
   badge: {
-    fontSize: 10,
-    fontWeight: 800,
-    letterSpacing: "0.05em",
-    padding: "3px 8px",
+    fontSize: 11,
+    fontWeight: 700,
+    padding: "3px 10px",
     borderRadius: 6,
     flexShrink: 0,
-    textTransform: "uppercase",
   },
   info: { flex: 1 },
   nombre: {
     fontSize: 13,
-    fontWeight: 700,
+    fontWeight: 600,
     color: "#0f172a",
     margin: "0 0 2px",
   },
@@ -192,7 +179,7 @@ const s = {
   },
   contador: {
     fontSize: 22,
-    fontWeight: 900,
+    fontWeight: 800,
     lineHeight: 1,
   },
   contadorLabel: {
@@ -218,7 +205,7 @@ const s = {
     textAlign: "right",
     padding: "8px 16px",
     margin: 0,
-    borderTop: "1px solid #f0f0f0",
+    borderTop: "1px solid #f1f5f9",
     fontStyle: "italic",
   },
 };

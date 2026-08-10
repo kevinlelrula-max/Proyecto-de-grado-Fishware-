@@ -4,11 +4,11 @@ export default function ReordenSugerencias({ sugerencias }) {
   return (
     <div style={s.wrap}>
       <div style={s.header}>
-        <div style={s.headerLeft}>
-          <h3 style={s.title}>🔁 Sugerencias de reorden</h3>
-          <span style={s.badge}>{sugerencias.length} producto{sugerencias.length !== 1 ? "s" : ""}</span>
+        <div>
+          <h3 style={s.title}>Sugerencias de reorden</h3>
+          <p style={s.hint}>Basado en ventas de los últimos 30 días · cobertura sugerida: 7 días</p>
         </div>
-        <p style={s.hint}>Basado en ventas de los últimos 30 días · cobertura sugerida: 7 días</p>
+        <span style={s.badge}>{sugerencias.length} producto{sugerencias.length !== 1 ? "s" : ""}</span>
       </div>
 
       <div style={s.tableWrap}>
@@ -47,7 +47,7 @@ export default function ReordenSugerencias({ sugerencias }) {
                         —
                       </span>
                     ) : (
-                      <span style={{ ...s.pill, backgroundColor: "#E1F5EE", color: "#0F6E56", fontWeight: "700" }}>
+                      <span style={{ ...s.pill, backgroundColor: "#eff6ff", color: "#1d4ed8", fontWeight: "700" }}>
                         {Number(p.cantidad_sugerida).toFixed(1)} {p.unidad || "uds."}
                       </span>
                     )}
@@ -70,45 +70,44 @@ const s = {
   wrap: {
     backgroundColor: "white",
     borderRadius: "16px",
-    border: "1.5px solid #d1fae5",
+    border: "1px solid #e2e8f0",
+    borderLeft: "4px solid #2563eb",
     overflow: "hidden",
   },
   header: {
-    padding: "16px 20px 12px",
-    backgroundColor: "#f0fdf4",
-    borderBottom: "1px solid #d1fae5",
-  },
-  headerLeft: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    marginBottom: "4px",
+    justifyContent: "space-between",
+    padding: "16px 20px",
+    borderBottom: "1px solid #f1f5f9",
+    gap: 12,
   },
-  title: { fontSize: "14px", fontWeight: "700", color: "#166534", margin: 0 },
+  title: { fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
   badge: {
-    padding: "2px 10px",
-    backgroundColor: "#bbf7d0",
-    color: "#166534",
+    padding: "3px 12px",
+    backgroundColor: "#eff6ff",
+    color: "#1d4ed8",
     borderRadius: "999px",
     fontSize: "11px",
     fontWeight: "700",
+    flexShrink: 0,
   },
-  hint: { fontSize: "11px", color: "#16a34a", margin: 0 },
+  hint: { fontSize: "11px", color: "#94a3b8", margin: 0 },
   tableWrap: { overflowX: "auto" },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {
     padding: "10px 16px",
     fontSize: "11px",
     fontWeight: "700",
-    color: "#64748b",
+    color: "#94a3b8",
     textTransform: "uppercase",
     letterSpacing: "0.04em",
     textAlign: "left",
     backgroundColor: "#fafafa",
-    borderBottom: "1px solid #f0f0f0",
+    borderBottom: "1px solid #f1f5f9",
   },
   rowEven: { backgroundColor: "white" },
-  rowOdd:  { backgroundColor: "#fafeff" },
+  rowOdd:  { backgroundColor: "#fafcff" },
   tdNombre: {
     padding: "11px 16px",
     fontSize: "13px",
@@ -146,7 +145,7 @@ const s = {
     textAlign: "right",
     padding: "8px 16px",
     margin: 0,
-    borderTop: "1px solid #f0f0f0",
+    borderTop: "1px solid #f1f5f9",
     fontStyle: "italic",
   },
 };
