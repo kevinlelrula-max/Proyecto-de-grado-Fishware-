@@ -157,7 +157,7 @@ export default function Productos() {
           <div style={s.statsRow}>
             <div style={s.statCard}>
               <span style={s.statLabel}>Total productos</span>
-              <span style={{ ...s.statValue, color: "#0F6E56" }}>{productos.length}</span>
+              <span style={{ ...s.statValue, color: "#2563eb" }}>{productos.length}</span>
             </div>
             <div style={s.statCard}>
               <span style={s.statLabel}>Mostrando</span>
@@ -300,8 +300,8 @@ const s = {
     marginBottom: "-2px", display: "flex", alignItems: "center", gap: "6px",
   },
   tabActive: {
-    color: "#0F6E56",
-    borderBottomColor: "#0F6E56",
+    color: "#2563eb",
+    borderBottomColor: "#2563eb",
   },
 
   // Stats
@@ -339,7 +339,7 @@ const s = {
   viewBtnActive: { backgroundColor: "#eff6ff", color: "#2563eb" },
   alertBadge: {
     marginLeft: 6, padding: "1px 6px", fontSize: 10, fontWeight: 700,
-    backgroundColor: "#fecaca", color: "#b91c1c", borderRadius: 999,
+    backgroundColor: "#dbeafe", color: "#1d4ed8", borderRadius: 999,
   },
 
   // Paginación
