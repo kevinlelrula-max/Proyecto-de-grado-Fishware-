@@ -227,7 +227,7 @@ export default function Categorias() {
 
         {/* FORMULARIO NUEVA */}
         <div className="cat-nueva">
-          <h3>➕ Nueva categoría</h3>
+          <h3>Nueva categoría</h3>
           <form className="cat-nueva-form" onSubmit={handleCrear}>
             <input
               className="cat-nueva-input"

@@ -53,7 +53,6 @@ export default function Configuracion() {
                   : "text-gray-400 hover:text-gray-600"
               }`}
             >
-              <tab.Icon size={14} />
               {tab.label}
             </button>
           ))}

@@ -90,12 +90,9 @@ function Empty({ msg = "Sin datos en este período" }) {
 function KpiCard({ label, value, sub, color, icon, delta }) {
   return (
     <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 5 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div>
         <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
           {label}
-        </span>
-        <span style={{ width: 32, height: 32, borderRadius: 8, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", color: color, flexShrink: 0 }}>
-          {icon}
         </span>
       </div>
       <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
@@ -553,10 +550,10 @@ function TabComparativa({ periodo }) {
   }));
 
   const kpisMeta = [
-    { key: "ingresos",         label: "Ingresos",         fmt: fmt,    Icon: DollarSign },
-    { key: "total_ventas",     label: "Ventas",            fmt: v => v, Icon: Package },
-    { key: "ticket_promedio",  label: "Ticket promedio",   fmt: fmt,    Icon: Receipt },
-    { key: "clientes_activos", label: "Clientes activos",  fmt: v => v, Icon: Users },
+    { key: "ingresos",         label: "Ingresos",         fmt: fmt    },
+    { key: "total_ventas",     label: "Ventas",            fmt: v => v },
+    { key: "ticket_promedio",  label: "Ticket promedio",   fmt: fmt    },
+    { key: "clientes_activos", label: "Clientes activos",  fmt: v => v },
   ];
 
   return (
@@ -574,9 +571,8 @@ function TabComparativa({ periodo }) {
           const delta = cambios[m.key];
           return (
             <div key={m.key} style={{ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "16px 20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>{m.label}</span>
-                <m.Icon size={16} color={C.azul} />
               </div>
               {/* Período actual */}
               <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em", marginBottom: 6 }}>
@@ -644,7 +640,7 @@ function TabComparativa({ periodo }) {
               const delta = cambios[m.key];
               return (
                 <tr key={m.key} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={{ ...sTd, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}><m.Icon size={13} style={{ color: "#94a3b8" }} /> {m.label}</td>
+                  <td style={{ ...sTd, fontWeight: 500 }}>{m.label}</td>
                   <td style={{ ...sTd, fontWeight: 700, color: "#0f172a" }}>{m.fmt(actual[m.key])}</td>
                   <td style={{ ...sTd, color: "#94a3b8" }}>{m.fmt(anterior[m.key])}</td>
                   <td style={sTd}>
@@ -926,11 +922,11 @@ function TabPronostico() {
 // COMPONENTE RAÍZ
 // ══════════════════════════════════════════════════════════════════════════════
 const TABS = [
-  { key: "resumen",      label: "Resumen",        Icon: LayoutDashboard },
-  { key: "rentabilidad", label: "Rentabilidad",   Icon: TrendingUp },
-  { key: "comparativa",  label: "Comparativa",    Icon: ArrowLeftRight },
-  { key: "pronostico",   label: "Pronóstico",     Icon: Sparkles },
-  { key: "meta",         label: "Meta de ventas", Icon: Target },
+  { key: "resumen",      label: "Resumen"        },
+  { key: "rentabilidad", label: "Rentabilidad"   },
+  { key: "comparativa",  label: "Comparativa"    },
+  { key: "pronostico",   label: "Pronóstico"     },
+  { key: "meta",         label: "Meta de ventas" },
 ];
 
 function TabMeta() {
@@ -987,7 +983,6 @@ export default function Reportes() {
             borderBottom: `2px solid ${tab === t.key ? C.azul : "transparent"}`,
             marginBottom: -2, transition: "color 0.15s, border-color 0.15s",
           }}>
-            <t.Icon size={14} />
             {t.label}
           </button>
         ))}

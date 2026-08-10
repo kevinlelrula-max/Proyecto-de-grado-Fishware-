@@ -155,7 +155,7 @@ function EditorPremio({ entry, onChange }) {
               color:       activo ? C.azul : "#94a3b8",
               transition:  "all 0.12s",
             }}>
-              <p.Icon size={11} /> {p.label}
+              {p.label}
             </button>
           );
         })}
@@ -456,7 +456,7 @@ export default function Referidos() {
             borderBottom: `2px solid ${tab === t.key ? "#3B82F6" : "transparent"}`,
             marginBottom: -2, transition: "all 0.15s",
           }}>
-            <t.Icon size={14} /> {t.label}
+            {t.label}
           </button>
         ))}
       </div>

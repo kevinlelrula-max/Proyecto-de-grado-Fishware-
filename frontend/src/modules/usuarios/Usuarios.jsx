@@ -68,10 +68,10 @@ export default function Usuarios() {
         <>
           {/* STAT CARDS */}
           <div style={s.statsRow}>
-            <StatCard icon={<Users size={16} color="#2563eb" />} bg="#eff6ff" label="Total usuarios" value={usuarios.length} valueColor="#2563eb" />
-            <StatCard icon={<Shield size={16} color="#7c3aed" />} bg="#f5f3ff" label="Administradores" value={admins} valueColor="#7c3aed" />
-            <StatCard icon={<Briefcase size={16} color="#0891b2" />} bg="#ecfeff" label="Empleados" value={empleados} valueColor="#0891b2" />
-            <StatCard icon={<Tag size={16} color="#b45309" />} bg="#fffbeb" label="Otros roles" value={otros} valueColor="#b45309" />
+            <StatCard label="Total usuarios"  value={usuarios.length} valueColor="#2563eb" />
+            <StatCard label="Administradores" value={admins}           valueColor="#7c3aed" />
+            <StatCard label="Empleados"       value={empleados}        valueColor="#0891b2" />
+            <StatCard label="Otros roles"     value={otros}            valueColor="#b45309" />
           </div>
 
           {/* BUSCADOR */}
@@ -128,14 +128,11 @@ export default function Usuarios() {
   );
 }
 
-function StatCard({ icon, bg, label, value, valueColor }) {
+function StatCard({ label, value, valueColor }) {
   return (
     <div style={s.statCard}>
-      <div style={{ ...s.statIconWrap, backgroundColor: bg }}>{icon}</div>
-      <div>
-        <div style={s.statLabel}>{label}</div>
-        <div style={{ ...s.statValue, color: valueColor }}>{value}</div>
-      </div>
+      <div style={s.statLabel}>{label}</div>
+      <div style={{ ...s.statValue, color: valueColor }}>{value}</div>
     </div>
   );
 }

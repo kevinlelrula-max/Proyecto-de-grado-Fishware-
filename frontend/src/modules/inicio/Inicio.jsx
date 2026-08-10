@@ -70,9 +70,8 @@ export default function Inicio({ onIrA }) {
       {/* Encabezado */}
       <div style={s.header}>
         <div>
-          <div className="flex items-center gap-2 text-primary mb-1">
-            <IconoSaludo size={16} />
-            <span className="text-sm font-medium capitalize">
+          <div className="mb-1">
+            <span className="text-sm font-medium capitalize text-primary">
               {new Date().toLocaleDateString("es-CO", {
                 weekday: "long", day: "numeric", month: "long",
               })}

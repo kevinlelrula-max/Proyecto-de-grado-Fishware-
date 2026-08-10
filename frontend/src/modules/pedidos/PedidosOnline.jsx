@@ -85,18 +85,13 @@ function TabCarritosAbandonados() {
           {/* Resumen */}
           <div style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12 }}>
             {[
-              { label:"Carritos",             value: carritos.length,                                          Icon: ShoppingCart },
-              { label:"Valor potencial",      value: fmt(carritos.reduce((a,c)=>a+parseFloat(c.total||0),0)), Icon: DollarSign },
-              { label:"Productos no vendidos",value: carritos.reduce((a,c)=>a+(c.items?.length||0),0),         Icon: Package },
+              { label:"Carritos",             value: carritos.length                                          },
+              { label:"Valor potencial",      value: fmt(carritos.reduce((a,c)=>a+parseFloat(c.total||0),0)) },
+              { label:"Productos no vendidos",value: carritos.reduce((a,c)=>a+(c.items?.length||0),0)        },
             ].map(k => (
-              <div key={k.label} style={{ background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px",display:"flex",alignItems:"center",gap:12 }}>
-                <span style={{ width:38,height:38,borderRadius:10,background:"#eff6ff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#2563eb" }}>
-                  <k.Icon size={20} />
-                </span>
-                <div>
-                  <p style={{ fontSize:11,color:"#94a3b8",margin:0,textTransform:"uppercase",letterSpacing:"0.05em",fontWeight:600 }}>{k.label}</p>
-                  <p style={{ fontSize:20,fontWeight:800,color:"#0f172a",margin:"2px 0 0" }}>{k.value}</p>
-                </div>
+              <div key={k.label} style={{ background:"#fff",borderRadius:12,border:"1px solid #e2e8f0",padding:"14px 18px" }}>
+                <p style={{ fontSize:11,color:"#94a3b8",margin:0,textTransform:"uppercase",letterSpacing:"0.05em",fontWeight:600 }}>{k.label}</p>
+                <p style={{ fontSize:20,fontWeight:800,color:"#0f172a",margin:"4px 0 0" }}>{k.value}</p>
               </div>
             ))}
           </div>

@@ -121,16 +121,11 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
         {[
-          { label: "Amigos referidos", value: stats.total,       Icon: Users },
-          { label: "Completados",      value: stats.completados, Icon: CheckCircle },
-          { label: "Pendientes",       value: stats.pendientes,  Icon: Clock },
+          { label: "Amigos referidos", value: stats.total       },
+          { label: "Completados",      value: stats.completados },
+          { label: "Pendientes",       value: stats.pendientes  },
         ].map(k => (
           <div key={k.label} style={{ background: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
-              <span style={{ width: 32, height: 32, borderRadius: 8, background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", color: "#2563eb" }}>
-                <k.Icon size={16} />
-              </span>
-            </div>
             <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: "0 0 3px" }}>{k.value}</div>
             <div style={{ fontSize: 11, color: "#94a3b8" }}>{k.label}</div>
           </div>
