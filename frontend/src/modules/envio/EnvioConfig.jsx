@@ -73,7 +73,7 @@ export default function EnvioConfig() {
 
       {/* Costo por defecto */}
       <div style={s.card}>
-        <h3 style={s.cardTitle}>💰 Costo por defecto</h3>
+        <h3 style={s.cardTitle}>Costo por defecto</h3>
         <p style={s.cardDesc}>
           Se aplica a los departamentos que no tengan un costo específico.
         </p>
@@ -96,7 +96,7 @@ export default function EnvioConfig() {
 
       {/* Todos los departamentos */}
       <div style={s.card}>
-        <h3 style={s.cardTitle}>🗺️ Costo por departamento</h3>
+        <h3 style={s.cardTitle}>Costo por departamento</h3>
         <p style={s.cardDesc}>
           Configura un costo individual. Si lo dejas vacío usa el costo por defecto (${Number(costoDefecto).toLocaleString("es-CO")}).
         </p>
@@ -149,7 +149,7 @@ export default function EnvioConfig() {
 
       {/* Resumen */}
       <div style={s.resumen}>
-        <h3 style={s.cardTitle}>📋 Resumen</h3>
+        <h3 style={s.cardTitle}>Resumen</h3>
         <div style={s.resumenRow}>
           <span style={s.resumenLabel}>Costo por defecto</span>
           <span style={s.resumenVal}>

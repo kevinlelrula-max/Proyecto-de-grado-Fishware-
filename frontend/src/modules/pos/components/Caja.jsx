@@ -213,8 +213,7 @@ export default function Caja({ token }) {
       {/* Historial de sesiones */}
       {historial.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
-            <Clock size={13} />
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 10 }}>
             Sesiones recientes
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

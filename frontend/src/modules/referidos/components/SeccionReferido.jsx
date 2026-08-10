@@ -157,8 +157,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
       {/* Tabla de beneficios por nivel */}
       {todas_configs.length > 0 && (
         <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: "16px 20px" }}>
-          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 10px", display: "flex", alignItems: "center", gap: 7 }}>
-            <Lightbulb size={14} color="#d97706" />
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 10px" }}>
             Cuánto más leal seas, más valioso es tu referido
           </h4>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>

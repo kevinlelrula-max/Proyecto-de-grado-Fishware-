@@ -78,7 +78,7 @@ export default function EnvioForm({ empresa_id, onCostoChange }) {
 
   return (
     <div style={s.wrap}>
-      <h4 style={s.titulo}>🚚 Envío</h4>
+      <h4 style={s.titulo}>Envío</h4>
 
       <label style={s.label} htmlFor="envio-dep">
         ¿A qué departamento enviamos?

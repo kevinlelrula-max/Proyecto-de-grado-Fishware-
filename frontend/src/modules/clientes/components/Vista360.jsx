@@ -117,7 +117,7 @@ export default function Vista360({ clienteId, onCerrar }) {
 
             {/* ── BLOQUE 2: Comportamiento de compra ── */}
             <div style={s.card}>
-              <h4 style={s.cardTitle}>🛒 Comportamiento de compra</h4>
+              <h4 style={s.cardTitle}>Comportamiento de compra</h4>
 
               {/* Mini barra comparativa */}
               {totalOps > 0 && (
@@ -135,13 +135,13 @@ export default function Vista360({ clienteId, onCerrar }) {
 
               <div style={s.dobleCol}>
                 <div style={s.canalBox}>
-                  <p style={s.canalTitulo}>🏪 Punto de venta</p>
+                  <p style={s.canalTitulo}>Punto de venta</p>
                   <p style={s.canalVal}>{data.compras.pos.total_ventas} compras</p>
                   <p style={s.canalSub}>${fmt(data.compras.pos.total_gastado)} total</p>
                   <p style={s.canalSub}>Última: {fmtFecha(data.compras.pos.ultima_compra)}</p>
                 </div>
                 <div style={s.canalBox}>
-                  <p style={s.canalTitulo}>💻 Tienda online</p>
+                  <p style={s.canalTitulo}>Tienda online</p>
                   <p style={s.canalVal}>{data.compras.online.total_pedidos} pedidos</p>
                   <p style={s.canalSub}>${fmt(data.compras.online.total_gastado)} total</p>
                   <p style={s.canalSub}>Último: {fmtFecha(data.compras.online.ultimo_pedido)}</p>
@@ -153,7 +153,7 @@ export default function Vista360({ clienteId, onCerrar }) {
             {/* ── BLOQUE 2b: Top productos (card propia) ── */}
             {data.compras.top_productos.length > 0 && (
               <div style={s.card}>
-                <h4 style={s.cardTitle}>📦 Productos más comprados</h4>
+                <h4 style={s.cardTitle}>Productos más comprados</h4>
                 {data.compras.top_productos.map((p, i) => (
                   <div key={i} style={s.prodRow}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -170,7 +170,7 @@ export default function Vista360({ clienteId, onCerrar }) {
 
             {/* ── BLOQUE 3: Lealtad ── */}
             <div style={s.card}>
-              <h4 style={s.cardTitle}>🏆 Nivel de lealtad</h4>
+              <h4 style={s.cardTitle}>Nivel de lealtad</h4>
               {data.lealtad.nivel_actual ? (() => {
                 const nc = nivelColor(data.lealtad.nivel_actual.nombre);
                 return (
@@ -212,7 +212,7 @@ export default function Vista360({ clienteId, onCerrar }) {
 
             {/* ── BLOQUE 4: Referidos ── */}
             <div style={s.card}>
-              <h4 style={s.cardTitle}>🔗 Referidos</h4>
+              <h4 style={s.cardTitle}>Referidos</h4>
               <div style={s.refGrid}>
                 <div style={s.refStat}>
                   <span style={s.refVal}>{data.referidos.total}</span>
@@ -232,7 +232,7 @@ export default function Vista360({ clienteId, onCerrar }) {
             {/* ── BLOQUE 5: Cupones ── */}
             {data.cupones.length > 0 && (
               <div style={s.card}>
-                <h4 style={s.cardTitle}>🎫 Cupones usados</h4>
+                <h4 style={s.cardTitle}>Cupones usados</h4>
                 {data.cupones.map((c, i) => (
                   <div key={i} style={s.cuponRow}>
                     <span style={s.cuponCodigo}>{c.codigo}</span>
@@ -250,7 +250,7 @@ export default function Vista360({ clienteId, onCerrar }) {
             {/* ── BLOQUE 6: Reseñas ── */}
             {data.reseñas.length > 0 && (
               <div style={s.card}>
-                <h4 style={s.cardTitle}>⭐ Reseñas</h4>
+                <h4 style={s.cardTitle}>Reseñas</h4>
                 {data.reseñas.map((r, i) => (
                   <div key={i} style={s.reseñaRow}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
