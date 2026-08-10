@@ -8,8 +8,8 @@ export default function Carrito({
     <div className="carrito-wrap">
       {carrito.length === 0 ? (
         <div className="carrito-vacio">
-          <div className="icon">🛒</div>
-          <p>Agrega productos</p>
+          <p>Sin productos en el carrito</p>
+          <span>Selecciona un producto de la izquierda</span>
         </div>
       ) : (
         carrito.map(item => (

@@ -175,17 +175,17 @@ export default function PuntoDeVenta() {
       <div className="pos-tabs">
         <div className={`pos-tab ${pestana === "venta" ? "active" : ""}`}
           onClick={() => setPestana("venta")}>
-          🛒 Venta
+          Venta
         </div>
 
         <div className={`pos-tab ${pestana === "historial" ? "active" : ""}`}
           onClick={() => setPestana("historial")}>
-          📋 Historial
+          Historial
         </div>
 
         <div className={`pos-tab ${pestana === "caja" ? "active" : ""}`}
           onClick={() => setPestana("caja")}>
-          💰 Caja
+          Caja
         </div>
       </div>
 
@@ -381,7 +381,7 @@ function ModalTicket({ venta, empresa, onClose, fmt }) {
           <div className="pos-ticket-footer">¡Gracias por su compra!</div>
 
           <div className="pos-ticket-btns pos-ticket-no-print">
-            <button className="pos-ticket-btn-print" onClick={handlePrint}>🖨️ Imprimir ticket</button>
+            <button className="pos-ticket-btn-print" onClick={handlePrint}>Imprimir ticket</button>
             <button className="pos-ticket-btn-close" onClick={onClose}>Cerrar</button>
           </div>
 
