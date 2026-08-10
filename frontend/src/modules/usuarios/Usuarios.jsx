@@ -51,14 +51,12 @@ export default function Usuarios() {
           style={{ ...s.tab, ...(pestana === "usuarios" ? s.tabActive : {}) }}
           onClick={() => setPestana("usuarios")}
         >
-          <Users size={14} />
           Usuarios
         </button>
         <button
           style={{ ...s.tab, ...(pestana === "roles" ? s.tabActive : {}) }}
           onClick={() => setPestana("roles")}
         >
-          <KeyRound size={14} />
           Roles
         </button>
       </div>
