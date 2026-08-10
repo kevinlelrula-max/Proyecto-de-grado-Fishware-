@@ -163,7 +163,7 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
               key={t.key}
               style={{
                 ...s.tab,
-                backgroundColor: tab === t.key ? "#0B1628" : "transparent",
+                backgroundColor: tab === t.key ? "#2563eb" : "transparent",
                 color: tab === t.key ? "white" : "#64748b",
               }}
               onClick={() => setTab(t.key)}
@@ -241,9 +241,9 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
                     style={{
                       display: "flex", alignItems: "center", gap: 5,
                       padding: "4px 10px", borderRadius: 7,
-                      border: "1px solid rgba(15,110,86,0.3)",
-                      backgroundColor: !form.nombre || loadingDesc ? "#f8fafc" : "#f0fdf4",
-                      color: !form.nombre || loadingDesc ? "#94a3b8" : "#0F6E56",
+                      border: "1px solid rgba(37,99,235,0.25)",
+                      backgroundColor: !form.nombre || loadingDesc ? "#f8fafc" : "#eff6ff",
+                      color: !form.nombre || loadingDesc ? "#94a3b8" : "#2563eb",
                       fontSize: 11, fontWeight: 600, cursor: !form.nombre || loadingDesc ? "default" : "pointer",
                       transition: "all 0.15s",
                     }}
@@ -363,7 +363,7 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
                       width: `${Math.min((parseFloat(form.stock) / parseFloat(form.stock_maximo)) * 100, 100)}%`,
                       backgroundColor: parseFloat(form.stock) <= parseFloat(form.stock_minimo)
                         ? "#ef4444" : parseFloat(form.stock) <= parseFloat(form.stock_minimo) * 2
-                        ? "#f59e0b" : "#0F6E56",
+                        ? "#f59e0b" : "#16a34a",
                     }} />
                   </div>
                   <div style={s.stockLabels}>
@@ -466,7 +466,7 @@ const s = {
   thumb: { width: "100%", height: "100%", objectFit: "cover" },
   portadaBadge: {
     position: "absolute", bottom: 0, left: 0, right: 0,
-    backgroundColor: "rgba(15,110,86,0.85)", color: "white",
+    backgroundColor: "rgba(37,99,235,0.85)", color: "white",
     fontSize: 9, fontWeight: 700, textAlign: "center", padding: "2px 0",
   },
   thumbX: {
@@ -485,12 +485,12 @@ const s = {
   },
   calculoBox: {
     display: "flex", alignItems: "center", gap: "12px",
-    padding: "12px 16px", backgroundColor: "#f0fdf4",
-    borderRadius: "10px", border: "1px solid #bbf7d0",
+    padding: "12px 16px", backgroundColor: "#eff6ff",
+    borderRadius: "10px", border: "1px solid #bfdbfe",
   },
   calculoLabel: { fontSize: "12px", color: "#64748b", flex: 1 },
-  calculoValor: { fontSize: "20px", fontWeight: "800", color: "#0F6E56" },
-  calculoMargen: { fontSize: "12px", fontWeight: "600", color: "#0F6E56", backgroundColor: "#dcfce7", padding: "3px 8px", borderRadius: "999px" },
+  calculoValor: { fontSize: "20px", fontWeight: "800", color: "#2563eb" },
+  calculoMargen: { fontSize: "12px", fontWeight: "600", color: "#2563eb", backgroundColor: "#dbeafe", padding: "3px 8px", borderRadius: "999px" },
   infoBox: {
     display: "flex", alignItems: "flex-start", gap: "10px",
     padding: "12px 14px", backgroundColor: "#fffbeb",
@@ -518,7 +518,7 @@ const s = {
   },
   btnGuardar: {
     flex: 2, padding: "10px",
-    backgroundColor: "#0B1628", color: "white",
+    backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "14px", fontWeight: "700", cursor: "pointer",
   },
