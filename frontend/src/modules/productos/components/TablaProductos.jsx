@@ -2,7 +2,7 @@ import { useState } from "react";
 import { formatearPrecio } from "../helpers/formatearPrecio";
 import { imgUrl } from "../../../utils/imgUrl";
 
-const IMG_PLACEHOLDER = "https://placehold.co/300x200/E1F5EE/0F6E56?text=🐟";
+const IMG_PLACEHOLDER = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22200%22%20viewBox%3D%220%200%20300%20200%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23f1f5f9%22%2F%3E%3Crect%20x%3D%22120%22%20y%3D%2272%22%20width%3D%2260%22%20height%3D%2245%22%20rx%3D%225%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222.5%22%2F%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%2294%22%20r%3D%2211%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%222.5%22%2F%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%2294%22%20r%3D%224%22%20fill%3D%22%23cbd5e1%22%2F%3E%3C%2Fsvg%3E";
 
 export default function TablaProductos({ productos, onEliminar, onEditar, onAgregar, vista = "grid" }) {
   const [copiadoId, setCopiadoId] = useState(null);
@@ -20,7 +20,6 @@ export default function TablaProductos({ productos, onEliminar, onEditar, onAgre
   if (productos.length === 0) {
     return (
       <div style={styles.empty}>
-        <span style={styles.emptyIcon}>📦</span>
         <p style={styles.emptyTitle}>No hay productos aún</p>
         <p style={styles.emptyText}>Agrega tu primer producto para que aparezca en tu tienda online</p>
         {onAgregar && (
@@ -155,7 +154,7 @@ const styles = {
     width: "100%",
     height: "140px",
     overflow: "hidden",
-    backgroundColor: "#E1F5EE",
+    backgroundColor: "#f1f5f9",
   },
   cardImg: {
     width: "100%",
@@ -187,7 +186,7 @@ const styles = {
   cardPrice: {
     fontSize: "15px",
     fontWeight: "700",
-    color: "#0F6E56",
+    color: "#2563eb",
     marginBottom: "10px",
   },
   cardActions: {
@@ -229,7 +228,7 @@ const styles = {
   listPrice: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#0F6E56",
+    color: "#2563eb",
     minWidth: "80px",
     textAlign: "right",
   },

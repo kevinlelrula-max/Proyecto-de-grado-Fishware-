@@ -131,7 +131,7 @@ export default function Productos() {
           style={{ ...s.tab, ...(pestana === "productos" ? s.tabActive : {}) }}
           onClick={() => setPestana("productos")}
         >
-          📦 Productos
+          Productos
         </button>
         <button
           style={{ ...s.tab, ...(pestana === "categorias" ? s.tabActive : {}) }}
