@@ -41,7 +41,7 @@ export default function Usuarios() {
           <p style={s.headerSub}>Gestiona los miembros y permisos de tu empresa</p>
         </div>
         {pestana === "usuarios" && (
-          <button style={s.btnNew} onClick={handleNuevo}>+ Nuevo usuario</button>
+          <button style={s.btnNew} onClick={handleNuevo}>Nuevo usuario</button>
         )}
       </div>
 
