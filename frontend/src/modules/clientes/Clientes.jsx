@@ -188,6 +188,7 @@ export default function Clientes() {
             </div>
             <FormCliente
               onGuardar={handleGuardar}
+              onCancelar={() => setMostrarForm(false)}
               clienteSeleccionado={clienteSeleccionado}
             />
           </div>
