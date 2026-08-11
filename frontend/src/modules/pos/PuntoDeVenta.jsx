@@ -27,6 +27,8 @@ export default function PuntoDeVenta() {
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [metodoPago, setMetodoPago] = useState(1);
   const [ticketVenta, setTicketVenta] = useState(null);
+  const [modalEfectivo, setModalEfectivo] = useState(false);
+  const [pagoRecibido, setPagoRecibido] = useState("");
 
   const {
     carrito,
@@ -123,6 +125,21 @@ export default function PuntoDeVenta() {
     } finally {
       setCreandoCliente(false);
     }
+  };
+
+  const handleConfirmarClick = () => {
+    if (metodoPago === 1) {
+      setPagoRecibido("");
+      setModalEfectivo(true);
+    } else {
+      confirmarVenta();
+    }
+  };
+
+  const handleConfirmarEfectivo = () => {
+    setModalEfectivo(false);
+    setPagoRecibido("");
+    confirmarVenta();
   };
 
   const confirmarVenta = async () => {
@@ -248,7 +265,7 @@ export default function PuntoDeVenta() {
 
                 <button
                   className="btn-confirmar"
-                  onClick={confirmarVenta}
+                  onClick={handleConfirmarClick}
                   disabled={!carrito.length || !clienteSeleccionado}
                 >
                   Confirmar venta
@@ -276,6 +293,57 @@ export default function PuntoDeVenta() {
         municipios={municipios}
         onDepartamentoChange={handleDepartamentoChange}
       />
+
+      {modalEfectivo && (
+        <div style={mEf.overlay}>
+          <div style={mEf.box}>
+            <h3 style={mEf.title}>Cobro en efectivo</h3>
+
+            <div style={mEf.totalDisplay}>
+              <span style={mEf.totalLabel}>Total a cobrar</span>
+              <span style={mEf.totalValor}>${fmt(total)}</span>
+            </div>
+
+            <div style={mEf.inputWrap}>
+              <label style={mEf.inputLabel}>Monto recibido</label>
+              <input
+                style={mEf.input}
+                type="number"
+                min="0"
+                placeholder={String(total)}
+                value={pagoRecibido}
+                onChange={e => setPagoRecibido(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            {pagoRecibido !== "" && (
+              <div style={mEf.vueltoWrap}>
+                <span style={mEf.vueltoLabel}>
+                  {Number(pagoRecibido) >= total ? "Vuelto" : "Falta"}
+                </span>
+                <span style={{
+                  ...mEf.vueltoValor,
+                  color: Number(pagoRecibido) >= total ? "#2563eb" : "#ef4444"
+                }}>
+                  ${fmt(Math.abs(Number(pagoRecibido) - total))}
+                </span>
+              </div>
+            )}
+
+            <div style={mEf.btns}>
+              <button style={mEf.btnCancelar} onClick={() => setModalEfectivo(false)}>Cancelar</button>
+              <button
+                style={{ ...mEf.btnConfirmar, opacity: Number(pagoRecibido) >= total ? 1 : 0.4 }}
+                onClick={handleConfirmarEfectivo}
+                disabled={!pagoRecibido || Number(pagoRecibido) < total}
+              >
+                Confirmar venta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {ticketVenta && (
         <ModalTicket
@@ -390,3 +458,21 @@ function ModalTicket({ venta, empresa, onClose, fmt }) {
     </>
   );
 }
+
+const mEf = {
+  overlay:      { position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center" },
+  box:          { background: "white", borderRadius: "18px", padding: "28px 24px", width: "320px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: "18px" },
+  title:        { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  totalDisplay: { backgroundColor: "#f8fafc", borderRadius: "12px", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  totalLabel:   { fontSize: "12px", color: "#64748b", fontWeight: "600" },
+  totalValor:   { fontSize: "20px", fontWeight: "800", color: "#0f172a" },
+  inputWrap:    { display: "flex", flexDirection: "column", gap: "6px" },
+  inputLabel:   { fontSize: "11px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" },
+  input:        { padding: "10px 14px", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "18px", fontWeight: "600", color: "#0f172a", outline: "none", width: "100%", boxSizing: "border-box" },
+  vueltoWrap:   { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", backgroundColor: "#f8fafc", borderRadius: "10px" },
+  vueltoLabel:  { fontSize: "13px", color: "#64748b", fontWeight: "600" },
+  vueltoValor:  { fontSize: "18px", fontWeight: "800" },
+  btns:         { display: "flex", gap: "10px" },
+  btnCancelar:  { flex: 1, padding: "11px", background: "#f1f5f9", border: "none", borderRadius: "10px", fontSize: "13px", color: "#64748b", cursor: "pointer", fontWeight: "600" },
+  btnConfirmar: { flex: 2, padding: "11px", background: "#2563eb", border: "none", borderRadius: "10px", fontSize: "13px", color: "white", fontWeight: "700", cursor: "pointer", transition: "opacity 0.15s" },
+};

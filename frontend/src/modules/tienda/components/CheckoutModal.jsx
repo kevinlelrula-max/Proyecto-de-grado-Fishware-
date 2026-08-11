@@ -41,7 +41,7 @@ function StripeForm({ totalPrecio, onExito, onError }) {
       <PaymentElement options={{ layout: "tabs" }} />
 
       {errorPago && (
-        <div style={f.errorBox}>⚠️ {errorPago}</div>
+        <div style={f.errorBox}>{errorPago}</div>
       )}
 
       <button
@@ -59,7 +59,7 @@ function StripeForm({ totalPrecio, onExito, onError }) {
       </button>
 
       <p style={f.stripe}>
-        🔒 Pago seguro procesado por <strong>Stripe</strong>
+        Pago seguro procesado por <strong>Stripe</strong>
       </p>
     </form>
   );
@@ -115,8 +115,13 @@ export default function CheckoutModal({
           {/* Éxito */}
           {pagoExitoso ? (
             <div style={s.exitoWrap}>
-              <div style={s.exitoIcon}>🎉</div>
-              <h3 style={s.exitoTitle}>¡Pago exitoso!</h3>
+              <div style={s.exitoIcon}>
+                <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                  <circle cx="28" cy="28" r="28" fill="#eff6ff"/>
+                  <path d="M16 28l10 10 14-20" stroke="#3674B5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 style={s.exitoTitle}>Pago exitoso</h3>
               <p style={s.exitoDesc}>
                 Tu pedido fue confirmado y está siendo preparado.
               </p>
@@ -128,7 +133,7 @@ export default function CheckoutModal({
                 <p style={s.resumenTitle}>Resumen del pedido</p>
                 {carrito.map(item => (
                   <div key={item.id} style={s.resumenItem}>
-                    <span style={s.resumenNombre}>🐟 {item.nombre} · {Number(item.cantidad).toFixed(1)} {item.unidad || "uds."}</span>
+                    <span style={s.resumenNombre}>{item.nombre} · {Number(item.cantidad).toFixed(1)} {item.unidad || "uds."}</span>
                     <span style={s.resumenPrecio}>
                       ${(item.cantidad * item.precio).toLocaleString("es-CO")}
                     </span>
@@ -144,7 +149,7 @@ export default function CheckoutModal({
 
               {/* Error del checkout */}
               {errorCheckout && (
-                <div style={s.errorBox}>⚠️ {errorCheckout}</div>
+                <div style={s.errorBox}>{errorCheckout}</div>
               )}
 
               {/* Loading del PaymentIntent */}
@@ -164,7 +169,7 @@ export default function CheckoutModal({
                     appearance: {
                       theme: "stripe",
                       variables: {
-                        colorPrimary:    "#0F6E56",
+                        colorPrimary:    "#3674B5",
                         colorBackground: "#ffffff",
                         colorText:       "#0f172a",
                         borderRadius:    "10px",
@@ -235,19 +240,19 @@ const s = {
   resumenPrecio: { fontSize: "13px", fontWeight: "600", color: "#0f172a" },
   resumenTotal:  { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #e2e8f0" },
   resumenTotalLabel: { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
-  resumenTotalValor: { fontSize: "20px", fontWeight: "800", color: "#0F6E56" },
+  resumenTotalValor: { fontSize: "20px", fontWeight: "800", color: "#3674B5" },
 
   // Error
   errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c", marginBottom: "16px" },
 
   // Loading
   loading: { display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "40px 0" },
-  spinner: { width: "20px", height: "20px", border: "2px solid #e2e8f0", borderTop: "2px solid #0F6E56", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
+  spinner: { width: "20px", height: "20px", border: "2px solid #e2e8f0", borderTop: "2px solid #3674B5", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
   loadingText: { fontSize: "14px", color: "#64748b" },
 
   // Éxito
   exitoWrap:  { textAlign: "center", padding: "40px 20px" },
-  exitoIcon:  { fontSize: "56px", marginBottom: "16px" },
+  exitoIcon:  { marginBottom: "16px" },
   exitoTitle: { fontSize: "22px", fontWeight: "800", color: "#0f172a", marginBottom: "8px" },
   exitoDesc:  { fontSize: "14px", color: "#64748b", lineHeight: "1.6" },
 };
@@ -257,7 +262,7 @@ const f = {
   errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c" },
   btnPagar: {
     width: "100%", padding: "14px",
-    backgroundColor: "#0F6E56", color: "white",
+    backgroundColor: "#3674B5", color: "white",
     border: "none", borderRadius: "10px",
     fontSize: "15px", fontWeight: "700",
     transition: "opacity 0.2s",

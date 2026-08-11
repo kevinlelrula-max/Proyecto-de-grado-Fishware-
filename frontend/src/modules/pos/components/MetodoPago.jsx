@@ -1,8 +1,8 @@
 const metodos = [
-  { id: 1, label: "💵 Efectivo" },
-  { id: 2, label: "🏦 Transferencia" },
-  { id: 3, label: "📱 Nequi" },
-  { id: 4, label: "💳 Tarjeta" }
+  { id: 1, label: "Efectivo" },
+  { id: 2, label: "Transferencia" },
+  { id: 3, label: "Nequi" },
+  { id: 4, label: "Tarjeta" }
 ];
 
 export default function MetodoPago({ metodoPago, setMetodoPago }) {

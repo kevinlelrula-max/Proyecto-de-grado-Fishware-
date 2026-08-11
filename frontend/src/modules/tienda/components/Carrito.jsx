@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useCheckout }  from "../hooks/useCheckout";
 import CheckoutModal    from "./CheckoutModal";
 import EnvioForm        from "../../envio/components/EnvioForm";
@@ -31,7 +31,6 @@ export default function Carrito({
   onPedidoCreado,
   onPagoExitoso,
 }) {
-  // 2️⃣ Estado del costo de envío — se actualiza desde EnvioForm
   const [costoEnvio, setCostoEnvio] = useState(0);
   const handleCostoEnvio = useCallback((costo) => setCostoEnvio(costo), []);
 
@@ -50,9 +49,9 @@ export default function Carrito({
   const descuentoRefMonto = tieneDescuentoRef ? Math.round(totalPrecio * descuentoRefPct / 100) : 0;
   const costoEnvioEfectivo = envioGratisRef ? 0 : costoEnvio;
 
-  // 3️⃣ Estado de cupón
+  // Cupón
   const [codigoCupon,   setCodigoCupon]   = useState("");
-  const [cuponAplicado, setCuponAplicado] = useState(null); // { cupon_id, codigo, descuento, descripcion }
+  const [cuponAplicado, setCuponAplicado] = useState(null);
   const [errorCupon,    setErrorCupon]    = useState("");
   const [loadingCupon,  setLoadingCupon]  = useState(false);
 
@@ -89,7 +88,7 @@ export default function Carrito({
   const descuentoCupon = cuponAplicado?.descuento || 0;
   const totalConEnvio  = totalPrecio + costoEnvioEfectivo - descuentoCupon - descuentoRefMonto;
 
-  // ── Checkout con pasarela ─────────────────────────────────────────────────
+  // Checkout con pasarela
   const metodoSeleccionado = metodosPago.find(m => m.id === metodoPagoId);
   const esMetodoTarjeta = metodoSeleccionado?.metodo?.toLowerCase() === "tarjeta";
 
@@ -116,20 +115,49 @@ export default function Carrito({
 
   const usarStripe = tienePasarela && esMetodoTarjeta;
 
+  // Confirmación post-pedido para métodos manuales
+  const [pedidoExitoso, setPedidoExitoso] = useState(false);
+  const [metodoConfirmado, setMetodoConfirmado] = useState(null);
+  const prevLoadingPedido = useRef(false);
+
+  useEffect(() => {
+    if (prevLoadingPedido.current && !loadingPedido && !errorPedido && metodoConfirmado) {
+      setPedidoExitoso(true);
+    }
+    prevLoadingPedido.current = loadingPedido;
+  }, [loadingPedido, errorPedido]);
+
+  useEffect(() => {
+    if (!carritoAbierto) {
+      setPedidoExitoso(false);
+      setMetodoConfirmado(null);
+      prevLoadingPedido.current = false;
+    }
+  }, [carritoAbierto]);
+
+  const handleConfirmarPedido = () => {
+    setMetodoConfirmado(metodoSeleccionado?.metodo?.toLowerCase());
+    confirmarPedido(totalConEnvio, cuponAplicado?.cupon_id || null, descuentoCupon + descuentoRefMonto);
+  };
+
   if (!carritoAbierto) return null;
 
   return (
     <>
-      {/* Overlay */}
       <div style={s.overlay} onClick={() => setCarritoAbierto(false)} />
 
-      {/* Panel */}
       <div style={s.panel}>
 
         {/* Header */}
         <div style={s.header}>
           <div style={s.headerLeft}>
-            <span style={s.headerIcon}>🛒</span>
+            <div style={s.headerIconWrap}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 3h1.5l2.5 9h8l2-6H6" stroke="#3674B5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="9" cy="16" r="1.2" fill="#3674B5"/>
+                <circle cx="14" cy="16" r="1.2" fill="#3674B5"/>
+              </svg>
+            </div>
             <div>
               <h3 style={s.headerTitle}>Tu carrito</h3>
               <p style={s.headerSub}>
@@ -144,19 +172,38 @@ export default function Carrito({
 
         {/* Contenido */}
         <div style={s.body}>
-          {carrito.length === 0 ? (
+
+          {pedidoExitoso ? (
+            /* Panel de confirmación post-pedido */
+            <div style={s.exitoPanel}>
+              <div style={s.exitoIconWrap}>
+                <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                  <circle cx="28" cy="28" r="28" fill="#eff6ff"/>
+                  <path d="M16 28l10 10 14-20" stroke="#3674B5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h3 style={s.exitoTitle}>Pedido confirmado</h3>
+              <p style={s.exitoInstrucciones}>{instruccionesPago(metodoConfirmado)}</p>
+              <button style={s.btnCerrarExito} onClick={() => setCarritoAbierto(false)}>Cerrar</button>
+            </div>
+
+          ) : carrito.length === 0 ? (
+            /* Estado vacío */
             <div style={s.empty}>
-              <span style={s.emptyIcon}>🛒</span>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="12" fill="#f1f5f9"/>
+                <path d="M12 16h4l5 16h10l4-12H18" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               <p style={s.emptyTitle}>Tu carrito está vacío</p>
               <p style={s.emptyDesc}>Agrega productos del catálogo</p>
             </div>
+
           ) : (
             <>
               {/* Items */}
               <div style={s.items}>
                 {carrito.map((item) => (
                   <div key={item.id} style={s.item}>
-                    <div style={s.itemEmoji}>🐟</div>
                     <div style={s.itemInfo}>
                       <p style={s.itemNombre}>{item.nombre}</p>
                       <p style={s.itemPrecio}>${Number(item.precio).toLocaleString("es-CO")} / {item.unidad || "uds."}</p>
@@ -168,18 +215,18 @@ export default function Carrito({
                     </div>
                     <div style={s.itemRight}>
                       <p style={s.itemSubtotal}>${(item.cantidad * item.precio).toLocaleString("es-CO")}</p>
-                      <button style={s.quitarBtn} onClick={() => quitarDelCarrito(item.id)}>🗑️</button>
+                      <button style={s.quitarBtn} onClick={() => quitarDelCarrito(item.id)}>✕</button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* 3️⃣ EnvioForm — selector de departamento */}
+              {/* Selector de envío */}
               <EnvioForm empresa_id={empresaId} onCostoChange={handleCostoEnvio} />
 
-              {/* 4️⃣ Campo de cupón */}
+              {/* Cupón */}
               <div>
-                <label style={s.label}>🎫 ¿Tienes un cupón?</label>
+                <label style={s.label}>¿Tienes un cupón?</label>
                 {cuponAplicado ? (
                   <div style={s.cuponAplicado}>
                     <div>
@@ -212,7 +259,7 @@ export default function Carrito({
                 {errorCupon && <p style={s.cuponError}>{errorCupon}</p>}
               </div>
 
-              {/* Total con envío, referido y cupón */}
+              {/* Totales */}
               <div style={s.totalWrap}>
                 {(costoEnvio > 0 || descuentoCupon > 0 || tieneDescuentoRef) && (
                   <div style={s.subtotalRow}>
@@ -228,24 +275,24 @@ export default function Carrito({
                 )}
                 {envioGratisRef && costoEnvio > 0 && (
                   <div style={s.subtotalRow}>
-                    <span style={{ ...s.subtotalLabel, color: "#0F6E56" }}>Envío</span>
-                    <span style={{ ...s.subtotalValor, color: "#0F6E56", fontWeight: "700" }}>Gratis 🎁</span>
+                    <span style={{ ...s.subtotalLabel, color: "#3674B5" }}>Envío</span>
+                    <span style={{ ...s.subtotalValor, color: "#3674B5", fontWeight: "700" }}>Gratis</span>
                   </div>
                 )}
                 {tieneDescuentoRef && descuentoRefMonto > 0 && (
                   <div style={s.subtotalRow}>
-                    <span style={{ ...s.subtotalLabel, color: "#2563eb" }}>
-                      🤝 Descuento referido ({descuentoRefPct}%)
+                    <span style={{ ...s.subtotalLabel, color: "#3674B5" }}>
+                      Descuento referido ({descuentoRefPct}%)
                     </span>
-                    <span style={{ ...s.subtotalValor, color: "#2563eb", fontWeight: "700" }}>
+                    <span style={{ ...s.subtotalValor, color: "#3674B5", fontWeight: "700" }}>
                       −${descuentoRefMonto.toLocaleString("es-CO")}
                     </span>
                   </div>
                 )}
                 {descuentoCupon > 0 && (
                   <div style={s.subtotalRow}>
-                    <span style={{ ...s.subtotalLabel, color: "#0F6E56" }}>🎫 Cupón {cuponAplicado?.codigo}</span>
-                    <span style={{ ...s.subtotalValor, color: "#0F6E56", fontWeight: "700" }}>
+                    <span style={{ ...s.subtotalLabel, color: "#3674B5" }}>Cupón {cuponAplicado?.codigo}</span>
+                    <span style={{ ...s.subtotalValor, color: "#3674B5", fontWeight: "700" }}>
                       −${descuentoCupon.toLocaleString("es-CO")}
                     </span>
                   </div>
@@ -259,9 +306,8 @@ export default function Carrito({
               {/* Formulario */}
               <div style={s.form}>
 
-                {/* Dirección */}
                 <div style={s.fieldWrap}>
-                  <label style={s.label}>📍 Dirección de entrega</label>
+                  <label style={s.label}>Dirección de entrega</label>
                   <input
                     style={{ ...s.input, borderColor: errorPedido && !direccion ? "#fca5a5" : "#e2e8f0" }}
                     placeholder="Calle 123 #45-67, Apto 201"
@@ -270,33 +316,31 @@ export default function Carrito({
                   />
                 </div>
 
-                {/* Método de pago */}
                 {metodosPago.length > 0 && (
                   <div style={s.fieldWrap}>
-                    <label style={s.label}>💳 Método de pago</label>
+                    <label style={s.label}>Método de pago</label>
                     <div style={s.metodosGrid}>
                       {metodosPago.map((m) => (
                         <button
                           key={m.id}
                           style={{
                             ...s.metodoBtn,
-                            backgroundColor: metodoPagoId === m.id ? "#E1F5EE" : "white",
-                            borderColor:     metodoPagoId === m.id ? "#0F6E56" : "#e2e8f0",
-                            color:           metodoPagoId === m.id ? "#0F6E56" : "#64748b",
+                            backgroundColor: metodoPagoId === m.id ? "#eff6ff" : "white",
+                            borderColor:     metodoPagoId === m.id ? "#3674B5" : "#e2e8f0",
+                            color:           metodoPagoId === m.id ? "#3674B5" : "#64748b",
                             fontWeight:      metodoPagoId === m.id ? "700" : "500",
                           }}
                           onClick={() => setMetodoPagoId(m.id)}
                         >
-                          {getIconMetodo(m.metodo)} {capitalize(m.metodo)}
+                          {capitalize(m.metodo)}
                         </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Notas */}
                 <div style={s.fieldWrap}>
-                  <label style={s.label}>📝 Notas (opcional)</label>
+                  <label style={s.label}>Notas (opcional)</label>
                   <textarea
                     style={s.textarea}
                     placeholder="Instrucciones especiales..."
@@ -307,25 +351,21 @@ export default function Carrito({
                 </div>
 
                 {errorPedido && (
-                  <div style={s.errorBox}>⚠️ {errorPedido}</div>
+                  <div style={s.errorBox}>{errorPedido}</div>
                 )}
 
-                {/* Botón de acción principal */}
                 {usarStripe ? (
                   <button
-                    style={{
-                      ...s.btnConfirmar,
-                      background: "linear-gradient(135deg, #0F6E56, #0a5a45)",
-                    }}
+                    style={{ ...s.btnConfirmar, background: "#3674B5" }}
                     onClick={abrirCheckout}
                     disabled={!direccion.trim() || loadingIntent}
                   >
-                    {loadingIntent ? "Iniciando pago..." : `💳 Ir a pagar · $${totalConEnvio.toLocaleString("es-CO")}`}
+                    {loadingIntent ? "Iniciando pago..." : `Ir a pagar · $${totalConEnvio.toLocaleString("es-CO")}`}
                   </button>
                 ) : (
                   <button
                     style={{ ...s.btnConfirmar, opacity: loadingPedido ? 0.75 : 1, cursor: loadingPedido ? "not-allowed" : "pointer" }}
-                    onClick={() => confirmarPedido(totalConEnvio, cuponAplicado?.cupon_id || null, descuentoCupon + descuentoRefMonto)}
+                    onClick={handleConfirmarPedido}
                     disabled={loadingPedido}
                   >
                     {loadingPedido
@@ -337,7 +377,7 @@ export default function Carrito({
                 )}
 
                 {usarStripe && (
-                  <p style={s.seguridadNote}>🔒 Pago seguro con Stripe · Datos encriptados</p>
+                  <p style={s.seguridadNote}>Pago seguro con Stripe · Datos encriptados</p>
                 )}
 
                 <button style={s.btnVaciar} onClick={vaciarCarrito}>Vaciar carrito</button>
@@ -347,7 +387,6 @@ export default function Carrito({
         </div>
       </div>
 
-      {/* Checkout Modal con Stripe */}
       <CheckoutModal
         abierto={checkoutAbierto}
         onCerrar={cerrarCheckout}
@@ -364,13 +403,12 @@ export default function Carrito({
   );
 }
 
-function getIconMetodo(metodo) {
-  const m = metodo?.toLowerCase();
-  if (m === "efectivo")      return "💵";
-  if (m === "transferencia") return "🏦";
-  if (m === "nequi")         return "📱";
-  if (m === "tarjeta")       return "💳";
-  return "💰";
+function instruccionesPago(metodo) {
+  if (metodo === "nequi")
+    return "Envía el monto exacto al número de Nequi registrado por el negocio. Tu pedido se activará una vez confirmemos la transferencia.";
+  if (metodo === "transferencia")
+    return "Realiza la transferencia bancaria a la cuenta del negocio y comparte el comprobante. Tu pedido se activará una vez confirmemos el pago.";
+  return "Tu pedido quedó registrado y está pendiente de pago. El negocio se pondrá en contacto contigo para coordinar el cobro.";
 }
 
 function capitalize(str) {
@@ -383,43 +421,56 @@ const s = {
   panel:        { position: "fixed", top: 0, right: 0, bottom: 0, width: "420px", backgroundColor: "white", zIndex: 201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.15)", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
   header:       { padding: "20px 24px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc" },
   headerLeft:   { display: "flex", alignItems: "center", gap: "12px" },
-  headerIcon:   { fontSize: "24px" },
+  headerIconWrap: { width: "36px", height: "36px", backgroundColor: "#eff6ff", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   headerTitle:  { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
   headerSub:    { fontSize: "12px", color: "#64748b", margin: 0 },
   closeBtn:     { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#64748b", padding: "4px 8px", borderRadius: "6px" },
   body:         { flex: 1, overflowY: "auto", padding: "16px 24px", display: "flex", flexDirection: "column", gap: "16px" },
-  empty:        { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", padding: "60px 0" },
-  emptyIcon:    { fontSize: "48px" },
+
+  // Estado vacío
+  empty:        { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", padding: "60px 0" },
   emptyTitle:   { fontSize: "15px", fontWeight: "600", color: "#64748b", margin: 0 },
   emptyDesc:    { fontSize: "13px", color: "#94a3b8", margin: 0 },
-  items:        { display: "flex", flexDirection: "column", gap: "12px" },
+
+  // Éxito post-pedido
+  exitoPanel:        { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px", padding: "40px 20px", textAlign: "center" },
+  exitoIconWrap:     { marginBottom: "4px" },
+  exitoTitle:        { fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  exitoInstrucciones:{ fontSize: "13px", color: "#64748b", lineHeight: "1.6", maxWidth: "300px", margin: 0 },
+  btnCerrarExito:    { marginTop: "8px", padding: "12px 28px", backgroundColor: "#3674B5", color: "white", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer" },
+
+  // Items
+  items:        { display: "flex", flexDirection: "column", gap: "10px" },
   item:         { display: "flex", alignItems: "center", gap: "10px", padding: "12px", backgroundColor: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" },
-  itemEmoji:    { fontSize: "24px", flexShrink: 0 },
   itemInfo:     { flex: 1, minWidth: 0 },
   itemNombre:   { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   itemPrecio:   { fontSize: "11px", color: "#94a3b8", margin: 0 },
   itemKilos:    { display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 },
-  kilosBtn:     { width: "22px", height: "22px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white", fontSize: "13px", cursor: "pointer", color: "#0F6E56", display: "flex", alignItems: "center", justifyContent: "center" },
+  kilosBtn:     { width: "22px", height: "22px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white", fontSize: "13px", cursor: "pointer", color: "#3674B5", display: "flex", alignItems: "center", justifyContent: "center" },
   kilosVal:     { fontSize: "12px", fontWeight: "600", color: "#0f172a", minWidth: "32px", textAlign: "center" },
   itemRight:    { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 },
-  itemSubtotal: { fontSize: "13px", fontWeight: "700", color: "#0F6E56", margin: 0 },
-  quitarBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: "13px", padding: 0 },
+  itemSubtotal: { fontSize: "13px", fontWeight: "700", color: "#3674B5", margin: 0 },
+  quitarBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#cbd5e1", padding: 0, transition: "color 0.12s" },
+
+  // Totales
   totalWrap:    { display: "flex", flexDirection: "column", gap: "6px" },
   subtotalRow:  { display: "flex", justifyContent: "space-between", padding: "4px 8px" },
   subtotalLabel:{ fontSize: "12px", color: "#94a3b8" },
   subtotalValor:{ fontSize: "12px", color: "#94a3b8" },
-  totalRow:     { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", backgroundColor: "#E1F5EE", borderRadius: "12px", border: "1px solid #9FE1CB" },
+  totalRow:     { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", backgroundColor: "#eff6ff", borderRadius: "12px", border: "1px solid #bfdbfe" },
   totalLabel:   { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
-  totalValor:   { fontSize: "20px", fontWeight: "800", color: "#0F6E56" },
+  totalValor:   { fontSize: "20px", fontWeight: "800", color: "#3674B5" },
+
+  // Formulario
   form:         { display: "flex", flexDirection: "column", gap: "14px" },
   fieldWrap:    {},
   label:        { display: "block", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
   input:        { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box" },
   textarea:     { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box", resize: "none", fontFamily: "inherit" },
   metodosGrid:  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" },
-  metodoBtn:    { padding: "8px 10px", borderRadius: "8px", border: "1.5px solid", fontSize: "12px", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", gap: "4px", justifyContent: "center" },
+  metodoBtn:    { padding: "8px 10px", borderRadius: "8px", border: "1.5px solid", fontSize: "12px", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center" },
   errorBox:     { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 12px", fontSize: "12px", color: "#b91c1c" },
-  btnConfirmar: { width: "100%", padding: "13px", backgroundColor: "#0F6E56", color: "white", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", transition: "opacity 0.2s", cursor: "pointer" },
+  btnConfirmar: { width: "100%", padding: "13px", backgroundColor: "#3674B5", color: "white", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", transition: "opacity 0.2s", cursor: "pointer" },
   seguridadNote:{ textAlign: "center", fontSize: "11px", color: "#94a3b8", margin: 0 },
   btnVaciar:    { width: "100%", padding: "10px", background: "transparent", color: "#94a3b8", border: "none", fontSize: "12px", cursor: "pointer", textDecoration: "underline" },
 
@@ -440,12 +491,12 @@ const s = {
   cuponAplicado: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "9px 12px", marginTop: "6px",
-    backgroundColor: "#f0fdf4", border: "1.5px solid #bbf7d0",
+    backgroundColor: "#eff6ff", border: "1.5px solid #bfdbfe",
     borderRadius: "9px",
   },
   cuponCodigo:   { fontSize: "13px", fontWeight: "700", color: "#0f172a", fontFamily: "'DM Mono', monospace" },
   cuponDesc:     { fontSize: "12px", color: "#64748b" },
-  cuponDescuento:{ fontSize: "13px", fontWeight: "700", color: "#0F6E56" },
+  cuponDescuento:{ fontSize: "13px", fontWeight: "700", color: "#3674B5" },
   cuponQuitarBtn:{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "13px" },
   cuponError:    { fontSize: "11px", color: "#b91c1c", marginTop: "4px" },
 };
