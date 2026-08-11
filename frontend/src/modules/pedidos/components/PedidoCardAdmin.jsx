@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, MapPin, Phone, FileText, ChevronDown, ChevronUp, CheckCircle, RotateCcw } from "lucide-react";
+import { CreditCard, MapPin, Phone, FileText, ChevronDown, ChevronUp, CheckCircle, RotateCcw, AlertCircle } from "lucide-react";
 import { ESTADOS, SIGUIENTE_ESTADO } from "../hooks/usePedidosAdmin";
 import ModalDevolucion from "../../devoluciones/ModalDevolucion";
 
@@ -19,10 +19,17 @@ function getBadge(estado) {
 }
 
 export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) {
-  const [expandido, setExpandido] = useState(false);
-  const [modalDevolucion, setModalDevolucion] = useState(false);
+  const [expandido,            setExpandido]            = useState(false);
+  const [modalDevolucion,      setModalDevolucion]      = useState(false);
+  const [confirmandoCancelacion, setConfirmandoCancelacion] = useState(false);
+
   const siguienteEstado = SIGUIENTE_ESTADO[pedido.estado];
-  const estaActivo = cambiando === pedido.id;
+  const estaActivo      = cambiando === pedido.id;
+
+  const metodoPagoLower = pedido.metodo_pago?.toLowerCase() || "";
+  const pagoSinVerificar =
+    pedido.estado === "pendiente" &&
+    (metodoPagoLower.includes("nequi") || metodoPagoLower.includes("transferencia"));
 
   return (
     <div style={s.card}>
@@ -46,10 +53,15 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
 
         <div style={s.cardMid}>
           {getBadge(pedido.estado)}
-          <span style={s.cardMetodo}>
-            <CreditCard size={11} style={{ marginRight: 4, verticalAlign: "middle" }} />
-            {pedido.metodo_pago}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={s.cardMetodo}>
+              <CreditCard size={11} style={{ marginRight: 4, verticalAlign: "middle" }} />
+              {pedido.metodo_pago}
+            </span>
+            {pagoSinVerificar && (
+              <span style={s.badgePago}>Pago por verificar</span>
+            )}
+          </div>
         </div>
 
         <div style={s.cardRight}>
@@ -63,6 +75,16 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
       {/* ── Detalle expandido ── */}
       {expandido && (
         <div style={s.detalle}>
+
+          {/* Aviso de pago pendiente */}
+          {pagoSinVerificar && (
+            <div style={s.avisoPago}>
+              <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>
+                Este pedido fue pagado por <strong>{pedido.metodo_pago}</strong>. Verifica que el cliente haya realizado la transferencia antes de confirmarlo.
+              </span>
+            </div>
+          )}
 
           {/* Info cliente */}
           <div style={s.detalleInfo}>
@@ -126,24 +148,42 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
                 ) : (
                   <>
                     <CheckCircle size={14} style={{ marginRight: 6 }} />
-                    Marcar como "{ESTADOS.find(e => e.key === siguienteEstado)?.label}"
+                    {pagoSinVerificar
+                      ? "Pago recibido — Confirmar pedido"
+                      : `Marcar como "${ESTADOS.find(e => e.key === siguienteEstado)?.label}"`}
                   </>
                 )}
               </button>
             )}
+
             {pedido.estado !== "cancelado" && pedido.estado !== "entregado" && (
-              <button
-                style={s.btnCancelar}
-                disabled={estaActivo}
-                onClick={() => {
-                  if (confirm("¿Cancelar este pedido?")) {
-                    onCambiarEstado(pedido.id, "cancelado");
-                  }
-                }}
-              >
-                Cancelar pedido
-              </button>
+              confirmandoCancelacion ? (
+                <div style={s.cancelConfirm}>
+                  <span style={s.cancelConfirmText}>¿Cancelar este pedido?</span>
+                  <button
+                    style={s.btnSiCancelar}
+                    onClick={() => {
+                      onCambiarEstado(pedido.id, "cancelado");
+                      setConfirmandoCancelacion(false);
+                    }}
+                  >
+                    Sí, cancelar
+                  </button>
+                  <button style={s.btnNo} onClick={() => setConfirmandoCancelacion(false)}>
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  style={s.btnCancelar}
+                  disabled={estaActivo}
+                  onClick={() => setConfirmandoCancelacion(true)}
+                >
+                  Cancelar pedido
+                </button>
+              )
             )}
+
             {(pedido.estado === "entregado" || pedido.estado === "confirmado") && (
               <button
                 style={s.btnDevolucion}
@@ -163,10 +203,10 @@ export default function PedidoCardAdmin({ pedido, cambiando, onCambiarEstado }) 
           pedido={{
             ...pedido,
             items: (pedido.detalle || []).map(d => ({
-              producto_id:    d.producto_id,
-              nombre:         d.nombre,
-              cantidad:       Number(d.cantidad),
-              precio_unitario:Number(d.precio_unitario || d.subtotal / d.cantidad || 0),
+              producto_id:     d.producto_id,
+              nombre:          d.nombre,
+              cantidad:        Number(d.cantidad),
+              precio_unitario: Number(d.precio_unitario || d.subtotal / d.cantidad || 0),
             })),
           }}
           tipo="pedido"
@@ -199,6 +239,23 @@ const s = {
   cardMetodo:  { fontSize: "11px", color: "#94a3b8", display: "flex", alignItems: "center" },
   cardRight:   { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 },
   cardTotal:   { fontSize: "16px", fontWeight: "800", color: "#0f172a" },
+
+  // Badge pago por verificar
+  badgePago: {
+    fontSize: "10px", fontWeight: "700",
+    color: "#92400e", backgroundColor: "#fffbeb",
+    border: "1px solid #fde68a",
+    padding: "2px 7px", borderRadius: "999px",
+  },
+
+  // Aviso en detalle
+  avisoPago: {
+    display: "flex", gap: "8px", alignItems: "flex-start",
+    padding: "10px 14px",
+    backgroundColor: "#fffbeb", border: "1px solid #fde68a",
+    borderRadius: "10px", fontSize: "12px", color: "#92400e", lineHeight: "1.5",
+  },
+
   detalle: {
     borderTop: "1.5px solid #f1f5f9", padding: "20px",
     display: "flex", flexDirection: "column", gap: "16px",
@@ -226,7 +283,7 @@ const s = {
     paddingTop: "10px", borderTop: "1px solid #f1f5f9",
     fontSize: "14px", fontWeight: "600", color: "#0f172a",
   },
-  acciones: { display: "flex", gap: "10px", flexWrap: "wrap" },
+  acciones: { display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" },
   btnAvanzar: {
     display: "inline-flex", alignItems: "center",
     padding: "10px 20px", backgroundColor: "#2563eb",
@@ -243,5 +300,23 @@ const s = {
     padding: "10px 16px", backgroundColor: "white",
     color: "#2563eb", border: "1.5px solid #bfdbfe",
     borderRadius: "9px", fontSize: "13px", fontWeight: "600", cursor: "pointer",
+  },
+
+  // Confirmación inline de cancelación
+  cancelConfirm: {
+    display: "flex", alignItems: "center", gap: "8px",
+    padding: "8px 12px", backgroundColor: "#fef2f2",
+    border: "1.5px solid #fecaca", borderRadius: "9px",
+  },
+  cancelConfirmText: { fontSize: "13px", color: "#b91c1c", fontWeight: "600", marginRight: 4 },
+  btnSiCancelar: {
+    padding: "6px 14px", backgroundColor: "#ef4444",
+    color: "white", border: "none", borderRadius: "7px",
+    fontSize: "12px", fontWeight: "700", cursor: "pointer",
+  },
+  btnNo: {
+    padding: "6px 14px", backgroundColor: "white",
+    color: "#64748b", border: "1px solid #e2e8f0",
+    borderRadius: "7px", fontSize: "12px", fontWeight: "600", cursor: "pointer",
   },
 };
