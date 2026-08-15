@@ -16,7 +16,7 @@ export const DEFAULT_LAYOUT = [
 
 const DATOS_INICIAL = {
   nombre: "", nit: "", slug: "", logoUrl: null,
-  color_primario: "#0F6E56", color_secundario: "#0B1628",
+  color_primario: "#2563eb", color_secundario: "#0B1628",
   unidad_predeterminada: "unidad", fuente: "Inter",
   productos_destacados_cantidad: 4, footer_texto: "",
   descripcion: "", horario: "",
@@ -46,7 +46,7 @@ export function useEditor() {
         nit:                data.nit                || "",
         slug:               data.slug               || "",
         logoUrl:            data.logoUrl            || null,
-        color_primario:     data.color_primario     || "#0F6E56",
+        color_primario:     data.color_primario     || "#2563eb",
         color_secundario:   data.color_secundario   || "#0B1628",
         unidad_predeterminada:         data.unidad_predeterminada         || "unidad",
         fuente:                        data.fuente                        || "Inter",

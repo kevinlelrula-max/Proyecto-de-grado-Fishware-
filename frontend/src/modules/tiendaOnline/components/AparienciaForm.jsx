@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const COLORES_PRESET = [
-  "#0F6E56", "#0099FF", "#7c3aed", "#db2777",
+  "#2563eb", "#0099FF", "#7c3aed", "#db2777",
   "#dc2626", "#d97706", "#0e7490", "#0B1628",
 ];
 
@@ -72,11 +72,11 @@ export default function AparienciaForm({
           <div style={s.colorCustom}>
             <input
               type="color"
-              value={empresa?.color_primario || "#0F6E56"}
+              value={empresa?.color_primario || "#2563eb"}
               onChange={e => onChange("color_primario", e.target.value)}
               style={s.colorInput}
             />
-            <span style={s.colorValue}>{empresa?.color_primario || "#0F6E56"}</span>
+            <span style={s.colorValue}>{empresa?.color_primario || "#2563eb"}</span>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function AparienciaForm({
         <div style={s.colorPreviewDual}>
           <button style={{
             ...s.previewBtn,
-            backgroundColor: empresa?.color_primario || "#0F6E56",
+            backgroundColor: empresa?.color_primario || "#2563eb",
           }}>
             Agregar al carrito
           </button>

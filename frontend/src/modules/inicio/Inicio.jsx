@@ -10,6 +10,7 @@ import ModalQR             from "./components/ModalQR";
 import ResumenDiario        from "./components/ResumenDiario";
 import InsightWidget        from "./components/InsightWidget";
 import ClientesReconquistar from "./components/ClientesReconquistar";
+import StockCriticoWidget  from "./components/StockCriticoWidget";
 
 function getIconoSaludo(saludo) {
   if (saludo === "Buenos días")  return Sunrise;
@@ -100,6 +101,8 @@ export default function Inicio({ onIrA }) {
           <InsightWidget />
 
           <ResumenDiario />
+
+          <StockCriticoWidget onIrA={onIrA} />
 
           {/* KPIs */}
           <div style={s.statsGrid} className="inicio-stats">

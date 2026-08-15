@@ -3,7 +3,7 @@ export const PLANTILLAS = [
     id: "plantilla_1",
     nombre: "Mar Profundo",
     descripcion: "Azul oscuro, portada con banner y datos clave",
-    color_primario: "#0F6E56",
+    color_primario: "#2563eb",
     color_secundario: "#0B1628",
     fuente: "Montserrat",
     hero_titulo: "Pescado fresco directo del mar",

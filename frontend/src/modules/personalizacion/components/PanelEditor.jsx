@@ -83,7 +83,7 @@ export default function PanelEditor({
                 ? "#10b981"
                 : guardando
                 ? "#94a3b8"
-                : "linear-gradient(135deg,#0F6E56,#0e9b7a)",
+                : "linear-gradient(135deg,#2563eb,#1d4ed8)",
               cursor: guardando ? "not-allowed" : "pointer",
             }}
           >
@@ -291,9 +291,9 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
       </Field>
       <Field label="Color principal">
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input type="color" value={datos.color_primario || "#0F6E56"}
+          <input type="color" value={datos.color_primario || "#2563eb"}
             onChange={e => onChange("color_primario", e.target.value)} style={f.colorInput} />
-          <input type="text" value={datos.color_primario || ""} placeholder="#0F6E56"
+          <input type="text" value={datos.color_primario || ""} placeholder="#2563eb"
             onChange={e => onChange("color_primario", e.target.value)} style={f.input} />
         </div>
       </Field>
@@ -419,9 +419,9 @@ function ConfigSeccion({ seccion, datos, bannerSrc, bannerRef, onChange, onBanne
             <button key={al} onClick={() => cfg("alineacion", al)}
               style={{
                 ...f.alineBtn,
-                background: (seccion.config?.alineacion || "center") === al ? "#f0fdf9" : "#f8fafc",
-                border: `1px solid ${(seccion.config?.alineacion || "center") === al ? "#0F6E56" : "#e2e8f0"}`,
-                color: (seccion.config?.alineacion || "center") === al ? "#0F6E56" : "#64748b",
+                background: (seccion.config?.alineacion || "center") === al ? "#eff6ff" : "#f8fafc",
+                border: `1px solid ${(seccion.config?.alineacion || "center") === al ? "#2563eb" : "#e2e8f0"}`,
+                color: (seccion.config?.alineacion || "center") === al ? "#2563eb" : "#64748b",
               }}>
               {{ left: "←", center: "↔", right: "→" }[al]}
             </button>
@@ -580,7 +580,7 @@ const s = {
   btnGuardar:   { padding: "8px 16px", border: "none", borderRadius: 9, color: "white", fontSize: 12, fontWeight: 700, flexShrink: 0, transition: "all 0.2s" },
   errorMsg:     { margin: "0 14px 8px", padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 12, color: "#b91c1c" },
   seccionesLabel2: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" },
-  plantillasBtn: { fontSize: 11, fontWeight: 600, color: "#0F6E56", background: "#f0fdf9", border: "1px solid #bbf7d0", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
+  plantillasBtn: { fontSize: 11, fontWeight: 600, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 7, padding: "4px 10px", cursor: "pointer" },
   btnDisenoIA:  { width: "100%", padding: "10px 0", background: "linear-gradient(135deg,#2563eb,#1d4ed8)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, letterSpacing: "0.01em" },
   lista:        { padding: "0 10px", display: "flex", flexDirection: "column", gap: 3 },
   seccionItem:  { display: "flex", alignItems: "center", gap: 6, padding: "7px 8px", borderRadius: 10, border: "1px solid", cursor: "default", transition: "all 0.15s", userSelect: "none" },
@@ -592,7 +592,7 @@ const s = {
   ocultaTag:    { fontSize: 10, color: "#f59e0b", marginTop: 2 },
   chevronBtn:   { background: "none", border: "none", cursor: "pointer", fontSize: 13, padding: "0 4px", flexShrink: 0 },
   deleteBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "#ef4444", padding: "2px 4px", flexShrink: 0, opacity: 0.6, lineHeight: 1 },
-  btnAgregar:   { width: "100%", padding: "9px 0", background: "#f8fafc", border: "1px dashed #d1fae5", borderRadius: 9, color: "#0F6E56", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  btnAgregar:   { width: "100%", padding: "9px 0", background: "#f8fafc", border: "1px dashed #bfdbfe", borderRadius: 9, color: "#2563eb", fontSize: 13, fontWeight: 600, cursor: "pointer" },
   agregarMenu:  { position: "absolute", top: "calc(100% - 4px)", left: 14, right: 14, background: "white", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.08)", zIndex: 50, overflow: "hidden" },
   agregarItem:  { display: "flex", alignItems: "flex-start", gap: 10, padding: "12px 14px", background: "none", border: "none", width: "100%", textAlign: "left", borderBottom: "1px solid #f1f5f9" },
   divider:      { height: 1, background: "#f1f5f9", margin: "6px 0", flexShrink: 0 },
@@ -608,11 +608,11 @@ const f = {
   colorInput: { width: 36, height: 32, borderRadius: 7, border: "1px solid #e2e8f0", padding: 2, cursor: "pointer", background: "none", flexShrink: 0 },
   bannerUpload: { border: "2px dashed #e2e8f0", borderRadius: 9, padding: 14, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", background: "#fafafa", transition: "border-color 0.15s" },
   alineBtn:   { flex: 1, padding: "6px 0", borderRadius: 7, fontSize: 16, cursor: "pointer", transition: "all 0.15s", fontFamily: "inherit" },
-  infoBox:    { background: "#f0fdf9", border: "1px solid #d1fae5", borderRadius: 10, padding: "12px 14px", fontSize: 12, color: "#64748b", lineHeight: 1.6, marginBottom: 14 },
+  infoBox:    { background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "12px 14px", fontSize: 12, color: "#64748b", lineHeight: 1.6, marginBottom: 14 },
   hint:       { fontSize: 10, color: "#94a3b8", marginTop: 4 },
   sectionDivider: { fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", margin: "14px 0 10px", borderTop: "1px solid #f1f5f9", paddingTop: 12 },
   itemCard:   { padding: "12px", background: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", marginBottom: 8 },
   itemLabel:  { fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" },
   removeBtn:  { background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: 12, opacity: 0.7 },
-  addRowBtn:  { width: "100%", padding: "9px 0", background: "white", border: "1px dashed #d1fae5", borderRadius: 8, color: "#0F6E56", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "center" },
+  addRowBtn:  { width: "100%", padding: "9px 0", background: "white", border: "1px dashed #bfdbfe", borderRadius: 8, color: "#2563eb", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "center" },
 };

@@ -848,3 +848,107 @@ export const getPronosticoVentas = async (req, res) => {
     res.status(500).json({ error: "Error al generar pronóstico" });
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREDICTOR AVANZADO: velocidad de ventas + tendencia semanal
+// GET /api/reportesEmpresa/predictor-avanzado
+// ─────────────────────────────────────────────────────────────────────────────
+export const getPredictorAvanzado = async (req, res) => {
+  try {
+    const empresa_id = req.user.empresa_id;
+
+    const result = await pool.query(
+      `WITH
+       v30 AS (
+         SELECT producto_id, SUM(cantidad) AS total
+         FROM (
+           SELECT dv.producto_id, dv.cantidad
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1 AND v.fecha >= NOW() - INTERVAL '30 days'
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.fecha_pedido >= NOW() - INTERVAL '30 days'
+             AND po.estado != 'cancelado'
+         ) t GROUP BY producto_id
+       ),
+       v7 AS (
+         SELECT producto_id, SUM(cantidad) AS total
+         FROM (
+           SELECT dv.producto_id, dv.cantidad
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1 AND v.fecha >= NOW() - INTERVAL '7 days'
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.fecha_pedido >= NOW() - INTERVAL '7 days'
+             AND po.estado != 'cancelado'
+         ) t GROUP BY producto_id
+       ),
+       v7p AS (
+         SELECT producto_id, SUM(cantidad) AS total
+         FROM (
+           SELECT dv.producto_id, dv.cantidad
+           FROM detalle_venta dv
+           JOIN ventas v ON v.id = dv.venta_id
+           WHERE v.empresa_id = $1
+             AND v.fecha BETWEEN NOW() - INTERVAL '14 days' AND NOW() - INTERVAL '7 days'
+           UNION ALL
+           SELECT dp.producto_id, dp.cantidad
+           FROM detalle_pedido_online dp
+           JOIN pedidos_online po ON po.id = dp.pedido_id
+           WHERE po.empresa_id = $1
+             AND po.fecha_pedido BETWEEN NOW() - INTERVAL '14 days' AND NOW() - INTERVAL '7 days'
+             AND po.estado != 'cancelado'
+         ) t GROUP BY producto_id
+       )
+       SELECT
+         p.id,
+         p.nombre,
+         ROUND(p.stock::numeric, 2)                                        AS stock,
+         p.unidad,
+         ROUND(COALESCE(v30.total / 30.0, 0)::numeric, 3)                 AS promedio_diario,
+         CASE
+           WHEN COALESCE(v30.total, 0) = 0 THEN NULL
+           ELSE ROUND((p.stock / NULLIF(v30.total / 30.0, 0))::numeric, 1)
+         END AS dias_hasta_agotarse,
+         ROUND(COALESCE(v7.total  / 7.0, 0)::numeric, 3)                  AS vel_7d,
+         ROUND(COALESCE(v7p.total / 7.0, 0)::numeric, 3)                  AS vel_7d_prev,
+         CASE
+           WHEN COALESCE(v7p.total, 0) = 0 THEN NULL
+           ELSE ROUND(
+             ((COALESCE(v7.total, 0) - COALESCE(v7p.total, 0))
+              / NULLIF(v7p.total::numeric, 0) * 100), 1
+           )
+         END AS tendencia_pct
+       FROM productos p
+       LEFT JOIN v30 ON v30.producto_id = p.id
+       LEFT JOIN v7  ON v7.producto_id  = p.id
+       LEFT JOIN v7p ON v7p.producto_id = p.id
+       WHERE p.empresa_id = $1
+         AND (
+           (v30.total > 0
+            AND (p.stock / NULLIF(v30.total / 30.0, 0)) < 30)
+           OR (p.stock_minimo IS NOT NULL AND p.stock <= p.stock_minimo)
+         )
+       ORDER BY
+         CASE
+           WHEN v30.total > 0 THEN p.stock / NULLIF(v30.total / 30.0, 0)
+           ELSE 999
+         END ASC
+       LIMIT 15`,
+      [empresa_id]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("[PredictorAvanzado]", err.message);
+    res.status(500).json({ error: "Error al calcular predictor" });
+  }
+};

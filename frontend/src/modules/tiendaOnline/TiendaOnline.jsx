@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Palette, PenLine, Smartphone, Image as ImageIcon, Home, BookOpen, Clock, Share2, MapPin, RefreshCw, Monitor, Store } from "lucide-react";
 import { useConfiguracion } from "../configuracion/hooks/useConfiguracion";
 import { usePersonalizacion } from "./hooks/usePersonalizacion";
 
@@ -8,32 +9,32 @@ const SECCIONES = [
   {
     key: "apariencia",
     label: "Apariencia",
-    icon: "🎨",
+    icon: Palette,
     desc: "Colores y banner",
     subsecciones: [
-      { key: "color",  label: "Color de marca", icon: "🎨", desc: "Color principal de tu tienda" },
-      { key: "banner", label: "Banner",          icon: "🖼️", desc: "Imagen de fondo de tu portada" },
+      { key: "color",  label: "Color de marca", icon: Palette,   desc: "Color principal de tu tienda" },
+      { key: "banner", label: "Banner",          icon: ImageIcon, desc: "Imagen de fondo de tu portada" },
     ],
   },
   {
     key: "contenido",
     label: "Contenido",
-    icon: "✍️",
+    icon: PenLine,
     desc: "Textos de tu tienda",
     subsecciones: [
-      { key: "portada",  label: "Portada",        icon: "🏠", desc: "Título y botón de bienvenida" },
-      { key: "nosotros", label: "Sobre nosotros",  icon: "📖", desc: "Descripción de tu negocio" },
-      { key: "horario",  label: "Horario",         icon: "🕐", desc: "Horario de atención" },
+      { key: "portada",  label: "Portada",        icon: Home,     desc: "Título y botón de bienvenida" },
+      { key: "nosotros", label: "Sobre nosotros",  icon: BookOpen, desc: "Descripción de tu negocio" },
+      { key: "horario",  label: "Horario",         icon: Clock,    desc: "Horario de atención" },
     ],
   },
   {
     key: "contacto",
     label: "Contacto",
-    icon: "📱",
+    icon: Smartphone,
     desc: "Cómo contactarte",
     subsecciones: [
-      { key: "redes", label: "Redes sociales", icon: "📲", desc: "WhatsApp, Instagram, Facebook" },
-      { key: "info",  label: "Información",    icon: "📍", desc: "Teléfono, email y dirección" },
+      { key: "redes", label: "Redes sociales", icon: Share2, desc: "WhatsApp, Instagram, Facebook" },
+      { key: "info",  label: "Información",    icon: MapPin, desc: "Teléfono, email y dirección" },
     ],
   },
 ];
@@ -78,7 +79,7 @@ export default function TiendaOnline() {
 
   if (cargando) return (
     <div style={s.loading}>
-      <span style={{ fontSize: 36 }}>🎨</span>
+      <Palette size={36} color="#94a3b8" />
       <p style={{ fontSize: 14, color: "#94a3b8" }}>Cargando Studio...</p>
     </div>
   );
@@ -89,27 +90,27 @@ export default function TiendaOnline() {
       {/* ── TOPBAR ── */}
       <div style={s.topbar}>
         <div style={s.topbarLeft}>
-          <span style={s.studioLabel}>🎨 Studio</span>
+          <span style={s.studioLabel}>Studio</span>
           <div style={s.completitudWrap}>
             <div style={s.completitudBar}>
-              <div style={{ ...s.completitudFill, width: `${completitud}%`, backgroundColor: completitud === 100 ? "#0F6E56" : completitud >= 60 ? "#f59e0b" : "#ef4444" }} />
+              <div style={{ ...s.completitudFill, width: `${completitud}%`, backgroundColor: completitud === 100 ? "#2563eb" : completitud >= 60 ? "#f59e0b" : "#ef4444" }} />
             </div>
             <span style={s.completitudPct}>{completitud}%</span>
           </div>
         </div>
         <div style={s.topbarRight}>
           <div style={s.vistaToggle}>
-            <button style={{ ...s.vistaBtn, backgroundColor: !vistaMovil ? "#0B1628" : "transparent", color: !vistaMovil ? "white" : "#64748b" }} onClick={() => setVistaMovil(false)} title="Escritorio">🖥️</button>
-            <button style={{ ...s.vistaBtn, backgroundColor: vistaMovil ? "#0B1628" : "transparent", color: vistaMovil ? "white" : "#64748b" }} onClick={() => setVistaMovil(true)} title="Móvil">📱</button>
+            <button style={{ ...s.vistaBtn, backgroundColor: !vistaMovil ? "#0B1628" : "transparent", color: !vistaMovil ? "white" : "#64748b", display: "flex", alignItems: "center" }} onClick={() => setVistaMovil(false)} title="Escritorio"><Monitor size={13} /></button>
+            <button style={{ ...s.vistaBtn, backgroundColor: vistaMovil ? "#0B1628" : "transparent", color: vistaMovil ? "white" : "#64748b", display: "flex", alignItems: "center" }} onClick={() => setVistaMovil(true)} title="Móvil"><Smartphone size={13} /></button>
           </div>
           {linkTienda && <a href={linkTienda} target="_blank" rel="noreferrer" style={s.btnVer}>Ver tienda ↗</a>}
-          <button style={{ ...s.btnGuardar, backgroundColor: exito ? "#0F6E56" : "#0B1628", opacity: guardando ? 0.7 : 1 }} onClick={handleGuardar} disabled={guardando}>
+          <button style={{ ...s.btnGuardar, backgroundColor: exito ? "#2563eb" : "#0B1628", opacity: guardando ? 0.7 : 1 }} onClick={handleGuardar} disabled={guardando}>
             {guardando ? "Guardando..." : exito ? "✓ Guardado" : "Guardar"}
           </button>
         </div>
       </div>
 
-      {error && <div style={s.errorBox}>⚠️ {error}</div>}
+      {error && <div style={s.errorBox}>{error}</div>}
 
       {/* ── BODY ── */}
       <div style={s.body}>
@@ -123,7 +124,7 @@ export default function TiendaOnline() {
                 onClick={() => setSeccionAbierta(prev => prev === sec.key ? null : sec.key)}
               >
                 <div style={s.secHeaderLeft}>
-                  <span style={{ fontSize: 16 }}>{sec.icon}</span>
+                  <sec.icon size={16} color="#64748b" />
                   <div>
                     <p style={s.secLabel}>{sec.label}</p>
                     <p style={s.secDesc}>{sec.desc}</p>
@@ -140,7 +141,7 @@ export default function TiendaOnline() {
                         style={{ ...s.subBtn, backgroundColor: subseccionActiva === sub.key ? "#e0f2fe" : "#f8fafc", fontWeight: subseccionActiva === sub.key ? "600" : "400", color: subseccionActiva === sub.key ? "#0B1628" : "#64748b" }}
                         onClick={() => setSubseccionActiva(sub.key)}
                       >
-                        <span style={{ fontSize: 13 }}>{sub.icon}</span>
+                        <sub.icon size={13} color="#64748b" />
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 12, color: "inherit" }}>{sub.label}</p>
                           <p style={{ fontSize: 10, color: "#94a3b8", marginTop: 1 }}>{sub.desc}</p>
@@ -177,7 +178,7 @@ export default function TiendaOnline() {
             <div style={s.browserUrl}>
               <span style={{ fontSize: 11, color: "#64748b", fontFamily: "monospace" }}>{linkTienda || "tu-tienda"}</span>
             </div>
-            <button style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13 }} onClick={() => setIframeKey(k => k + 1)} title="Recargar">🔄</button>
+            <button style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }} onClick={() => setIframeKey(k => k + 1)} title="Recargar"><RefreshCw size={13} color="#64748b" /></button>
           </div>
 
           <div style={{ ...s.iframeWrap, backgroundColor: vistaMovil ? "#e2e8f0" : "white", padding: vistaMovil ? "16px" : "0", justifyContent: vistaMovil ? "center" : "stretch" }}>
@@ -188,7 +189,7 @@ export default function TiendaOnline() {
               />
             ) : (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, textAlign: "center", padding: 40 }}>
-                <span style={{ fontSize: 48 }}>🛍️</span>
+                <Store size={48} color="#cbd5e1" />
                 <p style={{ fontSize: 14, color: "#64748b" }}>Configura tu tienda para ver la vista previa</p>
               </div>
             )}
@@ -202,12 +203,12 @@ export default function TiendaOnline() {
 
 // ── Contenido de subsecciones ────────────────────────────────────────────────
 function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange, onQuitarBanner }) {
-  const COLORES = ["#0F6E56", "#0099FF", "#7c3aed", "#db2777", "#dc2626", "#d97706", "#0e7490", "#0B1628"];
+  const COLORES = ["#2563eb", "#0099FF", "#7c3aed", "#db2777", "#dc2626", "#d97706", "#0e7490", "#0B1628"];
   const COLORES_SEC = ["#0B1628", "#1e293b", "#334155", "#1e3a5f", "#312e81", "#3f3f46", "#18181b", "#0c4a6e"];
 
   if (subKey === "color") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Se aplica en botones y precios de tu tienda.</p>
+      <p style={f.tip}>Se aplica en botones y precios de tu tienda.</p>
       <label style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em" }}>Color principal</label>
       <div style={f.colorRow}>
         {COLORES.map(c => (
@@ -216,13 +217,13 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
             onClick={() => onChange("color_primario", c)}
           />
         ))}
-        <input type="color" value={empresa?.color_primario || "#0F6E56"} onChange={e => onChange("color_primario", e.target.value)}
+        <input type="color" value={empresa?.color_primario || "#2563eb"} onChange={e => onChange("color_primario", e.target.value)}
           style={{ width: 22, height: 22, border: "none", cursor: "pointer", borderRadius: "50%", padding: 0 }} title="Color personalizado"
         />
       </div>
       <div style={f.colorValRow}>
-        <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b" }}>{empresa?.color_primario || "#0F6E56"}</span>
-        <div style={{ ...f.colorPreview, backgroundColor: empresa?.color_primario || "#0F6E56" }}>Vista previa</div>
+        <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b" }}>{empresa?.color_primario || "#2563eb"}</span>
+        <div style={{ ...f.colorPreview, backgroundColor: empresa?.color_primario || "#2563eb" }}>Vista previa</div>
       </div>
       <div style={{ height: 1, backgroundColor: "#e2e8f0", margin: "6px 0" }} />
       <label style={{ fontSize: 10, fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.05em" }}>Color secundario</label>
@@ -247,7 +248,7 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "banner") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Imagen de fondo de tu portada. Recomendado: 1200x400px.</p>
+      <p style={f.tip}>Imagen de fondo de tu portada. Recomendado: 1200x400px.</p>
       {bannerPreview ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <img src={bannerPreview} alt="Banner" style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 8, border: "1px solid #e2e8f0" }} />
@@ -255,7 +256,7 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
         </div>
       ) : (
         <label style={f.uploadArea}>
-          <span style={{ fontSize: 24 }}>🖼️</span>
+          <ImageIcon size={24} color="#94a3b8" />
           <span style={{ fontSize: 12, fontWeight: 600, color: "#0f172a" }}>Subir banner</span>
           <span style={{ fontSize: 10, color: "#94a3b8" }}>JPG, PNG o WEBP · Máx 5MB</span>
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files[0] && onBannerChange(e.target.files[0])} style={{ display: "none" }} />
@@ -266,7 +267,7 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "portada") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Lo primero que ven tus clientes al entrar.</p>
+      <p style={f.tip}>Lo primero que ven tus clientes al entrar.</p>
       <Field label="Título principal" hint="Vacío = nombre de tu empresa">
         <input style={f.input} placeholder={empresa?.nombre} value={empresa?.hero_titulo || ""} onChange={e => onChange("hero_titulo", e.target.value)} />
       </Field>
@@ -281,7 +282,7 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "nosotros") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Aparece debajo de los productos destacados.</p>
+      <p style={f.tip}>Aparece debajo de los productos destacados.</p>
       <Field label="Título de la sección">
         <input style={f.input} placeholder={`Conoce ${empresa?.nombre || "nuestra empresa"}`} value={empresa?.nosotros_titulo || ""} onChange={e => onChange("nosotros_titulo", e.target.value)} />
       </Field>
@@ -294,7 +295,7 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "horario") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Informa a tus clientes cuándo atiendes.</p>
+      <p style={f.tip}>Informa a tus clientes cuándo atiendes.</p>
       <Field label="Horario de atención">
         <input style={f.input} placeholder="Ej: Lun-Sáb 7am-6pm · Dom 8am-2pm" value={empresa?.horario || ""} onChange={e => onChange("horario", e.target.value)} />
       </Field>
@@ -303,11 +304,11 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "redes") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Aparecen como botones en tu tienda.</p>
+      <p style={f.tip}>Aparecen como botones en tu tienda.</p>
       {[
-        { key: "whatsapp",  label: "📱 WhatsApp",  prefix: "wa.me/",          placeholder: "573001234567" },
-        { key: "instagram", label: "📸 Instagram", prefix: "instagram.com/",  placeholder: "@tunegocio" },
-        { key: "facebook",  label: "👍 Facebook",  prefix: "facebook.com/",   placeholder: "tunegocio" },
+        { key: "whatsapp",  label: "WhatsApp",  prefix: "wa.me/",         placeholder: "573001234567" },
+        { key: "instagram", label: "Instagram", prefix: "instagram.com/", placeholder: "@tunegocio" },
+        { key: "facebook",  label: "Facebook",  prefix: "facebook.com/",  placeholder: "tunegocio" },
       ].map(red => (
         <Field key={red.key} label={red.label}>
           <div style={f.prefixRow}>
@@ -321,14 +322,14 @@ function SubContenido({ subKey, empresa, onChange, bannerPreview, onBannerChange
 
   if (subKey === "info") return (
     <div style={f.wrap}>
-      <p style={f.tip}>💡 Aparece en la página de Contacto.</p>
-      <Field label="📞 Teléfono">
+      <p style={f.tip}>Aparece en la página de Contacto.</p>
+      <Field label="Teléfono">
         <input style={f.input} placeholder="300 000 0000" value={empresa?.telefono || ""} onChange={e => onChange("telefono", e.target.value)} />
       </Field>
-      <Field label="✉️ Email">
+      <Field label="Email">
         <input style={f.input} placeholder="contacto@tuempresa.com" value={empresa?.email || ""} onChange={e => onChange("email", e.target.value)} />
       </Field>
-      <Field label="📍 Dirección">
+      <Field label="Dirección">
         <input style={f.input} placeholder="Calle 123 #45-67" value={empresa?.direccion || ""} onChange={e => onChange("direccion", e.target.value)} />
       </Field>
     </div>
@@ -360,7 +361,7 @@ const s = {
   topbarRight: { display: "flex", alignItems: "center", gap: 8 },
   vistaToggle: { display: "flex", backgroundColor: "#f1f5f9", borderRadius: 7, padding: 2, gap: 2 },
   vistaBtn: { padding: "3px 9px", border: "none", borderRadius: 5, fontSize: 12, cursor: "pointer", transition: "all 0.15s" },
-  btnVer: { padding: "5px 11px", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, fontWeight: 600, color: "#0F6E56", textDecoration: "none" },
+  btnVer: { padding: "5px 11px", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, fontWeight: 600, color: "#2563eb", textDecoration: "none" },
   btnGuardar: { padding: "6px 14px", color: "white", border: "none", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" },
   errorBox: { margin: "0 14px", padding: "6px 10px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, fontSize: 12, color: "#b91c1c", flexShrink: 0 },
   body: { display: "grid", gridTemplateColumns: "260px 1fr", flex: 1, overflow: "hidden" },

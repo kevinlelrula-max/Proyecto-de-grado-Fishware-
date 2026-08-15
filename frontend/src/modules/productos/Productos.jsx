@@ -5,8 +5,9 @@ import Categorias from "./components/Categorias";
 import useProductos from "./hooks/useProductos";
 import { useInventarioAnalytics } from "./hooks/useInventarioAnalytics";
 import StockBajo from "./components/StockBajo";
-import PredictorStock from "./components/PredictorStock";
+import PredictorAvanzado from "./components/PredictorAvanzado";
 import ReordenSugerencias from "./components/ReordenSugerencias";
+import { useStockPredictor } from "./hooks/useStockPredictor";
 
 function getUnidadPredeterminada() {
   try {
@@ -21,7 +22,8 @@ function getUnidadPredeterminada() {
 
 export default function Productos() {
   const { productos, agregar, eliminar, actualizar } = useProductos();
-  const { stockBajo: stockBajoLista, predictorStock, sugerenciasReorden } = useInventarioAnalytics();
+  const { stockBajo: stockBajoLista, sugerenciasReorden } = useInventarioAnalytics();
+  const { productos: productosRiesgo, loading: loadingPredictor } = useStockPredictor();
 
   const [pestana, setPestana] = useState("productos");
 
@@ -246,7 +248,7 @@ export default function Productos() {
       {pestana === "alertas" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <StockBajo productos={stockBajoLista} />
-          <PredictorStock productos={predictorStock} />
+          <PredictorAvanzado productos={productosRiesgo} loading={loadingPredictor} />
           <ReordenSugerencias sugerencias={sugerenciasReorden} />
         </div>
       )}

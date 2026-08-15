@@ -24,7 +24,7 @@ export default function LinkTienda({ linkTienda, copiado, onCopiar, onAbrir, emp
             ...s.browserContent,
             background: empresa?.banner_url
               ? `url(${API_BASE}${empresa.banner_url}) center/cover`
-              : `linear-gradient(135deg, ${empresa?.color_primario || "#0F6E56"} 0%, #0B1628 100%)`,
+              : `linear-gradient(135deg, ${empresa?.color_primario || "#2563eb"} 0%, #0B1628 100%)`,
           }}>
             {/* Navbar simulado */}
             <div style={s.previewNav}>
@@ -44,7 +44,7 @@ export default function LinkTienda({ linkTienda, copiado, onCopiar, onAbrir, emp
               <div style={s.previewHeroSubtitle} />
               <div style={{
                 ...s.previewHeroBtn,
-                backgroundColor: empresa?.color_primario || "#0F6E56",
+                backgroundColor: empresa?.color_primario || "#2563eb",
               }} />
             </div>
 
@@ -86,7 +86,7 @@ export default function LinkTienda({ linkTienda, copiado, onCopiar, onAbrir, emp
           <button
             style={{
               ...s.btnCopiar,
-              backgroundColor: copiado ? "#0F6E56" : "#0B1628",
+              backgroundColor: copiado ? "#2563eb" : "#0B1628",
             }}
             onClick={onCopiar}
             disabled={!linkTienda}
@@ -198,11 +198,11 @@ const s = {
     borderRadius: "999px",
     border: "1px solid #e2e8f0",
     boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    fontSize: "12px", fontWeight: "600", color: "#0F6E56",
+    fontSize: "12px", fontWeight: "600", color: "#2563eb",
   },
   onlineDot: {
     width: "8px", height: "8px",
-    borderRadius: "50%", backgroundColor: "#0F6E56",
+    borderRadius: "50%", backgroundColor: "#2563eb",
     boxShadow: "0 0 0 2px rgba(15,110,86,0.2)",
   },
 
@@ -243,8 +243,8 @@ const s = {
   btnAbrir: {
     flex: 1, padding: "12px",
     backgroundColor: "white",
-    color: "#0F6E56",
-    border: "1.5px solid #0F6E56",
+    color: "#2563eb",
+    border: "1.5px solid #2563eb",
     borderRadius: "10px", fontSize: "14px",
     fontWeight: "600", cursor: "pointer",
   },

@@ -7,6 +7,7 @@ import {
   getResumenDiario,
   getSegmentacionClientes,
   getPronosticoVentas,
+  getPredictorAvanzado,
 } from "../controllers/reporteEmpresa.controller.js";
 import { verificarToken } from "../middlewares/auth.middleware.js";
 
@@ -19,5 +20,6 @@ router.get("/comparativa",    verificarToken, getComparativa);
 router.get("/resumen-diario",         verificarToken, getResumenDiario);
 router.get("/segmentacion-clientes",  verificarToken, getSegmentacionClientes);
 router.get("/pronostico",             verificarToken, getPronosticoVentas);
+router.get("/predictor-avanzado",     verificarToken, getPredictorAvanzado);
 
 export default router;
