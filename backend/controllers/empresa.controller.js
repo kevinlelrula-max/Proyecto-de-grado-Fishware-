@@ -252,6 +252,88 @@ export const getMiRed = async (req, res) => {
   }
 };
 
+// Crea una nueva empresa y la vincula al usuario autenticado
+export const crearTiendaAdicional = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const persona_id = req.user.id;
+    const { nombre, nit, email, telefono } = req.body;
+
+    if (!nombre) {
+      return res.status(400).json({ error: "El nombre de la tienda es obligatorio" });
+    }
+
+    await client.query("BEGIN");
+
+    // Código de referido único
+    let codigoReferido;
+    let intentos = 0;
+    do {
+      codigoReferido = generarCodigoReferido();
+      const existe = await client.query(
+        "SELECT id FROM empresas WHERE codigo_referido = $1", [codigoReferido]
+      );
+      if (existe.rows.length === 0) break;
+      intentos++;
+    } while (intentos < 5);
+
+    // Slug único
+    let slug = generarSlug(nombre);
+    let slugFinal = slug;
+    let sufijo = 1;
+    while (true) {
+      const existeSlug = await client.query(
+        "SELECT id FROM empresas WHERE slug = $1", [slugFinal]
+      );
+      if (existeSlug.rows.length === 0) break;
+      slugFinal = `${slug}-${sufijo}`;
+      sufijo++;
+    }
+
+    // Crear empresa
+    const empresaResult = await client.query(
+      `INSERT INTO empresas (nombre, nit, email, telefono, codigo_referido, slug)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [nombre, nit || null, email || null, telefono || null, codigoReferido, slugFinal]
+    );
+    const empresa = empresaResult.rows[0];
+
+    // Obtener rol_id actual del usuario
+    const personaResult = await client.query(
+      "SELECT rol_id FROM persona WHERE id = $1", [persona_id]
+    );
+    const rol_id = personaResult.rows[0]?.rol_id || 1;
+
+    // Vincular usuario a la nueva empresa
+    await client.query(
+      `INSERT INTO persona_empresas (persona_id, empresa_id, rol_id)
+       VALUES ($1, $2, $3)`,
+      [persona_id, empresa.id, rol_id]
+    );
+
+    const token = generarToken({ id: persona_id, empresa_id: empresa.id, rol_id });
+
+    await client.query("COMMIT");
+
+    res.json({
+      message:         "Tienda creada correctamente",
+      token,
+      empresa_id:      empresa.id,
+      rol_id,
+      codigo_referido: codigoReferido,
+      slug:            slugFinal,
+    });
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("❌ ERROR crearTiendaAdicional:", error);
+    if (error.code === "23505") return res.status(400).json({ error: "Ya existe una empresa con ese nombre o slug" });
+    res.status(500).json({ error: "Error al crear la tienda" });
+  } finally {
+    client.release();
+  }
+};
+
 // ✅ Buscar empresa por slug — para cargar la tienda por link directo
 export const getEmpresaPorSlug = async (req, res) => {
   try {

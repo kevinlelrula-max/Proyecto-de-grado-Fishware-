@@ -6,7 +6,8 @@ import {
   getSolicitudesVinculacion,
   responderSolicitud,
   getMiRed,
-  getEmpresaPorSlug 
+  getEmpresaPorSlug,
+  crearTiendaAdicional,
 } from "../controllers/empresa.controller.js";
 
 import { verificarToken } from "../middlewares/auth.middleware.js";
@@ -22,7 +23,8 @@ router.post("/vincular",           verificarToken, solicitarVinculacion);
 router.get("/solicitudes",         verificarToken, getSolicitudesVinculacion);
 router.patch("/solicitudes/:id",   verificarToken, responderSolicitud);
 router.get("/mi-red",              verificarToken, getMiRed);
-router.get("/slug/:slug", getEmpresaPorSlug);
+router.get("/slug/:slug",        getEmpresaPorSlug);
+router.post("/crear-adicional",  verificarToken, crearTiendaAdicional);
 
 export default router;
 

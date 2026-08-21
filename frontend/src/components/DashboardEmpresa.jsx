@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import BuscadorGlobal from "./BuscadorGlobal";
 import PersonalizarColor, { useAcento } from "./PersonalizarColor";
+import SelectorEmpresa from "./SelectorEmpresa";
 import { cn } from "@/lib/utils";
+import { decodeToken } from "../utils/auth";
 
 import Inicio from "../modules/inicio/Inicio";
 import Productos from "../modules/productos/Productos";
@@ -50,11 +52,6 @@ const TODO_EL_MENU = [
   { key: "pedidos",       label: "Pedidos",   icon: PedidosIcon },
   { key: "claude-ia",     label: "Claude AI",        icon: ClaudeIaIcon },
 ];
-
-function decodeToken(token) {
-  try { return JSON.parse(atob(token.split(".")[1])); }
-  catch { return null; }
-}
 
 // ── Íconos SVG ───────────────────────────────────────────────────────────────
 function InicioIcon({ active }) {
@@ -486,6 +483,8 @@ export default function DashboardEmpresa() {
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [logoUrl, setLogoUrl]               = useState(null);
   const [nombreEmpresa, setNombreEmpresa]   = useState("Merkai");
+  const [misEmpresas, setMisEmpresas]       = useState([]);
+  const [showSwitcher, setShowSwitcher]     = useState(false);
 
   const [gruposAbiertos, setGruposAbiertos] = useState({
     principal: true, operaciones: true, comercial: true,
@@ -521,6 +520,16 @@ export default function DashboardEmpresa() {
     window.addEventListener("configuracion:guardada", onConfigGuardada);
     return () => window.removeEventListener("configuracion:guardada", onConfigGuardada);
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/api/auth/mis-empresas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setMisEmpresas(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (!open) return;
@@ -800,6 +809,15 @@ export default function DashboardEmpresa() {
                       Configuración
                     </button>
                   )}
+                  {(rolId === 1 || rolId === 2) && (
+                    <button
+                      className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#3D5068] hover:bg-slate-50 hover:text-[#0B1628] transition-colors bg-transparent border-none w-full text-left cursor-pointer"
+                      onClick={() => { setOpen(false); setShowSwitcher(true); }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                      Mis tiendas
+                    </button>
+                  )}
                   <div className="h-px bg-slate-100 my-1" />
                   <button
                     className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-red-500 hover:bg-red-50 transition-colors bg-transparent border-none w-full text-left cursor-pointer"
@@ -843,6 +861,23 @@ export default function DashboardEmpresa() {
       </main>
 
       <BtnSoporte />
+
+      {showSwitcher && (
+        <SelectorEmpresa
+          empresas={misEmpresas}
+          token={token}
+          rolId={rolId}
+          onClose={() => setShowSwitcher(false)}
+          onSelect={(data) => {
+            localStorage.setItem("token",           data.token);
+            localStorage.setItem("empresa_id",      data.empresa_id);
+            localStorage.setItem("rol_id",          data.rol_id);
+            localStorage.setItem("codigo_referido", data.codigo_referido || "");
+            if (data.slug) localStorage.setItem("empresa_slug", data.slug);
+            window.location.reload();
+          }}
+        />
+      )}
 
       <BuscadorGlobal
         abierto={buscadorAbierto}

@@ -52,6 +52,59 @@ export async function enviarEmailRecuperacion(destinatario, nombre, token, baseU
   });
 }
 
+export async function enviarEmailNuevoPedido({ destinatario, empresaNombre, numeroPedido, total, clienteNombre, productos }) {
+  if (!smtpConfigurado) return;
+
+  const filasProductos = productos.map(p => `
+    <tr>
+      <td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:14px;">${p.nombre}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;text-align:center;color:#64748b;font-size:14px;">${p.cantidad}</td>
+      <td style="padding:8px 14px;border-bottom:1px solid #f1f5f9;text-align:right;color:#0f172a;font-size:14px;font-weight:600;">$${Number(p.precio_unitario).toLocaleString("es-CO")}</td>
+    </tr>`).join("");
+
+  await transporter.sendMail({
+    from:    `"Merkai" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    to:      destinatario,
+    subject: `🛒 Nuevo pedido #${numeroPedido} en ${empresaNombre}`,
+    html: `
+      <div style="font-family:'Inter',Arial,sans-serif;max-width:540px;margin:0 auto;padding:32px 24px;background:#f8fafc;border-radius:16px;">
+        <h2 style="color:#0f172a;margin-bottom:4px;">🛒 Nuevo pedido recibido</h2>
+        <p style="color:#64748b;font-size:15px;margin-bottom:24px;">
+          <strong>${clienteNombre}</strong> acaba de hacer un pedido en <strong>${empresaNombre}</strong>.
+        </p>
+
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+          <div style="padding:12px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+            <span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Pedido #${numeroPedido}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="padding:8px 14px;text-align:left;font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;">Producto</th>
+                <th style="padding:8px 14px;text-align:center;font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;">Cant.</th>
+                <th style="padding:8px 14px;text-align:right;font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;">Precio</th>
+              </tr>
+            </thead>
+            <tbody>${filasProductos}</tbody>
+          </table>
+          <div style="padding:12px 14px;display:flex;justify-content:space-between;border-top:2px solid #f1f5f9;">
+            <span style="font-size:14px;font-weight:700;color:#0f172a;">Total</span>
+            <span style="font-size:16px;font-weight:700;color:#0F6E56;">$${Number(total).toLocaleString("es-CO")}</span>
+          </div>
+        </div>
+
+        <a href="${process.env.FRONTEND_URL || "https://merkai.vercel.app"}/dashboard"
+           style="display:inline-block;padding:12px 28px;background:#0F6E56;color:white;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:24px;">
+          Ver pedido en el panel →
+        </a>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
+        <p style="color:#cbd5e1;font-size:12px;">Merkai · Plataforma de gestión comercial</p>
+      </div>
+    `,
+  });
+}
+
 export async function enviarEmailEstadoPedido({ destinatario, nombre, numeroPedido, estado, empresaNombre }) {
   if (!smtpConfigurado) return;
   const info = MENSAJES_ESTADO[estado];

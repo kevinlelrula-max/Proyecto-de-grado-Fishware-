@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 import { crearNotificacion } from "../utils/notificaciones.js";
 import { procesarReferidoPrimeraCompra } from "./referidos.controller.js";
-import { enviarEmailEstadoPedido } from "../utils/email.js";
+import { enviarEmailEstadoPedido, enviarEmailNuevoPedido } from "../utils/email.js";
 
 // =========================
 // 🛒 CREAR PEDIDO ONLINE
@@ -75,6 +75,39 @@ export const crearPedido = async (req, res) => {
       seccion: "pedidos",
       referencia_id: pedido.id,
     });
+
+    // 📧 Email al dueño de la tienda
+    try {
+      const infoRes = await pool.query(
+        `SELECT e.email, e.nombre AS empresa_nombre,
+                p.nombre AS cliente_nombre,
+                json_agg(json_build_object(
+                  'nombre',          pr.nombre,
+                  'cantidad',        dp.cantidad,
+                  'precio_unitario', dp.precio_unitario
+                )) AS productos
+         FROM empresas e
+         JOIN persona p ON p.id = $2
+         JOIN detalle_pedido_online dp ON dp.pedido_id = $3
+         JOIN productos pr ON pr.id = dp.producto_id
+         WHERE e.id = $1
+         GROUP BY e.email, e.nombre, p.nombre`,
+        [empresa_id, cliente_id, pedido.id]
+      );
+      if (infoRes.rows.length > 0 && infoRes.rows[0].email) {
+        const { email, empresa_nombre, cliente_nombre, productos: prods } = infoRes.rows[0];
+        enviarEmailNuevoPedido({
+          destinatario:  email,
+          empresaNombre: empresa_nombre,
+          numeroPedido:  pedido.id,
+          total,
+          clienteNombre: cliente_nombre,
+          productos:     prods,
+        }).catch(err => console.error("Error enviando email nuevo pedido:", err));
+      }
+    } catch (emailErr) {
+      console.error("Error preparando email nuevo pedido:", emailErr);
+    }
 
     res.json({ id: pedido.id, estado: pedido.estado, total: pedido.total });
   } catch (error) {
@@ -216,6 +249,7 @@ export const getPedidosEmpresa = async (req, res) => {
 // pendiente → confirmado → en_preparacion → enviado → entregado → cancelado
 // =========================
 export const actualizarEstadoPedido = async (req, res) => {
+  const client = await pool.connect();
   try {
     const { id } = req.params;
     const { estado } = req.body;
@@ -234,7 +268,9 @@ export const actualizarEstadoPedido = async (req, res) => {
       return res.status(400).json({ error: "Estado no válido" });
     }
 
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const result = await client.query(
       `UPDATE pedidos_online
        SET estado = $1, fecha_actualizacion = NOW()
        WHERE id = $2 AND empresa_id = $3
@@ -243,19 +279,36 @@ export const actualizarEstadoPedido = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      await client.query("ROLLBACK");
       return res.status(404).json({ error: "Pedido no encontrado" });
     }
 
-    // Registrar en historial
-    await pool.query(
+    // Registrar en historial (dentro de la transacción)
+    await client.query(
       `INSERT INTO pedido_estados_historial (pedido_id, estado, nota)
        VALUES ($1, $2, $3)`,
       [id, estado, req.body.nota || null]
     );
 
-    // 🔔 Notificación interna para estados relevantes
+    // Restaurar stock si se cancela (dentro de la transacción)
+    if (estado === "cancelado") {
+      const detalles = await client.query(
+        `SELECT producto_id, cantidad FROM detalle_pedido_online WHERE pedido_id = $1`,
+        [id]
+      );
+      for (const item of detalles.rows) {
+        await client.query(
+          `UPDATE productos SET stock = stock + $1 WHERE id = $2`,
+          [item.cantidad, item.producto_id]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+
+    // 🔔 Notificaciones (fuera de transacción — fire-and-forget)
     if (estado === "entregado") {
-      await crearNotificacion({
+      crearNotificacion({
         empresa_id,
         tipo: "pedido_entregado",
         titulo: `Pedido #${id} entregado`,
@@ -264,7 +317,7 @@ export const actualizarEstadoPedido = async (req, res) => {
         referencia_id: Number(id),
       });
     } else if (estado === "cancelado") {
-      await crearNotificacion({
+      crearNotificacion({
         empresa_id,
         tipo: "pedido_cancelado",
         titulo: `Pedido #${id} cancelado`,
@@ -272,32 +325,19 @@ export const actualizarEstadoPedido = async (req, res) => {
         seccion: "pedidos",
         referencia_id: Number(id),
       });
-
-      // Restaurar stock de cada producto del pedido cancelado
-      const detalles = await pool.query(
-        `SELECT producto_id, cantidad FROM detalle_pedido_online WHERE pedido_id = $1`,
-        [id]
-      );
-      for (const item of detalles.rows) {
-        await pool.query(
-          `UPDATE productos SET stock = stock + $1 WHERE id = $2`,
-          [item.cantidad, item.producto_id]
-        );
-      }
     }
 
-    // 📧 Email al cliente cuando el estado es relevante
+    // 📧 Email al cliente (fuera de transacción — fire-and-forget)
     const ESTADOS_CON_EMAIL = ["confirmado", "en_preparacion", "enviado", "entregado", "cancelado"];
     if (ESTADOS_CON_EMAIL.includes(estado)) {
-      try {
-        const clienteRes = await pool.query(
-          `SELECT p.nombre, p.usuario AS email, e.nombre AS empresa_nombre
-           FROM pedidos_online po
-           JOIN persona p ON p.id = po.cliente_id
-           JOIN empresas e ON e.id = po.empresa_id
-           WHERE po.id = $1`,
-          [id]
-        );
+      pool.query(
+        `SELECT p.nombre, p.usuario AS email, e.nombre AS empresa_nombre
+         FROM pedidos_online po
+         JOIN persona p ON p.id = po.cliente_id
+         JOIN empresas e ON e.id = po.empresa_id
+         WHERE po.id = $1`,
+        [id]
+      ).then(clienteRes => {
         if (clienteRes.rows.length > 0) {
           const { nombre, email, empresa_nombre } = clienteRes.rows[0];
           enviarEmailEstadoPedido({
@@ -308,15 +348,16 @@ export const actualizarEstadoPedido = async (req, res) => {
             empresaNombre: empresa_nombre,
           }).catch(err => console.error("Error enviando email de estado:", err));
         }
-      } catch (emailErr) {
-        console.error("Error preparando email de estado:", emailErr);
-      }
+      }).catch(err => console.error("Error preparando email de estado:", err));
     }
 
     res.json(result.rows[0]);
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Error actualizarEstadoPedido:", error);
     res.status(500).json({ error: "Error al actualizar estado" });
+  } finally {
+    client.release();
   }
 };
 
@@ -326,6 +367,18 @@ export const actualizarEstadoPedido = async (req, res) => {
 export const getHistorialPedido = async (req, res) => {
   try {
     const { id } = req.params;
+    const { id: usuario_id, empresa_id } = req.user;
+
+    // Verificar que el pedido pertenece al usuario (cliente) o a su empresa
+    const acceso = await pool.query(
+      `SELECT 1 FROM pedidos_online
+       WHERE id = $1 AND (cliente_id = $2 OR empresa_id = $3)`,
+      [id, usuario_id, empresa_id]
+    );
+
+    if (acceso.rows.length === 0) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
 
     const result = await pool.query(
       `SELECT estado, nota, cambiado_en

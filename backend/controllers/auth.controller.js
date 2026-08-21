@@ -10,52 +10,105 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Usuario y contraseña son obligatorios" });
     }
 
-    // ✅ SELECT explícito — nunca mandar la contraseña hasheada al frontend
-    // ✅ Cambiar el SELECT para incluir codigo_referido de la empresa
-   const result = await pool.query(
-    `SELECT p.id, p.nombre, p.apellido, p.usuario, p.empresa_id, p.rol_id, p.contrasena,
-          e.codigo_referido
-     FROM persona p
-     LEFT JOIN empresas e ON e.id = p.empresa_id
-     WHERE p.usuario = $1`,
-     [usuario]
-  );
+    const result = await pool.query(
+      `SELECT p.id, p.nombre, p.apellido, p.usuario, p.empresa_id, p.rol_id, p.contrasena,
+              e.codigo_referido
+       FROM persona p
+       LEFT JOIN empresas e ON e.id = p.empresa_id
+       WHERE p.usuario = $1`,
+      [usuario]
+    );
 
-    // ✅ Mensaje genérico — no revelar si el usuario existe o no
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Credenciales incorrectas" });
     }
 
     const user = result.rows[0];
 
-    // ✅ Bloquear clientes internos (rol_id 4 sin acceso real)
-    // Los clientes internos tienen contraseña generada con Date.now(),
-    // pero este bloqueo explícito es más seguro y claro
     if (user.rol_id === 4) {
       return res.status(403).json({ error: "Este usuario no tiene acceso a la plataforma" });
     }
 
-    // ✅ Solo bcrypt — eliminada la comparación en texto plano
     const match = await bcrypt.compare(contrasena, user.contrasena);
-
     if (!match) {
       return res.status(401).json({ error: "Credenciales incorrectas" });
     }
 
+    // Verificar si el usuario tiene múltiples empresas en persona_empresas
+    const misEmpresas = await pool.query(
+      `SELECT e.id, e.nombre, e.slug, e.logo_url, pe.rol_id
+       FROM persona_empresas pe
+       JOIN empresas e ON e.id = pe.empresa_id
+       WHERE pe.persona_id = $1
+       ORDER BY pe.created_at ASC`,
+      [user.id]
+    );
+
     const token = generarToken(user);
 
-    // ✅ No incluir contrasena en la respuesta
     res.json({
       token,
-      usuario: user.usuario,
-      empresa_id: user.empresa_id,
-      rol_id: user.rol_id,
-      codigo_referido: user.codigo_referido || null, // ✅ nuevo
-
+      usuario:         user.usuario,
+      empresa_id:      user.empresa_id,
+      rol_id:          user.rol_id,
+      codigo_referido: user.codigo_referido || null,
+      mis_empresas:    misEmpresas.rows.length > 1 ? misEmpresas.rows : null,
     });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error en login" });
+  }
+};
+
+// Devuelve todas las empresas del usuario autenticado
+export const misEmpresas = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT e.id, e.nombre, e.slug, e.logo_url, pe.rol_id
+       FROM persona_empresas pe
+       JOIN empresas e ON e.id = pe.empresa_id
+       WHERE pe.persona_id = $1
+       ORDER BY pe.created_at ASC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener empresas" });
+  }
+};
+
+// Emite un nuevo token para la empresa seleccionada
+export const seleccionarEmpresa = async (req, res) => {
+  try {
+    const { empresa_id } = req.body;
+    const persona_id = req.user.id;
+
+    if (!empresa_id) {
+      return res.status(400).json({ error: "empresa_id es obligatorio" });
+    }
+
+    // Verificar que el usuario pertenece a esa empresa
+    const pertenece = await pool.query(
+      `SELECT pe.rol_id, e.codigo_referido, e.slug
+       FROM persona_empresas pe
+       JOIN empresas e ON e.id = pe.empresa_id
+       WHERE pe.persona_id = $1 AND pe.empresa_id = $2`,
+      [persona_id, empresa_id]
+    );
+
+    if (pertenece.rows.length === 0) {
+      return res.status(403).json({ error: "No tienes acceso a esta empresa" });
+    }
+
+    const { rol_id, codigo_referido, slug } = pertenece.rows[0];
+    const token = generarToken({ id: persona_id, empresa_id, rol_id });
+
+    res.json({ token, empresa_id, rol_id, codigo_referido, slug });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al seleccionar empresa" });
   }
 };

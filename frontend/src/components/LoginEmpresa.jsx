@@ -1,17 +1,30 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginEmpresa } from "../services/api";
+import SelectorEmpresa from "./SelectorEmpresa";
 
 export default function LoginEmpresa() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ usuario: "", contrasena: "" });
-  const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState("");
+  const [form, setForm]           = useState({ usuario: "", contrasena: "" });
+  const [loading, setLoading]     = useState(false);
+  const [showPass, setShowPass]   = useState(false);
+  const [error, setError]         = useState("");
+  const [misEmpresas, setMisEmpresas] = useState(null); // array si hay múltiples
+  const [tempToken, setTempToken]     = useState(null);
+  const [tempRolId, setTempRolId]     = useState(1);
 
   const handleChange = (e) => {
     setError("");
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const guardarSesion = (data) => {
+    localStorage.setItem("token",          data.token);
+    localStorage.setItem("empresa_id",     data.empresa_id);
+    localStorage.setItem("rol_id",         data.rol_id);
+    localStorage.setItem("codigo_referido", data.codigo_referido || "");
+    if (data.slug) localStorage.setItem("empresa_slug", data.slug);
+    navigate("/dashboard");
   };
 
   const handleLogin = async () => {
@@ -23,11 +36,14 @@ export default function LoginEmpresa() {
     try {
       const res = await loginEmpresa(form);
       if (res.token) {
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("empresa_id", res.empresa_id);
-        localStorage.setItem("rol_id", res.rol_id);
-        localStorage.setItem("codigo_referido", res.codigo_referido || "");
-        navigate("/dashboard");
+        if (res.mis_empresas && res.mis_empresas.length > 1) {
+          // Usuario con múltiples tiendas — mostrar selector
+          setTempToken(res.token);
+          setTempRolId(res.rol_id);
+          setMisEmpresas(res.mis_empresas);
+        } else {
+          guardarSesion(res);
+        }
       } else {
         setError(res.error || "Credenciales incorrectas.");
       }
@@ -39,6 +55,17 @@ export default function LoginEmpresa() {
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleLogin(); };
+
+  if (misEmpresas) {
+    return (
+      <SelectorEmpresa
+        empresas={misEmpresas}
+        token={tempToken}
+        rolId={tempRolId}
+        onSelect={guardarSesion}
+      />
+    );
+  }
 
   return (
     <div style={s.page}>
