@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../config/db.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const gemini = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+const gemini = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
 // Cache por empresa: empresa_id -> { generatedAt, content }
 const cache = new Map();
@@ -69,19 +69,19 @@ export const generarDescripcion = async (req, res) => {
   const { nombre, precio, unidad } = req.body;
   if (!nombre) return res.status(400).json({ error: "El nombre es requerido" });
 
+  const detalles = [
+    precio ? `Precio: $${Number(precio).toLocaleString("es-CO")} COP` : null,
+    unidad && unidad !== "unidad" ? `Se vende por ${unidad}` : null,
+  ].filter(Boolean).join(". ");
+
+  const prompt = `Escribe una descripción de producto corta y atractiva (2 oraciones máximo) en español para una tienda.\nProducto: ${nombre}${detalles ? `\n${detalles}` : ""}\n\nSolo la descripción, sin saludos ni introducciones.`;
+
   try {
-    const detalles = [
-      precio ? `Precio: $${Number(precio).toLocaleString("es-CO")} COP` : null,
-      unidad && unidad !== "unidad" ? `Se vende por ${unidad}` : null,
-    ].filter(Boolean).join(". ");
-
-    const prompt = `Escribe una descripción de producto corta y atractiva (2 oraciones máximo) en español para una tienda.\nProducto: ${nombre}${detalles ? `\n${detalles}` : ""}\n\nSolo la descripción, sin saludos ni introducciones.`;
-
     const result = await gemini.generateContent(prompt);
-    res.json({ descripcion: result.response.text().trim() });
+    return res.json({ descripcion: result.response.text().trim() });
   } catch (err) {
     console.error("[Insight] generarDescripcion:", err.message);
-    res.status(500).json({ error: "No se pudo generar la descripción" });
+    return res.status(500).json({ error: "No se pudo generar la descripción" });
   }
 };
 

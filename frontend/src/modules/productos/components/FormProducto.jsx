@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { eliminarImagenProducto } from "../services/productos.api";
 import { imgUrl } from "../../../utils/imgUrl";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const UNIDADES = [
   { value: "unidad",  label: "Unidad / Pieza" },
   { value: "kg",      label: "Kilogramo (kg)" },
@@ -37,7 +39,7 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
   const fileInputRef = useRef(null);
 
   const handleGenerarDescripcion = async () => {
-    if (!form.nombre) return;
+if (!form.nombre) return;
     setLoadingDesc(true);
     try {
       const token = localStorage.getItem("token");
@@ -49,8 +51,12 @@ export default function FormProducto({ producto, onClose, onSave, unidadPredeter
       const data = await res.json();
       if (data.descripcion) {
         setForm((prev) => ({ ...prev, descripcion: data.descripcion }));
+      } else {
+        alert("No se pudo generar la descripción: " + (data.error || "Error desconocido"));
       }
-    } catch {}
+    } catch (err) {
+      alert("Error al conectar con el servidor de IA: " + err.message);
+    }
     setLoadingDesc(false);
   };
 
