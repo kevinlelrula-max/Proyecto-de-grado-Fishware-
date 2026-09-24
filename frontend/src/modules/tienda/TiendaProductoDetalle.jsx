@@ -8,20 +8,6 @@ import { getReseñasProducto } from "../reseñas/services/reseñasService";
 
 import { imgUrl } from "../../utils/imgUrl";
 
-function getEmoji(nombre) {
-  const n = nombre?.toLowerCase() || "";
-  if (n.includes("camisa") || n.includes("camiseta")) return "👕";
-  if (n.includes("zapato") || n.includes("tenis"))    return "👟";
-  if (n.includes("pan")    || n.includes("torta"))    return "🍞";
-  if (n.includes("leche")  || n.includes("queso"))    return "🥛";
-  if (n.includes("carne")  || n.includes("pollo"))    return "🥩";
-  if (n.includes("fruta")  || n.includes("mango"))    return "🍎";
-  if (n.includes("pescado")|| n.includes("bagre"))    return "🐟";
-  if (n.includes("camaron")|| n.includes("camarón"))  return "🦐";
-  if (n.includes("bebida") || n.includes("jugo"))     return "🥤";
-  if (n.includes("cafe")   || n.includes("café"))     return "☕";
-  return "📦";
-}
 
 const css = `
   @keyframes fadeIn { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
@@ -97,7 +83,7 @@ export default function TiendaProductoDetalle() {
   if (!producto) return (
     <TiendaLayout empresa={empresa} carrito={carrito} onAbrirCarrito={() => setCarritoAbierto(true)}>
       <div style={{ padding: "100px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
+        <div style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: "#e2e8f0", margin: "0 auto 16px" }} />
         <p style={{ fontSize: 18, color: "#64748b", marginBottom: 24 }}>Producto no encontrado</p>
         <button onClick={() => navigate(`/tienda/${empresaSlug}/catalogo`, { state: { empresa } })}
           style={{ padding: "12px 28px", background: colorMarca, color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 15, fontWeight: 700 }}>
@@ -179,7 +165,7 @@ export default function TiendaProductoDetalle() {
                   ? <img src={imgUrl(imagenes[imgIdx].url)} alt={producto.nombre}
                       style={{ width: "100%", height: "100%", objectFit: "contain", padding: 24 }} />
                   : <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 110 }}>{getEmoji(producto.nombre)}</div>
+                      <div style={{ width: 80, height: 80, borderRadius: 20, backgroundColor: "#e2e8f0", margin: "0 auto" }} />
                       <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 12 }}>Sin imagen</p>
                     </div>
                 }
@@ -259,7 +245,7 @@ export default function TiendaProductoDetalle() {
               </div>
               {tieneDesc && (
                 <p style={{ fontSize:13,color:colorMarca,fontWeight:700,margin:"8px 0 0" }}>
-                  🏷️ Ahorras ${(precioO - precioM).toLocaleString("es-CO")} en este producto
+                  Ahorras ${(precioO - precioM).toLocaleString("es-CO")} en este producto
                 </p>
               )}
             </div>
@@ -331,8 +317,12 @@ export default function TiendaProductoDetalle() {
                   boxShadow: añadido ? "none" : `0 8px 24px ${colorMarca}55`,
                   display:"flex", alignItems:"center", justifyContent:"center", gap:10,
                 }}>
-                  <span style={{ fontSize:20 }}>{añadido ? "✓" : "🛒"}</span>
-                  {añadido ? "¡Agregado al carrito!" : "Agregar al carrito"}
+                  {!añadido && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+                    </svg>
+                  )}
+                  {añadido ? "¡Agregado!" : "Agregar al carrito"}
                 </button>
               </div>
             ) : (
@@ -366,7 +356,7 @@ export default function TiendaProductoDetalle() {
                       <div style={{ width:"100%",aspectRatio:"1/1",background:"linear-gradient(145deg,#f8fafc,#f1f5f9)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden" }}>
                         {ri.length > 0
                           ? <img src={imgUrl(ri[0].url)} alt={rel.nombre} style={{ width:"100%",height:"100%",objectFit:"cover" }} />
-                          : <span style={{ fontSize:52 }}>{getEmoji(rel.nombre)}</span>
+                          : <div style={{ width:52, height:52, borderRadius:12, backgroundColor:"#e2e8f0" }} />
                         }
                         {(rel.stock??0)<=0 && (
                           <div style={{ position:"absolute",inset:0,background:"rgba(255,255,255,0.75)",display:"flex",alignItems:"center",justifyContent:"center" }}>
@@ -453,7 +443,7 @@ export default function TiendaProductoDetalle() {
             <p style={{ fontSize:20,fontWeight:900,color:"#fff",margin:0 }}>${(cantidad*precioM).toLocaleString("es-CO")}</p>
           </div>
           <button onClick={handleAgregar} style={{ padding:"14px 28px",fontSize:15,fontWeight:800,color:colorMarca,background:"#fff",border:"none",borderRadius:12,cursor:"pointer",whiteSpace:"nowrap" }}>
-            {añadido?"✓ Agregado":"🛒 Agregar"}
+            {añadido ? "Añadido" : "Agregar"}
           </button>
         </div>
       )}

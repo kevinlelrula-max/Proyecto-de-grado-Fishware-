@@ -24,7 +24,7 @@ export default function CatalogoGrid({ productos, loading, busqueda, onAgregar, 
   if (productos.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "80px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 48 }}>🔍</span>
+        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "#e2e8f0" }} />
         <p style={{ fontSize: 16, fontWeight: 600, color: "#64748b", maxWidth: 320, lineHeight: 1.5 }}>
           {busqueda ? `No encontramos productos para "${busqueda}"` : "Esta empresa no tiene productos disponibles aún"}
         </p>

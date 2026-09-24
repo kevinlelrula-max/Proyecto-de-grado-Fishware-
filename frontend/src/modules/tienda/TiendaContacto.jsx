@@ -72,22 +72,22 @@ export default function TiendaContacto() {
           {/* ── INFO DE CONTACTO ── */}
           <div style={s.colLeft}>
             <div style={s.card}>
-              <h3 style={s.cardTitle}>📍 Información de contacto</h3>
+              <h3 style={s.cardTitle}>Información de contacto</h3>
               <div style={s.items}>
                 {empresa?.telefono && (
-                  <ContactoItem icon="📞" label="Teléfono" valor={empresa.telefono} />
+                  <ContactoItem icon="Tel" label="Teléfono" valor={empresa.telefono} />
                 )}
                 {empresa?.email && (
-                  <ContactoItem icon="✉️" label="Email" valor={empresa.email} />
+                  <ContactoItem icon="@" label="Email" valor={empresa.email} />
                 )}
                 {empresa?.direccion && (
-                  <ContactoItem icon="📍" label="Dirección" valor={empresa.direccion} />
+                  <ContactoItem icon="Loc" label="Dirección" valor={empresa.direccion} />
                 )}
                 {empresa?.horario && (
-                  <ContactoItem icon="🕐" label="Horario de atención" valor={empresa.horario} />
+                  <ContactoItem icon="Hor" label="Horario de atención" valor={empresa.horario} />
                 )}
                 {empresa?.nit && (
-                  <ContactoItem icon="📄" label="NIT" valor={empresa.nit} />
+                  <ContactoItem icon="NIT" label="NIT" valor={empresa.nit} />
                 )}
                 {!empresa?.telefono && !empresa?.email && !empresa?.direccion && (
                   <p style={s.sinInfo}>Esta empresa no ha configurado su información de contacto.</p>
@@ -98,12 +98,12 @@ export default function TiendaContacto() {
             {/* Redes sociales */}
             {(empresa?.whatsapp || empresa?.instagram || empresa?.facebook) && (
               <div style={s.card}>
-                <h3 style={s.cardTitle}>📱 Redes sociales</h3>
+                <h3 style={s.cardTitle}>Redes sociales</h3>
                 <div style={s.redesList}>
                   {empresa?.whatsapp && (
                     <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={s.redCard}>
                       <div style={{ ...s.redIconWrap, backgroundColor: "#25D36620" }}>
-                        <span style={s.redIcon}>📱</span>
+                        <span style={s.redIcon}>WA</span>
                       </div>
                       <div style={s.redInfo}>
                         <p style={s.redNombre}>WhatsApp</p>
@@ -115,7 +115,7 @@ export default function TiendaContacto() {
                   {empresa?.instagram && (
                     <a href={`https://instagram.com/${empresa.instagram.replace("@", "")}`} target="_blank" rel="noreferrer" style={s.redCard}>
                       <div style={{ ...s.redIconWrap, backgroundColor: "#E1306C20" }}>
-                        <span style={s.redIcon}>📸</span>
+                        <span style={s.redIcon}>IG</span>
                       </div>
                       <div style={s.redInfo}>
                         <p style={s.redNombre}>Instagram</p>
@@ -127,7 +127,7 @@ export default function TiendaContacto() {
                   {empresa?.facebook && (
                     <a href={`https://facebook.com/${empresa.facebook}`} target="_blank" rel="noreferrer" style={s.redCard}>
                       <div style={{ ...s.redIconWrap, backgroundColor: "#1877F220" }}>
-                        <span style={s.redIcon}>👍</span>
+                        <span style={s.redIcon}>FB</span>
                       </div>
                       <div style={s.redInfo}>
                         <p style={s.redNombre}>Facebook</p>
@@ -144,12 +144,16 @@ export default function TiendaContacto() {
           {/* ── FORMULARIO ── */}
           <div style={s.colRight}>
             <div style={s.card}>
-              <h3 style={s.cardTitle}>💬 Envíanos un mensaje</h3>
+              <h3 style={s.cardTitle}>Envíanos un mensaje</h3>
               <p style={s.cardSubtitle}>Te responderemos lo antes posible</p>
 
               {enviado ? (
                 <div style={s.exitoBox}>
-                  <span style={s.exitoIcon}>✅</span>
+                  <div>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/>
+                    </svg>
+                  </div>
                   <div>
                     <p style={s.exitoTitle}>¡Mensaje enviado!</p>
                     <p style={s.exitoDesc}>Nos pondremos en contacto contigo pronto.</p>
@@ -163,7 +167,7 @@ export default function TiendaContacto() {
                 </div>
               ) : (
                 <div style={s.formFields}>
-                  {error && <div style={s.errorBox}>⚠️ {error}</div>}
+                  {error && <div style={s.errorBox}>{error}</div>}
 
                   <Field label="Nombre *">
                     <input
@@ -234,7 +238,7 @@ export default function TiendaContacto() {
               target="_blank" rel="noreferrer"
               style={s.ctaBtn}
             >
-              📱 Escribir por WhatsApp
+              Escribir por WhatsApp
             </a>
           </div>
         )}
@@ -259,7 +263,7 @@ function ContactoItem({ icon, label, valor }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
       <div style={{ width: "40px", height: "40px", borderRadius: "10px", backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span style={{ fontSize: "18px" }}>{icon}</span>
+        <span style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.02em" }}>{icon}</span>
       </div>
       <div>
         <p style={{ fontSize: "11px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "3px" }}>{label}</p>
@@ -304,7 +308,7 @@ const s = {
     textDecoration: "none",
   },
   redIconWrap: { width: "40px", height: "40px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  redIcon: { fontSize: "20px" },
+  redIcon: { fontSize: "11px", fontWeight: "700", color: "#64748b" },
   redInfo: { flex: 1 },
   redNombre: { fontSize: "14px", fontWeight: "600", color: "#0f172a" },
   redDesc: { fontSize: "12px", color: "#64748b" },
@@ -345,7 +349,7 @@ const s = {
     backgroundColor: "#f0fdf4",
     borderRadius: "12px", border: "1px solid #bbf7d0",
   },
-  exitoIcon: { fontSize: "40px" },
+  exitoIcon: { lineHeight: 0 },
   exitoTitle: { fontSize: "18px", fontWeight: "700", color: "#0f172a" },
   exitoDesc: { fontSize: "14px", color: "#64748b" },
   exitoBtn: {

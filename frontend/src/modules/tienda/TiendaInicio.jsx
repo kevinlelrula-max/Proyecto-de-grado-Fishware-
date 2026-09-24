@@ -103,7 +103,7 @@ export default function TiendaInicio() {
       {/* ── BANNER DE LEALTAD ── */}
       {estaLogueado && nivelLealtad && (
         <div style={{ ...s.lealtadBanner, backgroundColor: `${colorMarca}15`, borderBottom: `1px solid ${colorMarca}30` }}>
-          <span>🏆</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           <p style={s.lealtadText}>
             Nivel <strong>{nivelLealtad.nombre}</strong> — precios con{" "}
             <strong>{nivelLealtad.descuento_porcentaje}% de descuento</strong>
@@ -170,7 +170,7 @@ export default function TiendaInicio() {
                 <p style={s.sobreDesc}>{empresa?.nosotros_contenido || empresa?.descripcion}</p>
                 {empresa?.horario && (
                   <div style={s.sobreHorario}>
-                    <span style={s.sobreHorarioIcon}>🕐</span>
+                    <span style={s.sobreHorarioIcon}>Hor</span>
                     <div>
                       <p style={s.sobreHorarioLabel}>Horario de atención</p>
                       <p style={s.sobreHorarioValor}>{empresa.horario}</p>
@@ -328,7 +328,11 @@ export default function TiendaInicio() {
       {pedidoExitoso && (
         <div style={s.modalOverlay}>
           <div style={s.modal}>
-            <div style={s.modalIcon}>🎉</div>
+            <div style={s.modalIcon}>
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
             <h2 style={s.modalTitle}>¡Pedido enviado!</h2>
             <p style={s.modalDesc}>
               Tu pedido <strong>#{pedidoExitoso.id}</strong> fue recibido por {empresaNombre}.
@@ -387,7 +391,7 @@ const s = {
   sobreTitle: { fontSize: "32px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.2 },
   sobreDesc: { fontSize: "15px", color: "#64748b", lineHeight: "1.8", maxWidth: "500px" },
   sobreHorario: { display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", backgroundColor: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" },
-  sobreHorarioIcon: { fontSize: "20px" },
+  sobreHorarioIcon: { fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "0.02em" },
   sobreHorarioLabel: { fontSize: "11px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase" },
   sobreHorarioValor: { fontSize: "14px", fontWeight: "600", color: "#0f172a", marginTop: "2px" },
   sobreBtn: { alignSelf: "flex-start", padding: "11px 22px", background: "transparent", border: "1.5px solid", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer" },
@@ -395,7 +399,7 @@ const s = {
   sobreAvatar: { width: "120px", height: "120px", borderRadius: "28px", color: "white", fontSize: "40px", fontWeight: "800", display: "flex", alignItems: "center", justifyContent: "center" },
   modalOverlay: { position: "fixed", inset: 0, backgroundColor: "rgba(15,23,42,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" },
   modal: { backgroundColor: "white", borderRadius: "20px", padding: "40px 36px", maxWidth: "400px", width: "90%", textAlign: "center" },
-  modalIcon: { fontSize: "52px", marginBottom: "16px" },
+  modalIcon: { marginBottom: "16px", display: "flex", justifyContent: "center" },
   modalTitle: { fontSize: "24px", fontWeight: "800", color: "#0f172a", marginBottom: "12px" },
   modalDesc: { fontSize: "14px", color: "#64748b", lineHeight: "1.6", marginBottom: "12px" },
   modalTotal: { fontSize: "18px", color: "#0F6E56", marginBottom: "24px" },
