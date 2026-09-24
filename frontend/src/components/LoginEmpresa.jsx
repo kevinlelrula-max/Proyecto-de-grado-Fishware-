@@ -239,7 +239,7 @@ export default function LoginEmpresa() {
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setError("No se pudo iniciar sesión con Google.")}
-                width="100%"
+                width="350"
                 shape="rectangular"
                 theme="outline"
                 size="large"
