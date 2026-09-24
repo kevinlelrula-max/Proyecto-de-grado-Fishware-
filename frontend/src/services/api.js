@@ -42,6 +42,15 @@ export const loginEmpresa = async (data) => {
   }
 };
 
+export const loginGoogleEmpresa = async (credential) => {
+  try {
+    const res = await axios.post(`${API_URL}/auth/login/google`, { credential });
+    return res.data;
+  } catch (error) {
+    return error.response?.data || { error: "Error en login con Google" };
+  }
+};
+
 // =========================
 // 🔹 LOGIN USUARIO
 // =========================

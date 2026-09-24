@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginEmpresa } from "../services/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { loginEmpresa, loginGoogleEmpresa } from "../services/api";
 import SelectorEmpresa from "./SelectorEmpresa";
 
 export default function LoginEmpresa() {
   const navigate = useNavigate();
-  const [form, setForm]           = useState({ usuario: "", contrasena: "" });
-  const [loading, setLoading]     = useState(false);
-  const [showPass, setShowPass]   = useState(false);
-  const [error, setError]         = useState("");
-  const [misEmpresas, setMisEmpresas] = useState(null); // array si hay múltiples
+  const [form, setForm]               = useState({ usuario: "", contrasena: "" });
+  const [loading, setLoading]         = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [showPass, setShowPass]       = useState(false);
+  const [error, setError]             = useState("");
+  const [misEmpresas, setMisEmpresas] = useState(null);
   const [tempToken, setTempToken]     = useState(null);
   const [tempRolId, setTempRolId]     = useState(1);
 
@@ -19,9 +21,9 @@ export default function LoginEmpresa() {
   };
 
   const guardarSesion = (data) => {
-    localStorage.setItem("token",          data.token);
-    localStorage.setItem("empresa_id",     data.empresa_id);
-    localStorage.setItem("rol_id",         data.rol_id);
+    localStorage.setItem("token",           data.token);
+    localStorage.setItem("empresa_id",      data.empresa_id);
+    localStorage.setItem("rol_id",          data.rol_id);
     localStorage.setItem("codigo_referido", data.codigo_referido || "");
     if (data.slug) localStorage.setItem("empresa_slug", data.slug);
     navigate("/dashboard");
@@ -37,7 +39,6 @@ export default function LoginEmpresa() {
       const res = await loginEmpresa(form);
       if (res.token) {
         if (res.mis_empresas && res.mis_empresas.length > 1) {
-          // Usuario con múltiples tiendas — mostrar selector
           setTempToken(res.token);
           setTempRolId(res.rol_id);
           setMisEmpresas(res.mis_empresas);
@@ -56,6 +57,30 @@ export default function LoginEmpresa() {
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleLogin(); };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoadingGoogle(true);
+    setError("");
+    try {
+      const res = await loginGoogleEmpresa(credentialResponse.credential);
+      if (res.token) {
+        if (res.mis_empresas && res.mis_empresas.length > 1) {
+          setTempToken(res.token);
+          setTempRolId(res.rol_id);
+          setMisEmpresas(res.mis_empresas);
+        } else {
+          guardarSesion(res);
+        }
+      } else {
+        setError(res.error || "No se pudo iniciar sesión con Google.");
+      }
+    } catch {
+      setError("No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
+
+
   if (misEmpresas) {
     return (
       <SelectorEmpresa
@@ -68,85 +93,81 @@ export default function LoginEmpresa() {
   }
 
   return (
-    <div style={s.page}>
+    <div className="min-h-screen font-sans" style={{ display: "grid", gridTemplateColumns: "60fr 40fr", background: "#fff" }}>
 
-      {/* Panel izquierdo — branding */}
-      <div style={s.left}>
-        <div style={s.leftContent}>
-          <div style={s.leftLogo}>
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="10" fill="white" fillOpacity="0.15"/>
-              <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-              <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="14" cy="15" r="1.5" fill="white"/>
-            </svg>
-            <span style={s.leftLogoText}>Merkai</span>
-          </div>
+      {/* ── Panel izquierdo — arte + branding ── */}
+      <div
+        className="hidden md:flex min-h-screen flex-col items-center justify-center gap-2 py-12 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 55%, #0f1f2e 100%)",
+          clipPath: "polygon(0 0, 100% 0, calc(100% - 90px) 100%, 0 100%)",
+        }}
+      >
+        {/* Círculos ambientales */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div style={{ position:"absolute", bottom:-100, right:-80, width:360, height:360, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.04)" }}/>
+        </div>
 
-          <div style={s.leftHero}>
-            <h2 style={s.leftTitle}>La plataforma que impulsa tu empresa</h2>
-            <p style={s.leftSubtitle}>
-              Gestión empresarial completa — productos, ventas, clientes y reportes, todo en un solo lugar.
-            </p>
-          </div>
+        {/* Logo — top left */}
+        <div className="absolute top-8 left-10 flex items-center gap-2.5 z-30">
+          <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="9" fill="white" fillOpacity="0.15"/>
+            <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+            <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="14" cy="15" r="1.5" fill="white"/>
+          </svg>
+          <span className="font-bold text-white text-base tracking-tight">Merkai</span>
+        </div>
 
-          <div style={s.pillsWrap}>
-            {["Multi-empresa", "Tiempo real", "Punto de venta", "Reportes", "Usuarios y roles"].map((tag) => (
-              <span key={tag} style={s.pill}>{tag}</span>
-            ))}
-          </div>
+        {/* Círculos decorativos — mismo estilo que SelectorEmpresa */}
+        <div style={{ position:"absolute", width:500, height:500, borderRadius:"50%", background:"rgba(255,255,255,0.02)", top:-100, left:-150 }}/>
+        <div style={{ position:"absolute", width:400, height:400, borderRadius:"50%", background:"rgba(255,255,255,0.02)", bottom:-80, right:-100 }}/>
+        <div style={{ position:"absolute", width:250, height:250, borderRadius:"50%", background:"rgba(255,255,255,0.02)", top:"40%", right:"15%" }}/>
 
-          <div style={s.leftFooter}>
-            <div style={s.statRow}>
-              {[
-               
-              ].map((st) => (
-                <div key={st.label} style={s.stat}>
-                  <span style={s.statNum}>{st.n}</span>
-                  <span style={s.statLabel}>{st.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Texto — grande, alineado a la izquierda */}
+        <div className="absolute inset-0 flex flex-col justify-center z-20 pointer-events-none px-14">
+          <h2 className="font-extrabold text-white leading-none tracking-tight mb-6" style={{ fontSize: "clamp(3rem, 5.5vw, 5rem)" }}>
+            Tu negocio,<br/>todo en un<br/>solo lugar
+          </h2>
+          <p className="text-lg" style={{ color: "rgba(255,255,255,0.55)", maxWidth: 380 }}>
+            Ventas, inventario, clientes y análisis con IA — para crecer con confianza.
+          </p>
         </div>
       </div>
 
-      {/* Panel derecho — formulario */}
-      <div style={s.right}>
-        <div style={s.formCard}>
+      {/* ── Panel derecho — formulario ── */}
+      <div className="min-h-screen bg-white flex items-center justify-center px-10">
+        <div className="w-full max-w-md">
 
-          <div style={s.formHeader}>
-            <div style={s.formLogoSmall}>
-              <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-                <rect width="36" height="36" rx="10" fill="#1e3a5f"/>
-                <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-                <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="14" cy="15" r="1.5" fill="white"/>
-              </svg>
-            </div>
-            <h2 style={s.formTitle}>Iniciar sesión</h2>
-            <p style={s.formSubtitle}>Accede al panel de tu empresa</p>
+          {/* Título */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Hola, bienvenido de nuevo
+            </h2>
+            <p className="text-base" style={{ color: "#94a3b8" }}>Ingresa tus datos para continuar</p>
           </div>
 
           {/* Error */}
           {error && (
-            <div style={s.errorBox}>
+            <div className="flex items-center gap-2 px-4 py-3 mb-5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
               <span>⚠️</span> {error}
             </div>
           )}
 
-          {/* Campo usuario */}
-          <div style={s.fieldWrap}>
-            <label style={s.label}>Correo electrónico</label>
-            <div style={s.inputWrap}>
-              <span style={s.inputIcon}>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
+          {/* Correo */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-slate-600 mb-2">
+              Correo electrónico
+            </label>
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 pointer-events-none">
+                <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
                   <rect x="2" y="4" width="16" height="13" rx="2"/>
                   <path d="M2 7l8 5 8-5"/>
                 </svg>
               </span>
               <input
-                style={s.input}
+                className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-slate-200 text-base text-slate-900 bg-slate-50 outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 name="usuario"
                 type="email"
                 placeholder="admin@tuempresa.com"
@@ -158,19 +179,21 @@ export default function LoginEmpresa() {
             </div>
           </div>
 
-          {/* Campo contraseña */}
-          <div style={s.fieldWrap}>
-            <label style={s.label}>Contraseña</label>
-            <div style={s.inputWrap}>
-              <span style={s.inputIcon}>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
+          {/* Contraseña */}
+          <div className="mb-7">
+            <label className="block text-sm font-semibold text-slate-600 mb-2">
+              Contraseña
+            </label>
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 pointer-events-none">
+                <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round">
                   <rect x="3" y="8" width="14" height="10" rx="2"/>
                   <path d="M7 8V6a3 3 0 0 1 6 0v2"/>
                   <circle cx="10" cy="13" r="1.2" fill="#94a3b8" stroke="none"/>
                 </svg>
               </span>
               <input
-                style={s.input}
+                className="w-full pl-10 pr-10 py-3.5 rounded-xl border border-slate-200 text-base text-slate-900 bg-slate-50 outline-none focus:border-slate-400 focus:bg-white transition-colors"
                 name="contrasena"
                 type={showPass ? "text" : "password"}
                 placeholder="••••••••"
@@ -179,234 +202,63 @@ export default function LoginEmpresa() {
                 onKeyDown={handleKeyDown}
                 autoComplete="current-password"
               />
-              <button style={s.eyeBtn} onClick={() => setShowPass(!showPass)} type="button" tabIndex={-1}>
+              <button
+                className="absolute right-3 text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none cursor-pointer p-0 leading-none text-sm"
+                onClick={() => setShowPass(!showPass)}
+                type="button"
+                tabIndex={-1}
+              >
                 {showPass ? "🙈" : "👁️"}
               </button>
             </div>
           </div>
 
-          {/* Botón */}
+          {/* Botón principal */}
           <button
-            style={{ ...s.btnLogin, opacity: loading ? 0.75 : 1 }}
+            className="w-full py-3 bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl transition-colors mb-4 disabled:opacity-70 cursor-pointer"
             onClick={handleLogin}
             disabled={loading}
           >
             {loading ? "Verificando..." : "Iniciar sesión"}
           </button>
 
-          <p style={s.registerText}>
+          {/* Divisor */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 font-medium">o continúa con</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+
+          {/* Google Sign-In */}
+          <div className="flex justify-center mb-5">
+            {loadingGoogle ? (
+              <div className="w-full py-3 flex items-center justify-center gap-2 border border-slate-200 rounded-xl text-sm text-slate-500 bg-slate-50">
+                <span>Verificando...</span>
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError("No se pudo iniciar sesión con Google.")}
+                width="100%"
+                shape="rectangular"
+                theme="outline"
+                size="large"
+                text="signin_with"
+                locale="es"
+              />
+            )}
+          </div>
+
+          <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
             ¿Tu empresa aún no está registrada?{" "}
-            <a href="/empresa/registro" style={s.registerLink}>Crear cuenta</a>
+            <a href="/empresa/registro" className="text-slate-900 font-semibold hover:underline">
+              Crear cuenta
+            </a>
           </p>
 
         </div>
       </div>
+
     </div>
   );
 }
-
-const s = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    fontFamily: "'Inter', 'Segoe UI', sans-serif",
-  },
-
-  // Panel izquierdo
-  left: {
-    flex: "1 1 55%",
-    background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 55%, #0f1f2e 100%)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "48px",
-    position: "relative",
-    overflow: "hidden",
-  },
-  leftContent: {
-    maxWidth: "440px",
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    gap: "36px",
-    position: "relative",
-    zIndex: 1,
-  },
-  leftLogo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  leftLogoText: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "white",
-    letterSpacing: "-0.02em",
-  },
-  leftHero: {},
-  leftTitle: {
-    fontSize: "32px",
-    fontWeight: "700",
-    color: "white",
-    lineHeight: "1.2",
-    marginBottom: "14px",
-    letterSpacing: "-0.02em",
-  },
-  leftSubtitle: {
-    fontSize: "15px",
-    color: "rgba(255,255,255,0.72)",
-    lineHeight: "1.6",
-  },
-  pillsWrap: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-  },
-  pill: {
-    padding: "5px 14px",
-    borderRadius: "999px",
-    border: "1px solid rgba(255,255,255,0.3)",
-    color: "rgba(255,255,255,0.9)",
-    fontSize: "12px",
-    fontWeight: "500",
-    backgroundColor: "rgba(255,255,255,0.1)",
-  },
-  leftFooter: {
-    borderTop: "1px solid rgba(255,255,255,0.2)",
-    paddingTop: "28px",
-  },
-  statRow: {
-    display: "flex",
-    gap: "32px",
-  },
-  stat: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-  statNum: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "white",
-  },
-  statLabel: {
-    fontSize: "12px",
-    color: "rgba(255,255,255,0.6)",
-  },
-
-  // Panel derecho
-  right: {
-    flex: "1 1 45%",
-    backgroundColor: "#f8fafc",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "48px 40px",
-  },
-  formCard: {
-    width: "100%",
-    maxWidth: "380px",
-  },
-  formHeader: {
-    marginBottom: "28px",
-  },
-  formLogoSmall: {
-    marginBottom: "20px",
-  },
-  formTitle: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#0f172a",
-    marginBottom: "6px",
-    letterSpacing: "-0.02em",
-  },
-  formSubtitle: {
-    fontSize: "14px",
-    color: "#64748b",
-  },
-
-  errorBox: {
-    backgroundColor: "#fef2f2",
-    border: "1px solid #fecaca",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    fontSize: "13px",
-    color: "#b91c1c",
-    marginBottom: "16px",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-
-  fieldWrap: {
-    marginBottom: "16px",
-  },
-  label: {
-    display: "block",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: "6px",
-  },
-  inputWrap: {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-  },
-  inputIcon: {
-    position: "absolute",
-    left: "12px",
-    display: "flex",
-    alignItems: "center",
-    pointerEvents: "none",
-  },
-  input: {
-    width: "100%",
-    padding: "11px 40px 11px 38px",
-    borderRadius: "10px",
-    border: "1.5px solid #e2e8f0",
-    fontSize: "14px",
-    color: "#0f172a",
-    backgroundColor: "white",
-    outline: "none",
-    boxSizing: "border-box",
-    transition: "border-color 0.15s",
-  },
-  eyeBtn: {
-    position: "absolute",
-    right: "12px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "14px",
-    padding: "0",
-    lineHeight: 1,
-  },
-
-  btnLogin: {
-    width: "100%",
-    padding: "13px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    fontSize: "15px",
-    fontWeight: "600",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    marginTop: "8px",
-    marginBottom: "20px",
-    letterSpacing: "0.01em",
-    transition: "background 0.2s",
-  },
-
-  registerText: {
-    textAlign: "center",
-    fontSize: "13px",
-    color: "#64748b",
-  },
-  registerLink: {
-    color: "#2563eb",
-    fontWeight: "600",
-    textDecoration: "none",
-  },
-};

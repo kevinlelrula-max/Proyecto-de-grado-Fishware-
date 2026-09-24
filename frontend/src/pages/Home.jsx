@@ -1,387 +1,427 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import BtnSoporte from "../components/BtnSoporte";
 
-const MOBILE_CSS = `
-  @media (max-width: 768px) {
-    .mk-nav-inner    { padding: 0 20px !important; }
-    .mk-nav-links    { gap: 6px !important; }
-    .mk-nav-link     { display: none !important; }
-    .mk-nav-divider  { display: none !important; }
-    .mk-nav-login    { display: none !important; }
-
-    .mk-hero-section { padding: 72px 20px 48px !important; min-height: auto !important; }
-    .mk-hero-inner   { grid-template-columns: 1fr !important; gap: 36px !important; }
-    .mk-hero-title   { font-size: 34px !important; }
-    .mk-hero-img     { display: none !important; }
-    .mk-hero-ctas    { flex-direction: column !important; }
-    .mk-hero-ctas button { width: 100% !important; }
-
-    .mk-caps-inner   { grid-template-columns: repeat(2, 1fr) !important; }
-    .mk-caps-item    { padding: 12px 14px !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; }
-
-    .mk-section      { padding: 56px 20px !important; }
-    .mk-store-inner  { grid-template-columns: 1fr !important; gap: 36px !important; }
-    .mk-steps        { grid-template-columns: 1fr !important; }
-    .mk-ct-btns      { flex-direction: column !important; }
-    .mk-ct-btns button { width: 100% !important; }
-
-    .mk-footer-inner { flex-direction: column !important; gap: 8px !important; text-align: center !important; }
-  }
-`;
-
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 32 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: "easeOut" },
+/* ─── Animación ─── */
+const up = (delay = 0) => ({
+  initial: { opacity: 0, y: 28 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] },
 });
 
-const fadeIn = (delay = 0) => ({
-  initial: { opacity: 0 },
-  whileInView: { opacity: 1 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
+/* ─── Estilos reutilizables ─── */
+// Mismo ancho y márgenes laterales para TODA la página (navbar incluido)
+const container = "mx-auto w-full max-w-[1760px] px-5 md:px-8 lg:px-12 xl:px-20";
 
-const slideLeft = (delay = 0) => ({
-  initial: { opacity: 0, x: -40 },
-  whileInView: { opacity: 1, x: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
+const btn = "inline-flex items-center justify-center rounded-full font-semibold whitespace-nowrap transition duration-200 hover:-translate-y-px cursor-pointer";
+const btnDark = `${btn} bg-neutral-950 text-white hover:shadow-[0_10px_24px_rgba(0,0,0,0.25)]`;
+const btnGhost = `${btn} border border-neutral-300 text-neutral-950 hover:bg-white`;
 
-const slideRight = (delay = 0) => ({
-  initial: { opacity: 0, x: 40 },
-  whileInView: { opacity: 1, x: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
+/* ─── Datos ─── */
+const NAV_LINKS = [
+  ["#features", "Funcionalidades"],
+  ["#tienda", "Tienda online"],
+  ["#how", "Cómo funciona"],
+  ["#faq", "Preguntas"],
+];
 
-function DashboardMockup() {
+const MARQUEE = [
+  "Tienda online incluida", "Inventario en tiempo real", "Punto de venta",
+  "Multitienda", "Predicción de demanda con IA", "Cupones de descuento",
+  "Sistema de referidos", "$0 en comisiones",
+];
+
+const FEATURES = [
+  {
+    icon: "store", title: "Tienda online pública", big: true, dark: true,
+    desc: "Cada empresa obtiene una tienda con URL propia donde tus clientes exploran el catálogo y hacen pedidos directamente, sin configurar nada extra.",
+  },
+  {
+    icon: "brain", title: "Predicción de demanda con IA", big: true,
+    desc: "Analiza tu historial de ventas y te anticipa qué productos vas a necesitar reponer y cuándo.",
+  },
+  {
+    icon: "package", title: "Inventario en tiempo real",
+    desc: "Cada venta actualiza el stock automáticamente y recibes alertas antes de que algo se agote.",
+  },
+  {
+    icon: "pos", title: "Punto de venta (POS)",
+    desc: "Registra ventas presenciales con varios métodos de pago, descuentos e historial de transacciones.",
+  },
+  {
+    icon: "buildings", title: "Multitienda",
+    desc: "Administra varias empresas desde una sola cuenta, cada una con su entorno aislado.",
+  },
+];
+
+const STATS = [
+  { value: "$0", label: "en comisiones por cada venta" },
+  { value: "1", label: "cuenta para todos tus negocios" },
+  { value: "24/7", label: "tu tienda online recibiendo pedidos" },
+];
+
+const STORE_ITEMS = [
+  <>URL propia: <code className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[15px] text-blue-600">merkai.app/tienda/tu-empresa</code></>,
+  "Carrito de compras, métodos de pago y seguimiento de pedidos",
+  "Notificaciones por correo al comprador y al administrador",
+  "Cupones de descuento y sistema de referidos integrado",
+];
+
+const STEPS = [
+  { n: "01", title: "Crea tu cuenta", desc: "Registra tu empresa en minutos. Sin tarjeta de crédito y sin configuraciones complicadas." },
+  { n: "02", title: "Configura tu negocio", desc: "Agrega productos, precios e imágenes, y define los roles de acceso para tu equipo." },
+  { n: "03", title: "Empieza a vender", desc: "Tu tienda queda activa de inmediato. Gestiona pedidos, ventas e inventario desde el mismo panel." },
+];
+
+const FAQS = [
+  { q: "¿Tiene algún costo registrarse?", a: "No. Creas tu cuenta gratis y no necesitas tarjeta de crédito para empezar." },
+  { q: "¿Merkai cobra comisión por mis ventas?", a: "No. Merkai no cobra comisiones por las transacciones que haces en tu tienda online ni en el punto de venta." },
+  { q: "¿Necesito conocimientos técnicos para crear mi tienda?", a: "No. La tienda online se crea automáticamente al registrar tu empresa. Solo agregas tus productos y queda lista para recibir pedidos." },
+  { q: "¿Puedo manejar varios negocios con una sola cuenta?", a: "Sí. Con la función multitienda administras varias empresas y cambias entre ellas sin cerrar sesión." },
+  { q: "¿Puedo dar acceso a mi equipo?", a: "Sí. Puedes crear usuarios y asignarles roles para controlar a qué partes del sistema tiene acceso cada persona." },
+];
+
+/* ─── Componentes pequeños ─── */
+const Serif = ({ children, className = "text-blue-600" }) => (
+  <span className={`font-['Instrument_Serif',Georgia,serif] italic font-normal text-[1.08em] ${className}`}>
+    {children}
+  </span>
+);
+
+function Eyebrow({ children }) {
   return (
-    <div style={{ borderRadius: "16px", overflow: "hidden", boxShadow: "0 40px 80px rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <img
-        src="/screenshot-dashboard.png"
-        alt="Panel de gestión Merkai"
-        style={{ width: "100%", display: "block" }}
-      />
-    </div>
+    <span className="mb-5 inline-block rounded-full bg-blue-50 px-4 py-1.5 text-[13px] font-semibold uppercase tracking-[0.08em] text-blue-600 md:text-sm">
+      {children}
+    </span>
   );
 }
 
-function StoreMockup() {
+function SectionHeader({ eyebrow, title, desc }) {
   return (
-    <div style={{ borderRadius: "16px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0" }}>
-      <img
-        src="/screenshot-tienda.png"
-        alt="Tienda online Merkai"
-        style={{ width: "100%", display: "block" }}
-      />
-    </div>
+    <motion.div {...up()} className="mb-12 grid gap-6 md:mb-16 lg:grid-cols-2 lg:items-end lg:gap-20 xl:mb-20">
+      <div>
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <h2 className="text-4xl font-bold leading-[1.03] tracking-[-0.04em] md:text-[56px] xl:text-[68px]">
+          {title}
+        </h2>
+      </div>
+      {desc && (
+        <p className="max-w-[560px] text-lg leading-relaxed text-neutral-700 md:text-xl lg:justify-self-end lg:pb-3">
+          {desc}
+        </p>
+      )}
+    </motion.div>
   );
 }
 
-function FeatureIcon({ name }) {
-  const paths = {
-    store:     <><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></>,
-    package:   <><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>,
-    pos:       <><rect x="2" y="3" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>,
+function Check() {
+  return (
+    <i className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-[13px] font-bold not-italic text-white">
+      ✓
+    </i>
+  );
+}
+
+function Icon({ name, size = 24 }) {
+  const p = {
+    store: <><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></>,
+    package: <><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>,
+    pos: <><rect x="2" y="3" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>,
     buildings: <><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M8 10h.01M16 10h.01" /></>,
-    brain:     <><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96-.44 2.5 2.5 0 01-2.96-3.08 3 3 0 01-.34-5.58 2.5 2.5 0 013.76-3.4z" /><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96-.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-3.76-3.4z" /></>,
-    gift:      <><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><path d="M12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" /></>,
+    brain: <><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96-.44 2.5 2.5 0 01-2.96-3.08 3 3 0 01-.34-5.58 2.5 2.5 0 013.76-3.4z" /><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96-.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-3.76-3.4z" /></>,
   };
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      {paths[name]}
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {p[name]}
     </svg>
   );
 }
 
+function Logo({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="10" fill="#0a0a0a" />
+      <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M26 18h6l-3-4 3-4h-6" stroke="#93b4ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="14" cy="15" r="1.5" fill="white" />
+    </svg>
+  );
+}
+
+/* ═══════════════════════════════════════ */
 export default function Home() {
   const navigate = useNavigate();
-
-  const capabilities = [
-    { label: "Tienda online pública", desc: "Incluida sin costo adicional" },
-    { label: "Multitienda",          desc: "Una cuenta, varios negocios" },
-    { label: "Inventario con IA",    desc: "Alertas y predicción automática" },
-    { label: "Sin comisiones",       desc: "$0 por cada transacción" },
-  ];
-
-  const features = [
-    {
-      icon: "store",
-      title: "Tienda online pública",
-      desc: "Cada empresa obtiene una tienda online con URL propia donde los clientes pueden explorar el catálogo y realizar pedidos directamente.",
-      color: "#2563eb", bg: "#eff6ff",
-    },
-    {
-      icon: "package",
-      title: "Gestión de inventario",
-      desc: "Control de productos y stock en tiempo real. Cada venta actualiza el inventario automáticamente y el sistema genera alertas antes de que algo se agote.",
-      color: "#0F6E56", bg: "#E1F5EE",
-    },
-    {
-      icon: "pos",
-      title: "Punto de venta (POS)",
-      desc: "Registro de ventas presenciales con soporte para múltiples métodos de pago, descuentos y generación de historial de transacciones.",
-      color: "#7c3aed", bg: "#f5f3ff",
-    },
-    {
-      icon: "buildings",
-      title: "Multitienda",
-      desc: "Administra varias empresas desde una sola cuenta y cambia entre ellas sin cerrar sesión. Cada una con su propio entorno aislado.",
-      color: "#b45309", bg: "#fffbeb",
-    },
-    {
-      icon: "brain",
-      title: "Análisis predictivo con IA",
-      desc: "Modelos de predicción de demanda que analizan el historial de ventas y anticipan qué productos necesitarás reponer y cuándo.",
-      color: "#0e7490", bg: "#ecfeff",
-    },
-    {
-      icon: "gift",
-      title: "Sistema de referidos",
-      desc: "Programa integrado de referidos que genera beneficios para los usuarios que invitan nuevas empresas a la plataforma.",
-      color: "#be185d", bg: "#fdf2f8",
-    },
-  ];
-
-  const steps = [
-    {
-      n: "01",
-      title: "Crea tu cuenta",
-      desc: "Registra tu empresa en minutos. Sin tarjeta de crédito requerida y sin configuraciones complicadas.",
-    },
-    {
-      n: "02",
-      title: "Configura tu negocio",
-      desc: "Agrega productos, define precios, sube imágenes y establece los roles de acceso para tu equipo.",
-    },
-    {
-      n: "03",
-      title: "Empieza a vender",
-      desc: "Tu tienda online queda activa de inmediato. Gestiona pedidos, ventas presenciales e inventario desde el mismo panel.",
-    },
-  ];
+  const [openFaq, setOpenFaq] = useState(0);
+  const toRegister = () => navigate("/empresa/registro");
+  const toLogin = () => navigate("/empresa/login");
 
   return (
-    <div style={{ fontFamily: "'Inter', 'Segoe UI', sans-serif", color: "#0f172a" }}>
-      <style>{MOBILE_CSS}</style>
+    <div className="min-h-screen overflow-x-hidden bg-[#f7f6f2] font-['Inter','Segoe_UI',sans-serif] text-neutral-950 antialiased">
 
-      {/* ── NAVBAR ── */}
-      <nav style={n.nav}>
-        <div className="mk-nav-inner" style={n.navInner}>
-          <div style={n.brand}>
-            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="9" fill="#2563eb" />
-              <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-              <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="14" cy="15" r="1.5" fill="white" />
-            </svg>
-            <span style={n.brandName}>Merkai</span>
-          </div>
+      {/* ── NAVBAR FLOTANTE (alineado con el contenedor) ── */}
+      <nav className="fixed inset-x-0 top-4 z-50">
+        <div className={container}>
+          <div className="flex w-full items-center justify-between rounded-full border border-neutral-200 bg-white/80 py-2 pl-5 pr-2 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-md">
+            <a href="#" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
+              <Logo /> Merkai
+            </a>
 
-          <div className="mk-nav-links" style={n.navLinks}>
-            <a className="mk-nav-link" href="#features" style={n.navLink}>Características</a>
-            <a className="mk-nav-link" href="#tienda" style={n.navLink}>Tienda online</a>
-            <a className="mk-nav-link" href="#how" style={n.navLink}>Cómo funciona</a>
-            <div className="mk-nav-divider" style={n.divider} />
-            <button className="mk-nav-login" onClick={() => navigate("/empresa/login")} style={n.btnOutline}>
-              Iniciar sesión
-            </button>
-            <button onClick={() => navigate("/empresa/registro")} style={n.btnPrimary}>
-              Registrarse gratis
-            </button>
+            <div className="hidden items-center gap-1 md:flex">
+              {NAV_LINKS.map(([href, label]) => (
+                <a key={href} href={href} className="rounded-full px-4 py-2 text-[15px] font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950">
+                  {label}
+                </a>
+              ))}
+            </div>
+
+            <div className="flex gap-1.5">
+              <button onClick={toLogin} className={`${btnGhost} hidden px-5 py-2.5 text-[15px] sm:inline-flex`}>Iniciar sesión</button>
+              <button onClick={toRegister} className={`${btnDark} px-5 py-2.5 text-[15px]`}>Registrarse gratis</button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* ── HERO ── */}
-      <section className="mk-hero-section" style={h.section}>
-        <div style={h.glow1} />
-        <div style={h.glow2} />
+      <header className="relative pt-32 pb-20 md:pt-40 md:pb-28 lg:pt-48 lg:pb-32">
+        <div className="pointer-events-none absolute -top-20 left-[-10%] h-[600px] w-[700px] bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.13),transparent_65%)]" />
+        <div className="pointer-events-none absolute bottom-0 right-[-5%] h-[500px] w-[800px] bg-[radial-gradient(ellipse_at_center,rgba(147,180,255,0.18),transparent_65%)]" />
 
-        <div className="mk-hero-inner" style={h.inner}>
-          <motion.div {...fadeUp(0)}>
-            <div style={h.badge}>Gestión comercial y ecommerce · Todo en uno</div>
-            <h1 className="mk-hero-title" style={h.title}>
-              Tu empresa<br />
-              y tu tienda online,<br />
-              <span style={h.titleAccent}>en un solo lugar.</span>
+        <div className={`${container} relative grid items-center gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 xl:gap-24`}>
+          <motion.div {...up(0)} className="text-center lg:text-left">
+            <h1 className="mx-auto mb-7 max-w-[680px] text-[44px] font-bold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:mx-0 xl:text-[80px]">
+              Tu negocio y tu tienda online, en un solo <Serif>lugar.</Serif>
             </h1>
-            <p style={h.subtitle}>
-              Merkai es una plataforma para gestionar inventario, ventas y clientes,
-              con una tienda online pública incluida desde el primer día, sin costo adicional
-              y sin depender de otras herramientas.
+
+            <p className="mx-auto mb-10 max-w-[560px] text-lg leading-relaxed text-neutral-700 md:text-xl lg:mx-0">
+              Gestiona inventario, ventas y clientes con una tienda online
+              incluida desde el primer día, sin costo adicional.
             </p>
-            <div className="mk-hero-ctas" style={h.ctas}>
-              <button onClick={() => navigate("/empresa/registro")} style={h.ctaPrimary}>
-                Crear cuenta gratis →
-              </button>
-              <button onClick={() => navigate("/empresa/login")} style={h.ctaSecondary}>
-                Ya tengo cuenta
-              </button>
-            </div>
-            <div style={h.trust}>
-              <span style={h.trustDot} />
-              <span style={h.trustText}>Sin tarjeta de crédito · Sin comisiones · Configuración en minutos</span>
+
+            <div className="flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+              <button onClick={toRegister} className={`${btnDark} px-8 py-4 text-[17px]`}>Crear cuenta gratis →</button>
+              <button onClick={toLogin} className={`${btnGhost} px-8 py-4 text-[17px]`}>Ya tengo cuenta</button>
             </div>
           </motion.div>
 
-          <motion.div className="mk-hero-img" {...fadeUp(0.2)}>
-            <DashboardMockup />
+          <motion.div {...up(0.15)}>
+            <div className="rounded-[20px] border border-neutral-200 bg-gradient-to-b from-white to-[#efeee9] p-2 shadow-[0_40px_100px_rgba(15,23,42,0.18)] md:rounded-[26px] md:p-3">
+              <img
+                src="/screenshot-dashboard.png"
+                alt="Panel de gestión Merkai"
+                className="block w-full rounded-[14px] md:rounded-[18px]"
+              />
+            </div>
           </motion.div>
         </div>
-      </section>
+      </header>
 
-      {/* ── CAPABILITIES BAR ── */}
-      <section style={st.section}>
-        <div className="mk-caps-inner" style={st.inner}>
-          {capabilities.map((c, i) => (
-            <motion.div
-              key={i}
-              className="mk-caps-item"
-              style={{ ...st.item, ...(i === capabilities.length - 1 ? { borderRight: "none" } : {}) }}
-              {...fadeIn(i * 0.1)}
-            >
-              <div>
-                <div style={st.label}>{c.label}</div>
-                <div style={st.desc}>{c.desc}</div>
-              </div>
-            </motion.div>
+      {/* ── MARQUEE (ancho completo a propósito) ── */}
+      <div className="overflow-hidden border-y border-neutral-200 py-7 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+        <motion.div
+          className="flex w-max gap-14"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 34, ease: "linear", repeat: Infinity }}
+        >
+          {[...MARQUEE, ...MARQUEE].map((item, i) => (
+            <span key={i} className="flex items-center gap-3 whitespace-nowrap text-lg font-semibold text-neutral-800 md:text-xl">
+              <span className="text-sm text-blue-600">✦</span> {item}
+            </span>
           ))}
-        </div>
-      </section>
-
-      {/* ── FEATURES ── */}
-      <section id="features" className="mk-section" style={f.section}>
-        <motion.div style={f.header} {...fadeUp(0)}>
-          <div style={f.badge}>Funcionalidades</div>
-          <h2 style={f.title}>Una plataforma, todo lo que necesitas</h2>
-          <p style={f.subtitle}>
-            Inventario, ventas, clientes y tienda online, todo conectado
-            y funcionando desde un solo panel.
-          </p>
         </motion.div>
+      </div>
 
-        <div style={f.grid}>
-          {features.map((feat, i) => (
-            <motion.div
-              key={i}
-              style={f.card}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              whileHover={{ y: -4, boxShadow: "0 12px 32px rgba(0,0,0,0.1)" }}
-            >
-              <div style={{ ...f.iconWrap, backgroundColor: feat.bg, color: feat.color }}>
-                <FeatureIcon name={feat.icon} />
-              </div>
-              <h3 style={{ ...f.cardTitle, color: feat.color }}>{feat.title}</h3>
-              <p style={f.cardDesc}>{feat.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* ── CONTENIDO: separación uniforme entre secciones ── */}
+      <main className="flex flex-col gap-28 py-28 md:gap-40 md:py-40 xl:gap-48 xl:py-48">
 
-      {/* ── TIENDA ONLINE ── */}
-      <section id="tienda" className="mk-section" style={sy.section}>
-        <div className="mk-store-inner" style={sy.inner}>
-          <motion.div {...slideLeft(0)}>
-            <div style={f.badge}>Ecommerce incluido</div>
-            <h2 style={sy.title}>
-              Tu tienda pública,<br />lista desde el primer día
+        {/* ── FUNCIONALIDADES (BENTO) ── */}
+        <section id="features" className={`${container} scroll-mt-32`}>
+          <SectionHeader
+            eyebrow="Funcionalidades"
+            title={<>Todo lo que tu negocio <Serif>necesita</Serif></>}
+            desc="Inventario, ventas, clientes y tienda online conectados y funcionando desde un solo panel."
+          />
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:gap-6">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                {...up(i * 0.06)}
+                className={[
+                  "relative overflow-hidden rounded-[28px] border p-8 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(0,0,0,0.07)] md:p-10",
+                  f.big ? "md:col-span-3" : "md:col-span-2",
+                  f.dark ? "border-neutral-950 bg-neutral-950 text-white" : "border-neutral-200 bg-white",
+                ].join(" ")}
+              >
+                {f.dark && (
+                  <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.5),transparent_70%)]" />
+                )}
+
+                <div className="relative mb-5 flex items-center gap-5">
+                  <div className={`flex shrink-0 items-center justify-center rounded-[18px] ${f.big ? "h-[68px] w-[68px]" : "h-[60px] w-[60px]"} ${f.dark ? "bg-white/10 text-white" : "bg-blue-50 text-blue-600"}`}>
+                    <Icon name={f.icon} size={f.big ? 32 : 28} />
+                  </div>
+                  <h3 className={`font-bold leading-tight tracking-[-0.02em] ${f.big ? "text-[32px]" : "text-[26px]"}`}>
+                    {f.title}
+                  </h3>
+                </div>
+
+                <p className={`relative text-[19px] leading-[1.65] ${f.big ? "max-w-[620px]" : ""} ${f.dark ? "text-white/85" : "text-neutral-800"}`}>
+                  {f.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── BANDA DE MÉTRICAS ── */}
+        <section className={container}>
+          <motion.div {...up()} className="grid gap-10 rounded-[28px] bg-neutral-950 px-7 py-12 text-white md:rounded-[36px] md:px-14 md:py-20 lg:grid-cols-[1fr_2fr] lg:items-center xl:px-20">
+            <div>
+              <h4 className="mb-4 text-[34px] font-bold leading-tight tracking-[-0.03em] md:text-[42px] xl:text-5xl">
+                Vende más, <Serif className="text-blue-300">paga menos.</Serif>
+              </h4>
+              <p className="max-w-[400px] text-lg leading-relaxed text-white/80 md:text-xl">
+                Todo lo que ganas en tu tienda es tuyo. Sin comisiones escondidas.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0">
+              {STATS.map((st) => (
+                <div key={st.label} className="border-t border-white/15 pt-8 sm:border-l sm:border-t-0 sm:px-8 sm:pt-0 xl:px-12">
+                  <strong className="mb-4 block text-6xl font-bold leading-none tracking-[-0.04em] xl:text-[80px]">{st.value}</strong>
+                  <span className="block text-lg leading-snug text-white/80 xl:text-xl">{st.label}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </section>
+
+        {/* ── TIENDA ONLINE: imagen izquierda, texto derecha ── */}
+        <section id="tienda" className={`${container} grid scroll-mt-32 items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-24`}>
+          <motion.div {...up(0.1)} className="order-2 lg:order-1">
+            <div className="rounded-[20px] border border-neutral-200 bg-white p-2 shadow-[0_30px_80px_rgba(15,23,42,0.14)] md:rounded-[26px] md:p-3">
+              <img
+                src="/screenshot-tienda.png"
+                alt="Tienda online Merkai"
+                className="block w-full rounded-[14px] md:rounded-[18px]"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div {...up()} className="order-1 lg:order-2">
+            <Eyebrow>Ecommerce incluido</Eyebrow>
+            <h2 className="mb-6 text-4xl font-bold leading-[1.03] tracking-[-0.04em] md:text-[56px] xl:text-[64px]">
+              Tu tienda pública, lista desde el <Serif>primer día</Serif>
             </h2>
-            <p style={sy.desc}>
-              Al crear tu empresa en Merkai obtienes automáticamente una tienda online
-              con URL propia donde los clientes pueden ver el catálogo, agregar
-              productos al carrito y hacer pedidos, sin necesidad de configurar nada extra.
+            <p className="mb-8 max-w-[600px] text-lg leading-relaxed text-neutral-700 md:text-xl">
+              Al crear tu empresa obtienes automáticamente una tienda online donde tus clientes
+              ven el catálogo, agregan productos al carrito y hacen pedidos.
             </p>
-            <ul style={sy.list}>
-              {[
-                "URL propia por empresa: merkai.app/tienda/nombre-de-tu-empresa",
-                "Carrito de compras, métodos de pago y seguimiento de pedidos",
-                "Notificaciones por correo al comprador y al administrador",
-                "Cupones de descuento y sistema de referidos integrado",
-              ].map((item, i) => (
-                <li key={i} style={sy.listItem}>
-                  <span style={sy.check}>✓</span>
-                  {item}
+            <ul className="mb-10 grid gap-3">
+              {STORE_ITEMS.map((item, i) => (
+                <li key={i} className="flex items-center gap-4 rounded-2xl border border-neutral-200 bg-white px-6 py-5 text-lg leading-snug text-neutral-800">
+                  <Check />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
-            <button onClick={() => navigate("/empresa/registro")} style={sy.cta}>
-              Crear cuenta gratis →
-            </button>
+            <button onClick={toRegister} className={`${btnDark} px-8 py-4 text-[17px]`}>Crear mi tienda gratis →</button>
           </motion.div>
+        </section>
 
-          <motion.div {...slideRight(0.1)}>
-            <StoreMockup />
-          </motion.div>
-        </div>
-      </section>
+        {/* ── CÓMO FUNCIONA ── */}
+        <section id="how" className={`${container} scroll-mt-32`}>
+          <SectionHeader
+            eyebrow="Proceso"
+            title={<>Listo en tres <Serif>pasos</Serif></>}
+            desc="Del registro a tu primera venta, sin configuraciones complicadas."
+          />
 
-      {/* ── CÓMO FUNCIONA ── */}
-      <section id="how" className="mk-section" style={hw.section}>
-        <motion.div style={f.header} {...fadeUp(0)}>
-          <div style={f.badge}>Proceso</div>
-          <h2 style={f.title}>Listo en tres pasos</h2>
-          <p style={f.subtitle}>
-            Desde el registro hasta la primera venta, el proceso es directo y sin configuraciones complicadas.
-          </p>
-        </motion.div>
+          <div className="grid gap-5 md:grid-cols-3 lg:gap-6">
+            {STEPS.map((step, i) => (
+              <motion.div
+                key={step.n}
+                {...up(i * 0.12)}
+                className="relative overflow-hidden rounded-[28px] border border-neutral-200 bg-white p-8 md:p-10"
+              >
+                <span className="pointer-events-none absolute -bottom-6 right-6 font-['Instrument_Serif',Georgia,serif] text-[150px] italic leading-none text-neutral-100">
+                  {i + 1}
+                </span>
 
-        <div className="mk-steps" style={hw.steps}>
-          {steps.map((step, i) => (
-            <motion.div
-              key={i}
-              style={hw.step}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-            >
-              <div style={hw.stepNum}>{step.n}</div>
-              <h3 style={hw.stepTitle}>{step.title}</h3>
-              <p style={hw.stepDesc}>{step.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+                <div className="relative mb-5 flex items-center gap-5">
+                  <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full bg-blue-50 text-lg font-bold text-blue-600">
+                    {step.n}
+                  </div>
+                  <h3 className="text-[28px] font-bold leading-tight tracking-[-0.02em]">{step.title}</h3>
+                </div>
 
-      {/* ── CTA FINAL ── */}
-      <section style={ct.section}>
-        <motion.div style={ct.inner} {...fadeUp(0)}>
-          <h2 style={ct.title}>¿Listo para empezar?</h2>
-          <p style={ct.subtitle}>
-            Crea tu cuenta, configura tu empresa y empieza a gestionar
-            tus ventas e inventario desde el mismo día. Sin costos ocultos ni comisiones.
-          </p>
-          <div className="mk-ct-btns" style={ct.btns}>
-            <button onClick={() => navigate("/empresa/registro")} style={ct.btnPrimary}>
-              Crear cuenta gratis
-            </button>
-            <button onClick={() => navigate("/empresa/login")} style={ct.btnOutline}>
-              Ya tengo cuenta
-            </button>
+                <p className="relative text-[19px] leading-[1.65] text-neutral-800">{step.desc}</p>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
-      </section>
+        </section>
+
+        {/* ── FAQ EN DOS COLUMNAS ── */}
+        <section id="faq" className={`${container} grid scroll-mt-32 gap-12 lg:grid-cols-[1fr_1.5fr] lg:gap-20 xl:gap-28`}>
+          <motion.div {...up()} className="lg:sticky lg:top-32 lg:self-start">
+            <Eyebrow>Preguntas frecuentes</Eyebrow>
+            <h2 className="mb-6 text-4xl font-bold leading-[1.03] tracking-[-0.04em] md:text-[56px] xl:text-[68px]">
+              Resolvemos tus <Serif>dudas</Serif>
+            </h2>
+            <p className="mb-8 max-w-[460px] text-lg leading-relaxed text-neutral-700 md:text-xl">
+              ¿No encuentras lo que buscas? Escríbenos desde el botón de soporte y te ayudamos.
+            </p>
+            <button onClick={toRegister} className={`${btnDark} px-8 py-4 text-[17px]`}>Empezar gratis →</button>
+          </motion.div>
+
+          <div className="grid gap-3 self-start">
+            {FAQS.map((item, i) => {
+              const open = openFaq === i;
+              return (
+                <motion.div key={item.q} {...up(i * 0.05)} className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white">
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="flex w-full cursor-pointer items-center justify-between gap-6 px-6 py-6 text-left text-lg font-semibold md:px-8 md:py-7 md:text-xl"
+                    aria-expanded={open}
+                  >
+                    {item.q}
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl transition duration-300 ${open ? "rotate-45 bg-neutral-950 text-white" : "bg-neutral-100"}`}>
+                      +
+                    </span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <p className="max-w-[760px] px-6 pb-7 text-lg leading-relaxed text-neutral-700 md:px-8">{item.a}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+
+        
+      </main>
 
       {/* ── FOOTER ── */}
-      <footer style={fo.footer}>
-        <div className="mk-footer-inner" style={fo.inner}>
-          <div style={fo.brand}>
-            <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="9" fill="#2563eb" />
-              <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
-              <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="14" cy="15" r="1.5" fill="white" />
-            </svg>
-            <span style={fo.brandName}>Merkai</span>
+      <footer className={`${container} pb-12`}>
+        <div className="flex flex-col items-center justify-between gap-6 border-t border-neutral-200 pt-10 text-center md:flex-row md:text-left">
+          <div className="flex items-center gap-2.5 text-lg font-bold"><Logo size={26} /> Merkai</div>
+          <div className="flex flex-wrap justify-center gap-6">
+            {NAV_LINKS.map(([href, label]) => (
+              <a key={href} href={href} className="text-base font-medium text-neutral-700 transition hover:text-neutral-950">{label}</a>
+            ))}
           </div>
-          <span style={fo.copy}>© 2026 Merkai · Plataforma de gestión comercial y ecommerce</span>
+          <span className="text-[15px] text-neutral-700">© 2026 Merkai · Gestión comercial y ecommerce</span>
         </div>
       </footer>
 
@@ -389,212 +429,3 @@ export default function Home() {
     </div>
   );
 }
-
-/* ─── ESTILOS ─── */
-
-const n = {
-  nav: {
-    position: "sticky", top: 0, zIndex: 100,
-    backgroundColor: "rgba(15,23,42,0.95)",
-    backdropFilter: "blur(12px)",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-  },
-  navInner: {
-    maxWidth: "1200px", margin: "0 auto",
-    padding: "0 32px", height: "64px",
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-  },
-  brand: { display: "flex", alignItems: "center", gap: "10px" },
-  brandName: { fontSize: "20px", fontWeight: "700", color: "white", letterSpacing: "-0.02em" },
-  navLinks: { display: "flex", alignItems: "center", gap: "8px" },
-  navLink: {
-    color: "rgba(255,255,255,0.65)", fontSize: "14px",
-    textDecoration: "none", padding: "6px 14px",
-    borderRadius: "8px", transition: "color 0.2s",
-  },
-  divider: { width: "1px", height: "20px", backgroundColor: "rgba(255,255,255,0.15)", margin: "0 4px" },
-  btnOutline: {
-    padding: "8px 18px", background: "transparent",
-    border: "1px solid rgba(255,255,255,0.3)", borderRadius: "8px",
-    color: "white", fontSize: "14px", cursor: "pointer", fontWeight: "500",
-  },
-  btnPrimary: {
-    padding: "8px 20px", backgroundColor: "#2563eb",
-    border: "none", borderRadius: "8px",
-    color: "white", fontSize: "14px", cursor: "pointer", fontWeight: "600",
-  },
-};
-
-const h = {
-  section: {
-    minHeight: "100vh",
-    background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 50%, #0f1f2e 100%)",
-    display: "flex", alignItems: "center",
-    padding: "80px 32px",
-    position: "relative", overflow: "hidden",
-  },
-  glow1: {
-    position: "absolute", top: "-200px", left: "-200px",
-    width: "600px", height: "600px", borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)",
-    pointerEvents: "none",
-  },
-  glow2: {
-    position: "absolute", bottom: "-200px", right: "-100px",
-    width: "500px", height: "500px", borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)",
-    pointerEvents: "none",
-  },
-  inner: {
-    maxWidth: "1200px", margin: "0 auto", width: "100%",
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "64px", alignItems: "center",
-    position: "relative", zIndex: 1,
-  },
-  badge: {
-    display: "inline-flex", alignItems: "center",
-    padding: "5px 14px", borderRadius: "999px",
-    border: "1px solid rgba(37,99,235,0.4)",
-    color: "#93c5fd", fontSize: "13px", fontWeight: "500",
-    marginBottom: "20px", backgroundColor: "rgba(37,99,235,0.08)",
-  },
-  title: {
-    fontSize: "52px", fontWeight: "800", color: "white",
-    lineHeight: "1.1", letterSpacing: "-0.03em", marginBottom: "20px",
-  },
-  titleAccent: { color: "#60a5fa" },
-  subtitle: {
-    fontSize: "17px", color: "rgba(255,255,255,0.65)",
-    lineHeight: "1.7", marginBottom: "32px", maxWidth: "440px",
-  },
-  ctas: { display: "flex", gap: "12px", marginBottom: "20px" },
-  ctaPrimary: {
-    padding: "13px 28px", backgroundColor: "#2563eb",
-    color: "white", border: "none", borderRadius: "10px",
-    fontSize: "15px", fontWeight: "700", cursor: "pointer",
-  },
-  ctaSecondary: {
-    padding: "13px 28px", background: "transparent",
-    color: "white", border: "1px solid rgba(255,255,255,0.3)",
-    borderRadius: "10px", fontSize: "15px", cursor: "pointer",
-  },
-  trust: { display: "flex", alignItems: "center", gap: "8px" },
-  trustDot: { width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#60a5fa", display: "inline-block" },
-  trustText: { fontSize: "13px", color: "rgba(255,255,255,0.45)" },
-};
-
-const st = {
-  section: {
-    backgroundColor: "#0f172a",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    padding: "28px 32px",
-  },
-  inner: {
-    maxWidth: "960px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0,
-  },
-  item: {
-    display: "flex", alignItems: "center", gap: "14px",
-    padding: "14px 24px",
-    borderRight: "1px solid rgba(255,255,255,0.06)",
-  },
-  label: { fontSize: "14px", fontWeight: "700", color: "white", lineHeight: "1.3" },
-  desc:  { fontSize: "12px", color: "rgba(255,255,255,0.45)", marginTop: "2px" },
-};
-
-const f = {
-  section: { padding: "96px 32px", backgroundColor: "#f8fafc" },
-  header:  { textAlign: "center", marginBottom: "56px" },
-  badge: {
-    display: "inline-block", padding: "4px 14px",
-    borderRadius: "999px", border: "1px solid #e2e8f0",
-    color: "#64748b", fontSize: "12px", fontWeight: "600",
-    marginBottom: "14px", backgroundColor: "white",
-    letterSpacing: "0.04em", textTransform: "uppercase",
-  },
-  title:    { fontSize: "36px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "12px" },
-  subtitle: { fontSize: "16px", color: "#64748b", maxWidth: "520px", margin: "0 auto" },
-  grid: {
-    maxWidth: "1100px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px",
-  },
-  card: {
-    backgroundColor: "white", borderRadius: "16px",
-    padding: "28px 24px", border: "1px solid #e2e8f0",
-    cursor: "default", transition: "all 0.2s",
-  },
-  iconWrap: {
-    width: "48px", height: "48px", borderRadius: "12px",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    marginBottom: "16px",
-  },
-  cardTitle: { fontSize: "16px", fontWeight: "700", marginBottom: "8px" },
-  cardDesc:  { fontSize: "14px", color: "#64748b", lineHeight: "1.6" },
-};
-
-const sy = {
-  section: { padding: "96px 32px", backgroundColor: "white" },
-  inner: {
-    maxWidth: "1100px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "80px", alignItems: "center",
-  },
-  title: {
-    fontSize: "34px", fontWeight: "800", color: "#0f172a",
-    lineHeight: "1.25", letterSpacing: "-0.02em",
-    marginTop: "12px", marginBottom: "16px",
-  },
-  desc: { fontSize: "15px", color: "#64748b", lineHeight: "1.75", marginBottom: "24px" },
-  list: { listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: "10px" },
-  listItem: { display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "14px", color: "#374151" },
-  check: {
-    width: "20px", height: "20px", borderRadius: "50%",
-    backgroundColor: "#dbeafe", color: "#2563eb",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: "11px", fontWeight: "700", flexShrink: 0, marginTop: "1px",
-  },
-  cta: {
-    padding: "12px 28px", backgroundColor: "#2563eb",
-    color: "white", border: "none", borderRadius: "10px",
-    fontSize: "15px", fontWeight: "700", cursor: "pointer",
-  },
-};
-
-const hw = {
-  section: { padding: "96px 32px", backgroundColor: "#f8fafc" },
-  steps: {
-    maxWidth: "900px", margin: "0 auto",
-    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "32px",
-  },
-  step:      { backgroundColor: "white", borderRadius: "16px", padding: "32px 28px", border: "1px solid #e2e8f0" },
-  stepNum:   { fontSize: "36px", fontWeight: "900", color: "#eff6ff", WebkitTextStroke: "2px #2563eb", marginBottom: "16px", lineHeight: 1 },
-  stepTitle: { fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "8px" },
-  stepDesc:  { fontSize: "14px", color: "#64748b", lineHeight: "1.6" },
-};
-
-const ct = {
-  section: { background: "linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)", padding: "96px 32px" },
-  inner:   { textAlign: "center", maxWidth: "600px", margin: "0 auto" },
-  title:   { fontSize: "40px", fontWeight: "800", color: "white", marginBottom: "16px", letterSpacing: "-0.02em", lineHeight: "1.2" },
-  subtitle:{ fontSize: "16px", color: "rgba(255,255,255,0.72)", marginBottom: "36px", lineHeight: "1.6" },
-  btns:    { display: "flex", gap: "12px", justifyContent: "center" },
-  btnPrimary: {
-    padding: "14px 32px", backgroundColor: "white",
-    color: "#1d4ed8", border: "none", borderRadius: "10px",
-    fontSize: "15px", fontWeight: "700", cursor: "pointer",
-  },
-  btnOutline: {
-    padding: "14px 32px", background: "transparent",
-    color: "white", border: "1px solid rgba(255,255,255,0.4)",
-    borderRadius: "10px", fontSize: "15px", cursor: "pointer",
-  },
-};
-
-const fo = {
-  footer: { backgroundColor: "#0f172a", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "24px 32px" },
-  inner:  { maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" },
-  brand:     { display: "flex", alignItems: "center", gap: "8px" },
-  brandName: { fontSize: "15px", fontWeight: "700", color: "white" },
-  copy:      { fontSize: "13px", color: "rgba(255,255,255,0.4)" },
-};

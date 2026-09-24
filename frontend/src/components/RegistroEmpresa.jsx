@@ -123,7 +123,7 @@ export default function RegistroEmpresa() {
           <div style={s.leftFooter}>
             <p style={s.leftFooterText}>¿Ya tienes cuenta?</p>
             <button style={s.leftBtn} onClick={() => navigate("/empresa/login")}>
-              Iniciar sesión →
+              Iniciar sesión
             </button>
           </div>
         </div>
@@ -150,21 +150,20 @@ export default function RegistroEmpresa() {
           {/* PASO 1 */}
           {step === 1 && (
             <div style={s.fieldsGrid}>
-              <Field label="Nombre de la empresa" icon="🏢">
+              <Field label="Nombre de la empresa">
                 <input style={s.input} name="nombre" placeholder="Ej: Comercializadora XYZ" value={form.nombre} onChange={handleChange}/>
               </Field>
-              <Field label="NIT" icon="📄">
+              <Field label="NIT">
                 <input style={s.input} name="nit" placeholder="900.123.456-7" value={form.nit} onChange={handleChange}/>
               </Field>
-              <Field label="Correo electrónico" icon="✉️" full>
+              <Field label="Correo electrónico" full>
                 <input style={s.input} name="email" type="email" placeholder="contacto@empresa.com" value={form.email} onChange={handleChange}/>
               </Field>
-              <Field label="Teléfono" icon="📞">
+              <Field label="Teléfono">
                 <input style={s.input} name="telefono" placeholder="+57 300 000 0000" value={form.telefono} onChange={handleChange}/>
               </Field>
 
-              {/* ✅ Campo de código de referido — opcional */}
-              <Field label="Código de referido (opcional)" icon="🔗" full>
+              <Field label="Código de referido (opcional)" full>
                 <div style={s.refWrap}>
                   <input
                     style={{
@@ -191,25 +190,25 @@ export default function RegistroEmpresa() {
           {/* PASO 2 */}
           {step === 2 && (
             <div style={s.fieldsGrid}>
-              <Field label="Nombre" icon="👤">
+              <Field label="Nombre">
                 <input style={s.input} name="admin_nombre" placeholder="Juan" value={form.admin_nombre} onChange={handleChange}/>
               </Field>
-              <Field label="Apellido" icon="👤">
+              <Field label="Apellido">
                 <input style={s.input} name="admin_apellido" placeholder="García" value={form.admin_apellido} onChange={handleChange}/>
               </Field>
-              <Field label="Usuario (email)" icon="✉️" full>
+              <Field label="Usuario (email)" full>
                 <input style={s.input} name="admin_usuario" type="email" placeholder="admin@empresa.com" value={form.admin_usuario} onChange={handleChange}/>
               </Field>
-              <Field label="Contraseña" icon="🔒" full>
+              <Field label="Contraseña" full>
                 <input style={s.input} name="admin_contrasena" type="password" placeholder="••••••••" value={form.admin_contrasena} onChange={handleChange}/>
               </Field>
-              <Field label="Teléfono" icon="📞">
+              <Field label="Teléfono">
                 <input style={s.input} name="admin_telefono" placeholder="+57 300 000 0000" value={form.admin_telefono} onChange={handleChange}/>
               </Field>
-              <Field label="Dirección" icon="📍">
+              <Field label="Dirección">
                 <input style={s.input} name="admin_direccion" placeholder="Calle 123 #45-67" value={form.admin_direccion} onChange={handleChange}/>
               </Field>
-              <Field label="Tipo de documento" icon="🪪" full>
+              <Field label="Tipo de documento" full>
                 <select style={s.input} name="admin_tipo_documento" value={form.admin_tipo_documento} onChange={handleChange}>
                   <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
                   <option value="Tarjeta de identidad">Tarjeta de identidad</option>
@@ -217,11 +216,11 @@ export default function RegistroEmpresa() {
                   <option value="Pasaporte">Pasaporte</option>
                 </select>
               </Field>
-              <Field label="Número de documento" icon="🔢">
+              <Field label="Número de documento">
                 <input style={s.input} name="admin_numero_documento" placeholder="1234567890" value={form.admin_numero_documento} onChange={handleChange}/>
               </Field>
 
-              <Field label="Departamento" icon="🗺️">
+              <Field label="Departamento">
                 <select style={s.input} name="_departamento" value={form._departamento} onChange={handleChange}>
                   <option value="">-- Selecciona --</option>
                   {departamentos.map((d) => (
@@ -230,7 +229,7 @@ export default function RegistroEmpresa() {
                 </select>
               </Field>
 
-              <Field label="Municipio" icon="🏙️">
+              <Field label="Municipio">
                 <select
                   style={{ ...s.input, color: form._departamento ? "#0f172a" : "#94a3b8" }}
                   name="admin_id_municipio"
@@ -252,7 +251,7 @@ export default function RegistroEmpresa() {
           {/* Botones */}
           <div style={s.btnRow}>
             {step === 2 && (
-              <button style={s.btnBack} onClick={() => setStep(1)}>← Atrás</button>
+              <button style={s.btnBack} onClick={() => setStep(1)}>Atrás</button>
             )}
             {step === 1 ? (
               <button
@@ -260,7 +259,7 @@ export default function RegistroEmpresa() {
                 disabled={!camposEmpresaLlenos}
                 onClick={() => setStep(2)}
               >
-                Continuar →
+                Continuar
               </button>
             ) : (
               <button
@@ -286,22 +285,22 @@ export default function RegistroEmpresa() {
   );
 }
 
-function Field({ label, icon, children, full }) {
+function Field({ label, children, full }) {
   return (
     <div style={{ gridColumn: full ? "1 / -1" : "span 1" }}>
-      <label style={s.label}><span>{icon}</span> {label}</label>
+      <label style={s.label}>{label}</label>
       {children}
     </div>
   );
 }
 
 const s = {
-  page: { minHeight: "100vh", display: "flex", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
+  page: { minHeight: "100vh", display: "grid", gridTemplateColumns: "38fr 62fr", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#fff" },
   left: {
-    flex: "0 0 380px",
     background: "linear-gradient(145deg, #0f172a 0%, #0d2b45 55%, #0f1f2e 100%)",
+    clipPath: "polygon(0 0, 100% 0, calc(100% - 90px) 100%, 0 100%)",
     display: "flex", alignItems: "center", justifyContent: "center",
-    padding: "48px 40px",
+    padding: "48px 40px 48px 40px",
   },
   leftContent: { display: "flex", flexDirection: "column", gap: "40px", width: "100%" },
   logo: { display: "flex", alignItems: "center", gap: "10px" },
@@ -314,8 +313,8 @@ const s = {
   stepLabel: { fontSize: "14px", fontWeight: "500", transition: "color 0.2s" },
   leftFooter: {},
   leftFooterText: { fontSize: "13px", color: "rgba(255,255,255,0.45)", marginBottom: "8px" },
-  leftBtn: { background: "transparent", border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.8)", borderRadius: "8px", padding: "8px 16px", fontSize: "13px", cursor: "pointer", fontWeight: "500" },
-  right: { flex: 1, backgroundColor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px", overflowY: "auto" },
+  leftBtn: { background: "transparent", border: "1.5px solid rgba(255,255,255,0.5)", color: "white", borderRadius: "8px", padding: "8px 18px", fontSize: "13px", cursor: "pointer", fontWeight: "600" },
+  right: { backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px", overflowY: "auto" },
   formWrap: { width: "100%", maxWidth: "520px" },
   formHeader: { marginBottom: "28px" },
   stepTag: { display: "inline-block", fontSize: "11px", fontWeight: "700", color: "#2563eb", backgroundColor: "#eff6ff", padding: "3px 10px", borderRadius: "999px", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "12px" },
@@ -323,13 +322,13 @@ const s = {
   formSubtitle: { fontSize: "14px", color: "#64748b" },
   errorBox: { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#b91c1c", marginBottom: "16px" },
   fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" },
-  label: { display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
-  input: { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box" },
+  label: { display: "block", fontSize: "13px", fontWeight: "600", color: "#475569", marginBottom: "7px" },
+  input: { width: "100%", padding: "12px 14px", borderRadius: "12px", border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a", backgroundColor: "#f8fafc", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s, background-color 0.15s" },
   btnRow: { display: "flex", gap: "10px", marginBottom: "0" },
   loginLink: { textAlign: "center", fontSize: "13px", color: "#64748b", marginTop: "18px" },
   loginLinkSpan: { color: "#2563eb", fontWeight: "600", cursor: "pointer" },
-  btnBack: { padding: "12px 20px", background: "transparent", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "14px", color: "#64748b", cursor: "pointer", fontWeight: "500" },
-  btnNext: { flex: 1, padding: "13px", backgroundColor: "#2563eb", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "opacity 0.2s" },
+  btnBack: { padding: "12px 20px", background: "transparent", border: "1.5px solid #0f172a", borderRadius: "10px", fontSize: "14px", color: "#0f172a", cursor: "pointer", fontWeight: "600" },
+  btnNext: { flex: 1, padding: "13px", backgroundColor: "#0f172a", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", transition: "opacity 0.2s" },
   // ✅ Estilos nuevos para el campo de referido
   refWrap: { position: "relative" },
   refCheck: { position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", fontWeight: "600", color: "#0F6E56" },

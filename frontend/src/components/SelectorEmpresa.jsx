@@ -2,168 +2,172 @@ import { useState } from "react";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+const AVATAR_COLORS = [
+  "bg-sky-500","bg-violet-500","bg-emerald-500","bg-amber-500",
+  "bg-red-500","bg-pink-500","bg-teal-500","bg-orange-500",
+  "bg-indigo-500","bg-lime-500",
+];
+const avatarColor = (id) => AVATAR_COLORS[id % AVATAR_COLORS.length];
+const rolLabel    = (r)  => r === 1 ? "SuperAdmin" : r === 2 ? "Administrador" : "Empleado";
+
 export default function SelectorEmpresa({ empresas, token, rolId = 1, onSelect, onClose }) {
-  const [vista, setVista]     = useState("lista"); // "lista" | "crear"
-  const [form, setForm]       = useState({ nombre: "", nit: "", email: "", telefono: "" });
+  const [vista,   setVista]   = useState("lista");
+  const [form,    setForm]    = useState({ nombre: "", nit: "", email: "", telefono: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState("");
+  const [error,   setError]   = useState("");
 
   const seleccionar = async (empresa_id) => {
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
       const res  = await fetch(`${BASE_URL}/api/auth/seleccionar-empresa`, {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ empresa_id }),
+        body: JSON.stringify({ empresa_id }),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
-        onSelect(data);
-      } else {
-        setError(data.error || "Error al seleccionar empresa");
-      }
-    } catch {
-      setError("No se pudo conectar. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok && data.token) onSelect(data);
+      else setError(data.error || "Error al seleccionar empresa");
+    } catch { setError("No se pudo conectar. Intenta de nuevo."); }
+    finally  { setLoading(false); }
   };
 
   const crear = async () => {
     if (!form.nombre.trim()) { setError("El nombre de la tienda es obligatorio"); return; }
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
       const res  = await fetch(`${BASE_URL}/api/empresa/crear-adicional`, {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify(form),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (res.ok && data.token) {
-        onSelect(data);
-      } else {
-        setError(data.error || "Error al crear la tienda");
-      }
-    } catch {
-      setError("No se pudo conectar. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok && data.token) onSelect(data);
+      else setError(data.error || "Error al crear la tienda");
+    } catch { setError("No se pudo conectar. Intenta de nuevo."); }
+    finally  { setLoading(false); }
   };
 
   const volverALista = () => {
-    setVista("lista");
-    setError("");
+    setVista("lista"); setError("");
     setForm({ nombre: "", nit: "", email: "", telefono: "" });
   };
 
   return (
-    <div style={s.overlay}>
-      <div style={s.card}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 overflow-auto"
+         style={{
+           fontFamily: "'Inter','Segoe UI',sans-serif",
+           background: "linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%)",
+         }}>
 
-        {/* Header */}
-        <div style={{ ...s.header, position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-              <rect width="36" height="36" rx="10" fill="#1e3a5f"/>
+      {/* Círculos decorativos */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div style={{ position:"absolute", width:500, height:500, borderRadius:"50%", background:"rgba(255,255,255,0.02)", top:-100, left:-150 }}/>
+        <div style={{ position:"absolute", width:400, height:400, borderRadius:"50%", background:"rgba(255,255,255,0.02)", bottom:-80, right:-100 }}/>
+        <div style={{ position:"absolute", width:250, height:250, borderRadius:"50%", background:"rgba(255,255,255,0.02)", top:"40%", right:"15%" }}/>
+      </div>
+
+      {/* Card */}
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full overflow-hidden"
+           style={{ maxWidth: 620 }}>
+
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-10 pt-9 pb-6">
+          <div className="flex items-center gap-3">
+            <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+              <rect width="36" height="36" rx="9" fill="#1e3a5f"/>
               <path d="M8 18c0-5 4-9 9-9s9 4 9 9-4 9-9 9" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
               <path d="M26 18h6l-3-4 3-4h-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <circle cx="14" cy="15" r="1.5" fill="white"/>
             </svg>
-            {onClose && (
+            <span className="font-bold text-gray-900 text-lg tracking-tight">Merkai</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {(rolId === 1 || rolId === 2) && vista === "lista" && (
               <button
-                onClick={onClose}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#94a3b8", lineHeight: 1 }}
+                onClick={() => { setVista("crear"); setError(""); }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold transition-colors"
               >
+                <span className="text-base leading-none">+</span> Crear negocio
+              </button>
+            )}
+            {onClose && (
+              <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
             )}
           </div>
-          {vista === "lista" ? (
-            <>
-              <h2 style={s.title}>Selecciona tu tienda</h2>
-              <p style={s.subtitle}>Elige el panel que quieres gestionar</p>
-            </>
-          ) : (
-            <>
-              <h2 style={s.title}>Nueva tienda</h2>
-              <p style={s.subtitle}>Agrega una tienda adicional a tu cuenta</p>
-            </>
-          )}
         </div>
 
+        <div className="h-px bg-gray-100 mx-10"/>
+
+        {/* ── Título ── */}
+        <div className="px-10 pt-7 pb-5">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+            {vista === "lista" ? "Bienvenido de nuevo" : "Nuevo negocio"}
+          </h2>
+          <p className="text-sm text-gray-400 mt-1.5">
+            {vista === "lista" ? "Selecciona el panel que quieres gestionar" : "Agrega un negocio adicional a tu cuenta"}
+          </p>
+        </div>
+
+        {/* ── Error ── */}
         {error && (
-          <div style={s.errorBox}>
+          <div className="mx-10 mb-4 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
             <span>⚠️</span> {error}
           </div>
         )}
 
-        {/* Lista de tiendas */}
+        {/* ── Lista ── */}
         {vista === "lista" && (
-          <>
-            <div style={s.lista}>
+          <div className="px-6 pb-8">
+            <div className="flex flex-col gap-1 mb-4">
               {empresas.map((emp) => (
                 <button
                   key={emp.id}
-                  style={s.empCard}
                   onClick={() => seleccionar(emp.id)}
                   disabled={loading}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "#00C9A7"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "#e2e8f0"}
+                  className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all text-left group disabled:opacity-60"
                 >
-                  <div style={s.empIcon}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-white font-bold text-lg ${avatarColor(emp.id)}`}>
                     {emp.logo_url
-                      ? <img src={`${BASE_URL}${emp.logo_url}`} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 6 }} />
-                      : <span style={{ fontSize: 20 }}>🏪</span>
+                      ? <img src={`${BASE_URL}${emp.logo_url}`} alt="" className="w-full h-full object-contain rounded-2xl"/>
+                      : emp.nombre.charAt(0).toUpperCase()
                     }
                   </div>
-                  <div style={s.empInfo}>
-                    <div style={s.empNombre}>{emp.nombre}</div>
-                    <div style={s.empRol}>
-                      {emp.rol_id === 1 ? "SuperAdmin" : emp.rol_id === 2 ? "Administrador" : "Empleado"}
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-semibold text-gray-900 truncate">{emp.nombre}</div>
+                    <div className="text-sm text-gray-400 mt-0.5">{rolLabel(emp.rol_id)}</div>
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="9 18 15 12 9 6"/>
-                  </svg>
+                  <div className="w-8 h-8 rounded-xl bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
+                    <svg className="text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
                 </button>
               ))}
             </div>
 
-            {(rolId === 1 || rolId === 2) && (
-              <button
-                style={s.btnCrear}
-                onClick={() => { setVista("crear"); setError(""); }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#00C9A7"; e.currentTarget.style.color = "#00C9A7"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#64748b"; }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Crear nueva tienda
-              </button>
-            )}
-          </>
+          
+          </div>
         )}
 
-        {/* Formulario nueva tienda */}
+        {/* ── Formulario ── */}
         {vista === "crear" && (
-          <>
-            <div style={s.formWrap}>
+          <div className="px-10 pb-9">
+            <div className="flex flex-col gap-4 mb-6">
               {[
                 { name: "nombre",   label: "Nombre de la tienda *", placeholder: "Mi tienda" },
                 { name: "nit",      label: "NIT (opcional)",         placeholder: "900.123.456-1" },
                 { name: "email",    label: "Email (opcional)",       placeholder: "tienda@correo.com" },
                 { name: "telefono", label: "Teléfono (opcional)",    placeholder: "3001234567" },
               ].map(({ name, label, placeholder }) => (
-                <div key={name} style={{ marginBottom: 12 }}>
-                  <label style={s.label}>{label}</label>
+                <div key={name}>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">{label}</label>
                   <input
-                    style={s.input}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-900 outline-none focus:border-gray-400 transition-colors"
                     value={form[name]}
                     onChange={e => setForm(p => ({ ...p, [name]: e.target.value }))}
                     placeholder={placeholder}
@@ -172,78 +176,22 @@ export default function SelectorEmpresa({ empresas, token, rolId = 1, onSelect, 
               ))}
             </div>
 
-            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-              <button style={s.btnVolver} onClick={volverALista}>
+            <div className="flex gap-3">
+              <button onClick={volverALista} className="px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm text-gray-600 font-medium transition-colors">
                 Volver
               </button>
               <button
-                style={{ ...s.btnPrimario, flex: 1, opacity: loading ? 0.75 : 1 }}
                 onClick={crear}
                 disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
               >
-                {loading ? "Creando..." : "Crear tienda"}
+                {loading ? "Creando..." : "Crear Negocio"}
               </button>
             </div>
-          </>
+          </div>
         )}
 
       </div>
     </div>
   );
 }
-
-const s = {
-  overlay: {
-    position: "fixed", inset: 0, background: "rgba(15,23,42,0.76)",
-    backdropFilter: "blur(5px)", display: "flex", alignItems: "center",
-    justifyContent: "center", zIndex: 9999, padding: 24,
-  },
-  card: {
-    background: "#fff", borderRadius: 18, padding: "32px 28px",
-    width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.24)",
-    fontFamily: "'Inter', 'Segoe UI', sans-serif",
-  },
-  header:  { marginBottom: 24 },
-  title:   { fontSize: 22, fontWeight: 700, color: "#0f172a", marginBottom: 5, letterSpacing: "-0.02em" },
-  subtitle: { fontSize: 14, color: "#64748b" },
-  errorBox: {
-    background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10,
-    padding: "10px 14px", fontSize: 13, color: "#b91c1c", marginBottom: 14,
-    display: "flex", alignItems: "center", gap: 8,
-  },
-  lista: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 },
-  empCard: {
-    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-    background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12,
-    cursor: "pointer", textAlign: "left", width: "100%", transition: "border-color 0.15s",
-  },
-  empIcon: {
-    width: 44, height: 44, borderRadius: 10, background: "#fff",
-    border: "1px solid #e2e8f0", display: "flex", alignItems: "center",
-    justifyContent: "center", flexShrink: 0,
-  },
-  empInfo:   { flex: 1, minWidth: 0 },
-  empNombre: { fontSize: 14, fontWeight: 600, color: "#0f172a" },
-  empRol:    { fontSize: 12, color: "#64748b", marginTop: 2 },
-  btnCrear: {
-    width: "100%", padding: 11, background: "none", border: "1.5px dashed #cbd5e1",
-    borderRadius: 12, fontSize: 13, color: "#64748b", cursor: "pointer",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    gap: 6, fontWeight: 500, transition: "all 0.15s",
-  },
-  formWrap: {},
-  label: { display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 5 },
-  input: {
-    width: "100%", padding: "10px 13px", borderRadius: 10, border: "1.5px solid #e2e8f0",
-    fontSize: 14, color: "#0f172a", background: "white", outline: "none",
-    boxSizing: "border-box",
-  },
-  btnVolver: {
-    padding: "12px 18px", background: "#f1f5f9", border: "none", borderRadius: 10,
-    fontSize: 14, color: "#64748b", cursor: "pointer", fontWeight: 500,
-  },
-  btnPrimario: {
-    padding: 12, background: "#2563eb", color: "white", fontSize: 14, fontWeight: 600,
-    border: "none", borderRadius: 10, cursor: "pointer",
-  },
-};
