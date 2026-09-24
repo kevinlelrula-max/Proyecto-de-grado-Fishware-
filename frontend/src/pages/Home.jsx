@@ -85,7 +85,7 @@ const FAQS = [
 
 /* ─── Componentes pequeños ─── */
 const Serif = ({ children, className = "text-blue-600" }) => (
-  <span className={`font-['Instrument_Serif',Georgia,serif] italic font-normal text-[1.08em] ${className}`}>
+  <span className={`font-normal text-[1.08em] ${className}`}>
     {children}
   </span>
 );
@@ -274,28 +274,6 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
-        </section>
-
-        {/* ── BANDA DE MÉTRICAS ── */}
-        <section className={container}>
-          <motion.div {...up()} className="grid gap-10 rounded-[28px] bg-neutral-950 px-7 py-12 text-white md:rounded-[36px] md:px-14 md:py-20 lg:grid-cols-[1fr_2fr] lg:items-center xl:px-20">
-            <div>
-              <h4 className="mb-4 text-[34px] font-bold leading-tight tracking-[-0.03em] md:text-[42px] xl:text-5xl">
-                Vende más, <Serif className="text-blue-300">paga menos.</Serif>
-              </h4>
-              <p className="max-w-[400px] text-lg leading-relaxed text-white/80 md:text-xl">
-                Todo lo que ganas en tu tienda es tuyo. Sin comisiones escondidas.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0">
-              {STATS.map((st) => (
-                <div key={st.label} className="border-t border-white/15 pt-8 sm:border-l sm:border-t-0 sm:px-8 sm:pt-0 xl:px-12">
-                  <strong className="mb-4 block text-6xl font-bold leading-none tracking-[-0.04em] xl:text-[80px]">{st.value}</strong>
-                  <span className="block text-lg leading-snug text-white/80 xl:text-xl">{st.label}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
         </section>
 
         {/* ── TIENDA ONLINE: imagen izquierda, texto derecha ── */}

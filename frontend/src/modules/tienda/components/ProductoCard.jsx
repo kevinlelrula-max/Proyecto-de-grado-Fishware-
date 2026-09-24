@@ -4,24 +4,6 @@ import Estrellas from "../../reseñas/components/Estrellas";
 
 import { imgUrl } from "../../../utils/imgUrl";
 
-// Emoji genérico por categoría o nombre
-function getEmojiProducto(nombre) {
-  const n = nombre?.toLowerCase() || "";
-  if (n.includes("camisa") || n.includes("camiseta") || n.includes("ropa")) return "👕";
-  if (n.includes("zapato") || n.includes("tenis") || n.includes("calzado")) return "👟";
-  if (n.includes("pan") || n.includes("torta") || n.includes("pastel"))     return "🍞";
-  if (n.includes("leche") || n.includes("yogur") || n.includes("queso"))    return "🥛";
-  if (n.includes("carne") || n.includes("pollo") || n.includes("cerdo"))    return "🥩";
-  if (n.includes("fruta") || n.includes("mango") || n.includes("banano"))   return "🍎";
-  if (n.includes("verdura") || n.includes("tomate") || n.includes("papa"))  return "🥦";
-  if (n.includes("pescado") || n.includes("bagre") || n.includes("tilapia")) return "🐟";
-  if (n.includes("camaron") || n.includes("camarón"))                        return "🦐";
-  if (n.includes("bebida") || n.includes("jugo") || n.includes("agua"))     return "🥤";
-  if (n.includes("cafe") || n.includes("café"))                              return "☕";
-  if (n.includes("celular") || n.includes("telefono"))                       return "📱";
-  if (n.includes("computador") || n.includes("laptop"))                      return "💻";
-  return "📦";
-}
 
 export default function ProductoCard({ producto, onAgregar, statsReseña, onVerReseñas, colorMarca = "#0F6E56" }) {
   const [cantidad, setCantidad] = useState(1);
@@ -99,7 +81,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
             style={s.img}
           />
         ) : (
-          <span style={s.emoji}>{getEmojiProducto(producto.nombre)}</span>
+          <div style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: "#e2e8f0" }} />
         )}
 
         {/* Flechas de carrusel */}
@@ -126,7 +108,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
         {sinStock && <div style={s.sinStockBadge}>Sin stock</div>}
 
         {tieneDescuento && !sinStock && (
-          <div style={s.descuentoBadge}>🏆 Precio especial</div>
+          <div style={s.descuentoBadge}>Precio especial</div>
         )}
 
         {producto.categoria && !tieneDescuento && (
@@ -210,7 +192,7 @@ export default function ProductoCard({ producto, onAgregar, statsReseña, onVerR
           onClick={handleAgregar}
           disabled={sinStock}
         >
-          {añadido ? "✓ Agregado" : sinStock ? "Sin stock" : "Agregar al carrito"}
+          {añadido ? "Añadido" : sinStock ? "Sin stock" : "Agregar al carrito"}
         </button>
       </div>
     </div>

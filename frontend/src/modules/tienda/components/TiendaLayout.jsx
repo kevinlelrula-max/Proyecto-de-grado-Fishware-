@@ -4,6 +4,12 @@ import { useEffect } from "react";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const SLUGS_RESERVADOS = ["mis-pedidos", "perfil", "login", "registro"];
 
+function resolverRedUrl(valor, dominio) {
+  if (!valor) return "#";
+  if (valor.startsWith("http")) return valor;
+  return `https://${dominio}/${valor.replace("@", "").trim()}`;
+}
+
 export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, children }) {
   const navigate        = useNavigate();
   const { empresaSlug: slugParam } = useParams();
@@ -127,21 +133,28 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
           <div style={s.navActions}>
             {estaLogueado ? (
               <>
-                <button style={s.navBtnGhost}
-                  onClick={() => navigate(`/tienda/${empresaSlug}/pedidos`, { state: { empresa } })}>
-                  📦 Pedidos
+                <button
+                  style={s.navPedidosBtn}
+                  onClick={() => navigate(`/tienda/${empresaSlug}/pedidos`, { state: { empresa } })}
+                >
+                  Mis pedidos
                 </button>
-                <button style={s.navBtnGhost}
-                  onClick={() => navigate("/tienda/perfil")}>
-                  👤 {clienteNombre}
-                </button>
-                <button style={s.navBtnSalir} onClick={handleCerrarSesion}>
-                  Salir
+
+                {/* User chip */}
+                <button
+                  style={s.navUserChip}
+                  onClick={() => navigate("/tienda/perfil")}
+                  title="Ver perfil"
+                >
+                  <div style={{ ...s.navUserAvatar, backgroundColor: colorMarca }}>
+                    {(clienteNombre || "U")[0].toUpperCase()}
+                  </div>
+                  <span style={s.navUserNombre}>{(clienteNombre || "").split(" ")[0]}</span>
                 </button>
               </>
             ) : (
               <>
-                <button style={s.navBtnGhost}
+                <button style={s.navLoginBtn}
                   onClick={() => navigate("/tienda/login", { state: { from: location.pathname } })}>
                   Iniciar sesión
                 </button>
@@ -154,24 +167,32 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
                     });
                   }}
                 >
-                  Registrarse
+                  Crear cuenta
                 </button>
               </>
             )}
 
             {/* Carrito */}
             <button
-              style={{
-                ...s.carritoBtn,
-                backgroundColor: carrito?.length > 0 ? colorMarca : "rgba(255,255,255,0.1)",
-              }}
+              style={{ ...s.carritoBtn, backgroundColor: carrito?.length > 0 ? colorMarca : "rgba(255,255,255,0.08)" }}
               onClick={onAbrirCarrito}
             >
-              🛒
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
               {carrito?.length > 0 && (
                 <span style={s.carritoBadge}>{carrito.length}</span>
               )}
             </button>
+
+            {/* Cerrar sesión — extremo derecho, solo si está logueado */}
+            {estaLogueado && (
+              <button style={s.navCerrarSesionBtn} onClick={handleCerrarSesion}>
+                Cerrar sesión
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -180,32 +201,67 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
       {children}
 
       {/* ── FOOTER ── */}
-      <footer style={{ ...s.footer, backgroundColor: colorSecundario, borderTop: `3px solid ${colorMarca}` }}>
+      <footer style={{ ...s.footer, backgroundColor: colorSecundario }}>
         <div style={s.footerInner}>
-          <div style={s.footerBrand}>
-            {logoUrl ? (
-              <img
-                src={logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`}
-                alt={empresaNombre}
-                style={s.footerLogo}
-              />
-            ) : (
-              <div style={{ ...s.footerDot, backgroundColor: colorMarca }} />
-            )}
-            <span style={s.footerNombre}>{empresaNombre}</span>
+
+          {/* Col 1: Marca + contacto */}
+          <div style={s.footerCol}>
+            <div style={s.footerBrand}>
+              {logoUrl ? (
+                <img src={logoUrl.startsWith("http") ? logoUrl : `${API_BASE}${logoUrl}`} alt={empresaNombre} style={s.footerLogo} />
+              ) : (
+                <div style={{ ...s.footerDot, backgroundColor: colorMarca }} />
+              )}
+              <span style={s.footerNombre}>{empresaNombre}</span>
+            </div>
+            <div style={s.footerContacto}>
+              {empresa?.telefono && <span style={s.footerContactoItem}>{empresa.telefono}</span>}
+              {empresa?.email    && <span style={s.footerContactoItem}>{empresa.email}</span>}
+              {empresa?.direccion && <span style={s.footerContactoItem}>{empresa.direccion}</span>}
+            </div>
           </div>
-          <div style={s.footerLinks}>
-            {rutas.map((ruta) => (
-              <button
-                key={ruta.path}
-                style={s.footerLink}
-                onClick={() => navigate(ruta.path, { state: { empresa } })}
-              >
-                {ruta.label}
-              </button>
-            ))}
+
+          {/* Col 2: Navegación */}
+          <div style={s.footerCol}>
+            <p style={s.footerColTitle}>Navega</p>
+            <div style={s.footerLinks}>
+              {rutas.map((ruta) => (
+                <button key={ruta.path} style={s.footerLink} onClick={() => navigate(ruta.path, { state: { empresa } })}>
+                  {ruta.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <span style={s.footerPowered}>{empresa?.footer_texto || "Powered by Merkai"}</span>
+
+          {/* Col 3: Redes (solo si existen) */}
+          {(empresa?.whatsapp || empresa?.instagram || empresa?.facebook) && (
+            <div style={s.footerCol}>
+              <p style={s.footerColTitle}>Síguenos</p>
+              <div style={s.footerRedes}>
+                {empresa?.whatsapp && (
+                  <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={s.footerRedBtn} title="WhatsApp">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  </a>
+                )}
+                {empresa?.instagram && (
+                  <a href={resolverRedUrl(empresa.instagram, "instagram.com")} target="_blank" rel="noreferrer" style={s.footerRedBtn} title="Instagram">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
+                  </a>
+                )}
+                {empresa?.facebook && (
+                  <a href={resolverRedUrl(empresa.facebook, "facebook.com")} target="_blank" rel="noreferrer" style={s.footerRedBtn} title="Facebook">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Línea inferior */}
+        <div style={{ ...s.footerBottom, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <span style={s.footerPowered}>Powered by Merkai</span>
+          <span style={s.footerCopy}>© {new Date().getFullYear()} {empresaNombre}</span>
         </div>
       </footer>
 
@@ -216,27 +272,39 @@ export default function TiendaLayout({ empresa, carrito, onAbrirCarrito, childre
 const s = {
   wrap:          { minHeight: "100vh", backgroundColor: "#f8fafc", fontFamily: "'Inter', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column" },
   nav:           { position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" },
-  navInner:      { maxWidth: "1300px", margin: "0 auto", padding: "0 24px", height: "64px", display: "flex", alignItems: "center", gap: "16px" },
-  navBrand:      { display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, cursor: "pointer" },
+  navInner:      { maxWidth: "1300px", margin: "0 auto", padding: "0 28px", height: "68px", display: "flex", alignItems: "center", gap: "20px" },
+  navBrand:      { display: "flex", alignItems: "center", gap: "10px", flexShrink: 0, cursor: "pointer" },
   navBrandDot:   { width: "8px", height: "8px", borderRadius: "50%" },
-  navLogo:       { height: "32px", width: "auto", objectFit: "contain", borderRadius: "6px" },
+  navLogo:       { height: "34px", width: "auto", objectFit: "contain", borderRadius: "6px" },
   navBrandName:  { fontSize: "15px", fontWeight: "700", color: "white", letterSpacing: "-0.02em" },
-  navLinks:      { display: "flex", alignItems: "center", gap: "4px", marginLeft: "24px" },
-  navLink:       { padding: "8px 16px", background: "none", border: "none", fontSize: "14px", cursor: "pointer", fontWeight: "500", transition: "all 0.15s" },
-  navActions:    { marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 },
-  navBtnGhost:   { padding: "6px 12px", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", color: "rgba(255,255,255,0.8)", fontSize: "12px", cursor: "pointer", fontWeight: "500" },
-  navBtnPrimary: { padding: "6px 14px", border: "none", borderRadius: "8px", color: "white", fontSize: "12px", cursor: "pointer", fontWeight: "600" },
-  navBtnSalir:   { background: "none", border: "none", color: "#64748b", fontSize: "12px", cursor: "pointer" },
-  carritoBtn:    { position: "relative", width: "38px", height: "38px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.15)", fontSize: "16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
+  navLinks:      { display: "flex", alignItems: "center", gap: "2px", marginLeft: "28px" },
+  navLink:       { padding: "8px 14px", background: "none", border: "none", fontSize: "14px", cursor: "pointer", fontWeight: "500", transition: "all 0.15s" },
+  navActions:      { marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 },
+  navPedidosBtn:   { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.8)", fontSize: "13px", cursor: "pointer", fontWeight: "500", padding: "7px 14px", borderRadius: "8px", transition: "all 0.15s" },
+  navUserChip:       { display: "flex", alignItems: "center", gap: "7px", backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "99px", padding: "5px 12px 5px 5px", cursor: "pointer", background: "rgba(255,255,255,0.08)" },
+  navUserAvatar:     { width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: "700", color: "white", flexShrink: 0 },
+  navUserNombre:     { fontSize: "13px", color: "white", fontWeight: "500", maxWidth: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  navCerrarSesionBtn:{ background: "rgba(239,68,68,0.18)", border: "1px solid rgba(239,68,68,0.45)", color: "#fca5a5", fontSize: "12px", fontWeight: "600", cursor: "pointer", padding: "7px 14px", borderRadius: "8px", transition: "all 0.15s" },
+  navLoginBtn:     { background: "none", border: "none", color: "rgba(255,255,255,0.65)", fontSize: "13px", cursor: "pointer", fontWeight: "500", padding: "7px 12px" },
+  navBtnPrimary:   { padding: "7px 16px", border: "none", borderRadius: "8px", color: "white", fontSize: "13px", cursor: "pointer", fontWeight: "600" },
+  carritoBtn:      { position: "relative", width: "38px", height: "38px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", transition: "background 0.15s" },
   carritoBadge:  { position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#ef4444", color: "white", fontSize: "10px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center" },
-  footer:        { padding: "24px" },
-  footerInner:   { maxWidth: "1300px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" },
-  footerBrand:   { display: "flex", alignItems: "center", gap: "8px" },
-  footerDot:     { width: "8px", height: "8px", borderRadius: "50%" },
-  footerLogo:    { height: "28px", width: "auto", objectFit: "contain", borderRadius: "4px" },
-  footerNombre:  { fontSize: "14px", fontWeight: "600", color: "white" },
-  footerLinks:   { display: "flex", gap: "4px" },
-  footerLink:    { background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: "13px", cursor: "pointer", padding: "4px 10px" },
-  footerPowered: { fontSize: "12px", color: "rgba(255,255,255,0.3)" },
+  footer:            {},
+  footerInner:       { maxWidth: "1300px", margin: "0 auto", padding: "40px 28px 32px", display: "flex", gap: "48px", flexWrap: "wrap" },
+  footerCol:         { display: "flex", flexDirection: "column", gap: "14px", minWidth: "140px", flex: 1 },
+  footerColTitle:    { fontSize: "11px", fontWeight: "700", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 },
+  footerBrand:       { display: "flex", alignItems: "center", gap: "8px" },
+  footerDot:         { width: "7px", height: "7px", borderRadius: "50%" },
+  footerLogo:        { height: "28px", width: "auto", objectFit: "contain", borderRadius: "4px" },
+  footerNombre:      { fontSize: "14px", fontWeight: "700", color: "white" },
+  footerContacto:    { display: "flex", flexDirection: "column", gap: "5px" },
+  footerContactoItem:{ fontSize: "12px", color: "rgba(255,255,255,0.4)", lineHeight: "1.4" },
+  footerLinks:       { display: "flex", flexDirection: "column", gap: "2px" },
+  footerLink:        { background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: "13px", cursor: "pointer", padding: "3px 0", textAlign: "left", transition: "color 0.15s" },
+  footerRedes:       { display: "flex", gap: "8px" },
+  footerRedBtn:      { width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.5)", textDecoration: "none", transition: "all 0.15s" },
+  footerBottom:      { maxWidth: "1300px", margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  footerPowered:     { fontSize: "11px", color: "rgba(255,255,255,0.2)" },
+  footerCopy:        { fontSize: "11px", color: "rgba(255,255,255,0.2)" },
   content:       { flex: 1, width: "100%" },
 };

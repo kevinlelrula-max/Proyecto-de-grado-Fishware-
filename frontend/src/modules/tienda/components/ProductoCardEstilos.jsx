@@ -3,18 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { imgUrl } from "../../../utils/imgUrl";
 import Estrellas from "../../reseñas/components/Estrellas";
 
-const PLACEHOLDER = "https://placehold.co/400x300/f1f5f9/94a3b8?text=📦";
-
-function getEmoji(nombre) {
-  const n = nombre?.toLowerCase() || "";
-  if (n.includes("pescado") || n.includes("bagre") || n.includes("tilapia")) return "🐟";
-  if (n.includes("camaron") || n.includes("camarón")) return "🦐";
-  if (n.includes("carne") || n.includes("pollo")) return "🥩";
-  if (n.includes("fruta") || n.includes("mango")) return "🍎";
-  if (n.includes("verdura") || n.includes("tomate")) return "🥦";
-  if (n.includes("cafe") || n.includes("café")) return "☕";
-  return "📦";
-}
+const PLACEHOLDER = null;
 
 function useCardState(producto, onAgregar) {
   const [cantidad, setCantidad] = useState(1);
@@ -57,10 +46,11 @@ export function CardEstandar({ producto, onAgregar, statsReseña, onVerReseñas,
       onMouseLeave={() => setHovered(false)}
     >
       <div onClick={irDetalle} style={{ height: 160, backgroundColor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", cursor: "pointer", overflow: "hidden" }}>
-        {imgSrc ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.src = PLACEHOLDER} />
-          : <span style={{ fontSize: 52 }}>{getEmoji(producto.nombre)}</span>}
+        {imgSrc
+          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+          : <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: "#e2e8f0" }} />}
         {sinStock && <div style={{ position: "absolute", top: 8, left: 8, backgroundColor: "#ef4444", color: "white", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Sin stock</div>}
-        {tieneDescuento && !sinStock && <div style={{ position: "absolute", top: 8, right: 8, backgroundColor: `${colorMarca}20`, color: colorMarca, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>🏆 Precio especial</div>}
+        {tieneDescuento && !sinStock && <div style={{ position: "absolute", top: 8, right: 8, backgroundColor: `${colorMarca}15`, color: colorMarca, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Precio especial</div>}
       </div>
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", margin: 0, cursor: "pointer" }} onClick={irDetalle}>{producto.nombre}</h3>
@@ -80,7 +70,7 @@ export function CardEstandar({ producto, onAgregar, statsReseña, onVerReseñas,
           style={{ width: "100%", padding: "9px 0", color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: sinStock ? "not-allowed" : "pointer", backgroundColor: añadido ? "#059669" : sinStock ? "#e2e8f0" : colorMarca, transition: "background 0.2s" }}
           onClick={handleAgregar} disabled={sinStock}
         >
-          {añadido ? "✓ Agregado" : sinStock ? "Sin stock" : "Agregar al carrito"}
+          {añadido ? "Añadido" : sinStock ? "Sin stock" : "Agregar al carrito"}
         </button>
       </div>
     </div>
@@ -102,8 +92,9 @@ export function CardMinimalista({ producto, onAgregar, statsReseña, onVerReseñ
     >
       {/* Imagen cuadrada */}
       <div onClick={irDetalle} style={{ aspectRatio: "1/1", borderRadius: 12, overflow: "hidden", backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
-        {imgSrc ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: hovered ? "scale(1.04)" : "scale(1)" }} onError={e => e.target.src = PLACEHOLDER} />
-          : <span style={{ fontSize: 48 }}>{getEmoji(producto.nombre)}</span>}
+        {imgSrc
+          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: hovered ? "scale(1.04)" : "scale(1)" }} onError={e => { e.target.style.display = "none"; }} />
+          : <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "#e2e8f0" }} />}
         {sinStock && <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#ef4444" }}>Sin stock</div>}
       </div>
       {/* Info */}
@@ -147,8 +138,9 @@ export function CardOscura({ producto, onAgregar, statsReseña, onVerReseñas, c
       onMouseLeave={() => setHovered(false)}
     >
       <div onClick={irDetalle} style={{ height: 160, backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", cursor: "pointer", overflow: "hidden" }}>
-        {imgSrc ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: hovered ? "scale(1.05)" : "scale(1)" }} onError={e => e.target.src = PLACEHOLDER} />
-          : <span style={{ fontSize: 52 }}>{getEmoji(producto.nombre)}</span>}
+        {imgSrc
+          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: hovered ? "scale(1.05)" : "scale(1)" }} onError={e => { e.target.style.display = "none"; }} />
+          : <div style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: "#e2e8f0" }} />}
         {sinStock && <div style={{ position: "absolute", top: 8, left: 8, backgroundColor: "#ef4444", color: "white", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Sin stock</div>}
         {tieneDescuento && !sinStock && <div style={{ position: "absolute", top: 8, right: 8, backgroundColor: `${colorMarca}30`, color: colorMarca, fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Precio especial</div>}
       </div>
@@ -192,15 +184,15 @@ export function CardBoutique({ producto, onAgregar, statsReseña, onVerReseñas,
       {/* Imagen de fondo */}
       <div style={{ position: "absolute", inset: 0, backgroundColor: "#1e293b" }}>
         {imgSrc
-          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s", transform: hovered ? "scale(1.06)" : "scale(1)" }} onError={e => e.target.src = PLACEHOLDER} />
-          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 64 }}>{getEmoji(producto.nombre)}</div>
+          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s", transform: hovered ? "scale(1.06)" : "scale(1)" }} onError={e => { e.target.style.display = "none"; }} />
+          : <div style={{ width: "100%", height: "100%", backgroundColor: "#334155" }} />
         }
       </div>
       {/* Gradiente inferior */}
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)" }} />
       {/* Badges */}
       {sinStock && <div style={{ position: "absolute", top: 10, left: 10, backgroundColor: "#ef4444", color: "white", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Sin stock</div>}
-      {tieneDescuento && !sinStock && <div style={{ position: "absolute", top: 10, right: 10, backgroundColor: `${colorMarca}cc`, color: "white", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>🏆 Especial</div>}
+      {tieneDescuento && !sinStock && <div style={{ position: "absolute", top: 10, right: 10, backgroundColor: `${colorMarca}cc`, color: "white", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>Especial</div>}
       {/* Info overlay */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: "white", margin: 0 }} onClick={irDetalle}>{producto.nombre}</h3>
@@ -240,8 +232,9 @@ export function CardHorizontal({ producto, onAgregar, statsReseña, onVerReseña
     >
       {/* Imagen izquierda */}
       <div onClick={irDetalle} style={{ width: 120, flexShrink: 0, backgroundColor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative", overflow: "hidden" }}>
-        {imgSrc ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.src = PLACEHOLDER} />
-          : <span style={{ fontSize: 36 }}>{getEmoji(producto.nombre)}</span>}
+        {imgSrc
+          ? <img src={imgSrc} alt={producto.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+          : <div style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: "#e2e8f0" }} />}
         {sinStock && <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(255,255,255,0.75)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 10, fontWeight: 700, color: "#ef4444" }}>Sin stock</span></div>}
       </div>
       {/* Info derecha */}

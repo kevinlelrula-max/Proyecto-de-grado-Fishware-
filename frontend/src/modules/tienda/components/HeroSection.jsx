@@ -31,31 +31,19 @@ function HeroOscuro({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo, he
         : `linear-gradient(135deg, ${colorSecundario} 0%, ${colorSecundario}dd 70%, ${colorSecundario}bb 100%)`,
     }}>
       <div style={{ maxWidth: "1300px", margin: "0 auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px", padding: "80px 0", flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: "300px", display: "flex", flexDirection: "column", gap: "18px", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 14px", borderRadius: "999px", alignSelf: "flex-start", backgroundColor: `${colorMarca}25`, border: `1px solid ${colorMarca}50` }}>
-            <div style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: colorMarca }} />
-            <span style={{ fontSize: "12px", fontWeight: "700", letterSpacing: "0.05em", color: colorMarca }}>Tienda Online</span>
-          </div>
-          <h1 style={{ fontSize: "52px", fontWeight: "800", color: "white", letterSpacing: "-0.03em", lineHeight: 1.05, margin: 0 }}>{heroTitulo}</h1>
-          {heroSubtitulo && <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.7)", lineHeight: "1.7", maxWidth: "500px" }}>{heroSubtitulo}</p>}
+        <div style={{ flex: 1, minWidth: "300px", display: "flex", flexDirection: "column", gap: "20px", position: "relative", zIndex: 1, maxWidth: "620px" }}>
+          <h1 style={{ fontSize: "clamp(40px, 5vw, 58px)", fontWeight: "800", color: "white", letterSpacing: "-0.03em", lineHeight: 1.05, margin: 0 }}>{heroTitulo}</h1>
+          {heroSubtitulo && <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.65)", lineHeight: "1.75", maxWidth: "500px", margin: 0 }}>{heroSubtitulo}</p>}
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <button style={{ padding: "14px 28px", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
+            <button style={{ padding: "14px 28px", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
               onClick={() => navigate(`/tienda/${empresaSlug}/catalogo`, { state: { empresa } })}>
               {heroBtnTexto}
             </button>
             {empresa?.whatsapp
-              ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 28px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "600", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>📱 WhatsApp</a>
-              : <button style={{ padding: "14px 28px", backgroundColor: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "12px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
+              ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 28px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>WhatsApp</a>
+              : <button style={{ padding: "14px 28px", backgroundColor: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "10px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
             }
           </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px", position: "relative", zIndex: 1, flexShrink: 0 }}>
-          {[{ num: productosCount, label: "Productos", color: colorMarca }, { num: "✓", label: "Delivery", color: "#34d399" }, { num: "🔒", label: "Seguro", color: "#fbbf24" }].map(stat => (
-            <div key={stat.label} style={{ backgroundColor: "rgba(255,255,255,0.08)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "14px", padding: "16px 24px", display: "flex", alignItems: "center", gap: "12px", minWidth: "160px" }}>
-              <span style={{ fontSize: "24px", fontWeight: "800", color: stat.color }}>{stat.num}</span>
-              <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", fontWeight: "500" }}>{stat.label}</span>
-            </div>
-          ))}
         </div>
       </div>
     </div>
@@ -67,20 +55,16 @@ function HeroLateral({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo, h
   return (
     <div style={{ display: "flex", minHeight: "480px", overflow: "hidden" }}>
       <div style={{ flex: 1, padding: "60px 48px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "20px", backgroundColor: "#f8fafc", minWidth: 0 }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 12px", borderRadius: "999px", alignSelf: "flex-start", backgroundColor: `${colorMarca}15`, border: `1px solid ${colorMarca}30` }}>
-          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: colorMarca }} />
-          <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.06em", color: colorMarca, textTransform: "uppercase" }}>Tienda Online</span>
-        </div>
         <h1 style={{ fontSize: "44px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.03em", lineHeight: 1.1, margin: 0 }}>{heroTitulo}</h1>
-        {heroSubtitulo && <p style={{ fontSize: "16px", color: "#64748b", lineHeight: "1.7", maxWidth: "480px", margin: 0 }}>{heroSubtitulo}</p>}
+        {heroSubtitulo && <p style={{ fontSize: "16px", color: "#64748b", lineHeight: "1.75", maxWidth: "480px", margin: 0 }}>{heroSubtitulo}</p>}
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <button style={{ padding: "13px 26px", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
+          <button style={{ padding: "13px 26px", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
             onClick={() => navigate(`/tienda/${empresaSlug}/catalogo`, { state: { empresa } })}>
             {heroBtnTexto}
           </button>
           {empresa?.whatsapp
-            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "13px 26px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "600", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>📱 WhatsApp</a>
-            : <button style={{ padding: "13px 26px", background: "transparent", color: "#64748b", border: "1.5px solid #e2e8f0", borderRadius: "12px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
+            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "13px 26px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>WhatsApp</a>
+            : <button style={{ padding: "13px 26px", background: "transparent", color: "#475569", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
           }
         </div>
       </div>
@@ -91,12 +75,9 @@ function HeroLateral({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo, h
         }
         <p style={{ color: "white", fontSize: "18px", fontWeight: "700", margin: 0, textAlign: "center" }}>{empresaNombre}</p>
         <div style={{ display: "flex", gap: "10px", width: "100%" }}>
-          {[{ num: productosCount, label: "Productos" }, { num: "✓", label: "Delivery" }].map(stat => (
-            <div key={stat.label} style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", padding: "14px 10px", textAlign: "center" }}>
-              <p style={{ fontSize: "20px", fontWeight: "800", color: colorMarca, margin: "0 0 4px" }}>{stat.num}</p>
-              <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: 0 }}>{stat.label}</p>
-            </div>
-          ))}
+          {productosCount > 0 && (
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: 0 }}>{productosCount} productos</p>
+          )}
         </div>
       </div>
     </div>
@@ -109,30 +90,21 @@ function HeroMinimalista({ colorMarca, colorSecundario, heroTitulo, heroSubtitul
     <div style={{ backgroundColor: "white", padding: "80px 24px", borderBottom: `3px solid ${colorMarca}` }}>
       <div style={{ maxWidth: "680px", margin: "0 auto", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
         {logoUrl && <img src={logoUrl} alt={empresaNombre} style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover" }} />}
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 14px", borderRadius: "999px", backgroundColor: `${colorMarca}12`, border: `1px solid ${colorMarca}25` }}>
-          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: colorMarca }} />
-          <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.06em", color: colorMarca, textTransform: "uppercase" }}>{empresaNombre}</span>
-        </div>
         <h1 style={{ fontSize: "46px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.03em", lineHeight: 1.1, margin: 0 }}>{heroTitulo}</h1>
-        {heroSubtitulo && <p style={{ fontSize: "17px", color: "#64748b", lineHeight: "1.7", margin: 0 }}>{heroSubtitulo}</p>}
+        {heroSubtitulo && <p style={{ fontSize: "17px", color: "#64748b", lineHeight: "1.75", margin: 0 }}>{heroSubtitulo}</p>}
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-          <button style={{ padding: "13px 28px", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
+          <button style={{ padding: "13px 28px", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "700", cursor: "pointer", backgroundColor: colorMarca }}
             onClick={() => navigate(`/tienda/${empresaSlug}/catalogo`, { state: { empresa } })}>
             {heroBtnTexto}
           </button>
           {empresa?.whatsapp
-            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "13px 28px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "600", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}>📱 WhatsApp</a>
-            : <button style={{ padding: "13px 28px", background: "transparent", color: colorMarca, border: `1.5px solid ${colorMarca}`, borderRadius: "12px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
+            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "13px 28px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>WhatsApp</a>
+            : <button style={{ padding: "13px 28px", background: "transparent", color: colorMarca, border: `1.5px solid ${colorMarca}`, borderRadius: "10px", fontSize: "15px", fontWeight: "600", cursor: "pointer" }} onClick={() => navigate(`/tienda/${empresaSlug}/contacto`, { state: { empresa } })}>Contacto</button>
           }
         </div>
-        <div style={{ display: "flex", gap: "28px", marginTop: "12px", paddingTop: "20px", borderTop: "1px solid #f1f5f9", width: "100%", justifyContent: "center" }}>
-          {[{ num: productosCount, label: "productos disponibles" }, { num: "✓", label: "entrega a domicilio" }, { num: "🔒", label: "compra segura" }].map(stat => (
-            <div key={stat.label} style={{ textAlign: "center" }}>
-              <p style={{ fontSize: "22px", fontWeight: "800", color: colorMarca, margin: "0 0 2px" }}>{stat.num}</p>
-              <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{stat.label}</p>
-            </div>
-          ))}
-        </div>
+        {productosCount > 0 && (
+          <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0 }}>{productosCount} productos disponibles</p>
+        )}
       </div>
     </div>
   );
@@ -172,7 +144,7 @@ function HeroRevista({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo, h
             {heroBtnTexto}
           </button>
           {empresa?.whatsapp
-            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 24px", backgroundColor: "rgba(255,255,255,0.12)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>📱 WhatsApp</a>
+            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 24px", backgroundColor: "rgba(255,255,255,0.12)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>WhatsApp</a>
             : null
           }
         </div>
@@ -210,23 +182,19 @@ function HeroNegrita({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo, h
               {heroBtnTexto}
             </button>
             {empresa?.whatsapp
-              ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 24px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>📱 WhatsApp</a>
+              ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "14px 24px", backgroundColor: "#25D366", color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>WhatsApp</a>
               : null
             }
           </div>
         </div>
-        {/* Derecha: bloque de color con stats */}
-        <div style={{ width: 260, flexShrink: 0, backgroundColor: colorSecundario, borderRadius: 24, padding: "40px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
-          {[
-            { num: productosCount, label: "Productos" },
-            { num: "✓", label: "Delivery disponible" },
-            { num: "🔒", label: "Compra segura" },
-          ].map((s, i) => (
-            <div key={i} style={{ borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none", paddingBottom: i < 2 ? 20 : 0 }}>
-              <p style={{ fontSize: 32, fontWeight: 900, color: colorMarca, margin: "0 0 4px" }}>{s.num}</p>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: 0 }}>{s.label}</p>
-            </div>
-          ))}
+        {/* Derecha: bloque de color */}
+        <div style={{ width: 220, flexShrink: 0, backgroundColor: colorSecundario, borderRadius: 24, padding: "40px 28px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          {logoUrl
+            ? <img src={logoUrl} alt={empresaNombre} style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover" }} />
+            : <div style={{ width: 72, height: 72, borderRadius: 18, backgroundColor: colorMarca, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: "white" }}>{empresaNombre?.slice(0, 2).toUpperCase()}</div>
+          }
+          <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0, textAlign: "center" }}>{empresaNombre}</p>
+          {productosCount > 0 && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0 }}>{productosCount} productos</p>}
         </div>
       </div>
     </div>
@@ -262,19 +230,13 @@ function HeroGradiente({ colorMarca, colorSecundario, heroTitulo, heroSubtitulo,
             {heroBtnTexto}
           </button>
           {empresa?.whatsapp
-            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "15px 28px", backgroundColor: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none", backdropFilter: "blur(8px)" }}>📱 WhatsApp</a>
+            ? <a href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noreferrer" style={{ padding: "15px 28px", backgroundColor: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none", backdropFilter: "blur(8px)" }}>WhatsApp</a>
             : null
           }
         </div>
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
-          {[{ num: productosCount, label: "productos" }, { num: "✓", label: "delivery" }, { num: "🔒", label: "seguro" }].map(st => (
-            <div key={st.label} style={{ padding: "12px 20px", backgroundColor: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, textAlign: "center" }}>
-              <p style={{ fontSize: 22, fontWeight: 800, color: "white", margin: "0 0 2px" }}>{st.num}</p>
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", margin: 0 }}>{st.label}</p>
-            </div>
-          ))}
-        </div>
+        {productosCount > 0 && (
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", margin: 0 }}>{productosCount} productos disponibles</p>
+        )}
       </div>
     </div>
   );
