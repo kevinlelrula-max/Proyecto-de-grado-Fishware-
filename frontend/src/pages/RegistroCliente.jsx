@@ -1,6 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, CheckCircle2, XCircle, Loader2, Check } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useRegistroCliente, STR_LABELS, STR_BAR_COLORS, STR_TXT_COLORS } from "../modules/tienda/hooks/useRegistroCliente";
+import { loginGoogleCliente } from "../services/api";
 import { MerkaiLogo } from "../modules/tienda/components/MerkaiLogo";
 
 const INPUT_BASE = "w-full px-3 py-2.5 rounded-[9px] border text-sm text-slate-900 bg-white outline-none transition-all";
@@ -19,6 +22,33 @@ function Field({ id, label, children, full }) {
 
 export default function RegistroCliente() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+
+  const slug = localStorage.getItem("ultima_empresa_slug");
+  const from = location.state?.from || (slug ? `/tienda/${slug}` : "/");
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoadingGoogle(true);
+    setGoogleError("");
+    try {
+      const res = await loginGoogleCliente(credentialResponse.credential);
+      if (res.token) {
+        localStorage.setItem("cliente_token",  res.token);
+        localStorage.setItem("cliente_id",     res.cliente_id);
+        localStorage.setItem("cliente_nombre", res.nombre);
+        navigate(from, { replace: true });
+      } else {
+        setGoogleError(res.error || "No se pudo registrar con Google.");
+      }
+    } catch {
+      setGoogleError("No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
+
   const {
     form, step, loading, error, showPass, setShowPass,
     departamentos, municipios, codigoReferidoFromUrl,
@@ -138,10 +168,45 @@ export default function RegistroCliente() {
             </div>
           )}
 
-          {error && (
+          {(error || googleError) && (
             <div role="alert" className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
+              <span>{error || googleError}</span>
+            </div>
+          )}
+
+          {/* Google registration — solo visible en paso 1 */}
+          {step === 1 && (
+            <div className="mb-5">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="flex-1 h-px bg-slate-200" />
+                <span className="text-xs text-slate-400 whitespace-nowrap">Registro rápido con Google</span>
+                <span className="flex-1 h-px bg-slate-200" />
+              </div>
+              <div className="flex justify-center mb-4">
+                {loadingGoogle ? (
+                  <div className="w-full py-3 flex items-center justify-center gap-2 border border-slate-200 rounded-xl text-sm text-slate-500 bg-slate-50">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Verificando...</span>
+                  </div>
+                ) : (
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setGoogleError("No se pudo registrar con Google.")}
+                    width="350"
+                    shape="rectangular"
+                    theme="outline"
+                    size="large"
+                    text="signup_with"
+                    locale="es"
+                  />
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex-1 h-px bg-slate-200" />
+                <span className="text-xs text-slate-400 whitespace-nowrap">o completa el formulario</span>
+                <span className="flex-1 h-px bg-slate-200" />
+              </div>
             </div>
           )}
 

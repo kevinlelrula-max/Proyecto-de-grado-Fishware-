@@ -88,6 +88,15 @@ export const loginCliente = async (data) => {
   }
 };
 
+export const loginGoogleCliente = async (credential) => {
+  try {
+    const res = await axios.post(`${API_URL}/clientes/login/google`, { credential });
+    return res.data;
+  } catch (error) {
+    return error.response?.data || { error: "Error al iniciar sesión con Google" };
+  }
+};
+
 // =========================
 // 🛒 EMPRESAS PÚBLICAS (marketplace)
 // =========================

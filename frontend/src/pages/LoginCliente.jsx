@@ -1,7 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useLoginCliente } from "../modules/tienda/hooks/useLoginCliente";
+import { loginGoogleCliente } from "../services/api";
 import { MerkaiLogo, MerkaiLogoColor } from "../modules/tienda/components/MerkaiLogo";
 
 const FEATURES = [
@@ -12,7 +15,33 @@ const FEATURES = [
 
 export default function LoginCliente() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { form, loading, error, showPass, setShowPass, handleChange, handleSubmit } = useLoginCliente();
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [googleError, setGoogleError] = useState("");
+
+  const slug = localStorage.getItem("ultima_empresa_slug");
+  const from = location.state?.from || (slug ? `/tienda/${slug}` : "/");
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoadingGoogle(true);
+    setGoogleError("");
+    try {
+      const res = await loginGoogleCliente(credentialResponse.credential);
+      if (res.token) {
+        localStorage.setItem("cliente_token",  res.token);
+        localStorage.setItem("cliente_id",     res.cliente_id);
+        localStorage.setItem("cliente_nombre", res.nombre);
+        navigate(from, { replace: true });
+      } else {
+        setGoogleError(res.error || "No se pudo iniciar sesión con Google.");
+      }
+    } catch {
+      setGoogleError("No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex font-sans">
@@ -82,10 +111,10 @@ export default function LoginCliente() {
             <p className="text-slate-500 text-sm">Tus pedidos y favoritos te esperan</p>
           </div>
 
-          {error && (
+          {(error || googleError) && (
             <div role="alert" className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-5">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
+              <span>{error || googleError}</span>
             </div>
           )}
 
@@ -160,7 +189,34 @@ export default function LoginCliente() {
 
           </form>
 
+          {/* Google */}
           <div className="flex items-center gap-3 my-5">
+            <span className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 whitespace-nowrap">o continúa con</span>
+            <span className="flex-1 h-px bg-slate-200" />
+          </div>
+
+          <div className="flex justify-center mb-5">
+            {loadingGoogle ? (
+              <div className="w-full py-3 flex items-center justify-center gap-2 border border-slate-200 rounded-xl text-sm text-slate-500 bg-slate-50">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Verificando...</span>
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setGoogleError("No se pudo iniciar sesión con Google.")}
+                width="350"
+                shape="rectangular"
+                theme="outline"
+                size="large"
+                text="signin_with"
+                locale="es"
+              />
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 mb-5">
             <span className="flex-1 h-px bg-slate-200" />
             <span className="text-xs text-slate-400 whitespace-nowrap">¿No tienes cuenta aún?</span>
             <span className="flex-1 h-px bg-slate-200" />

@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { registroEmpresa } from "../services/api";
 import { getDepartamentos, getMunicipios } from "../modules/ubicacion/services/ubicacion.api";
+
+function decodeGoogleJwt(credential) {
+  try {
+    const payload = credential.split(".")[1];
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export default function RegistroEmpresa() {
   const navigate  = useNavigate();
@@ -10,9 +21,10 @@ export default function RegistroEmpresa() {
   // ✅ Si viene con ?ref=ABC123 en la URL, prellenar el código
   const refFromUrl = new URLSearchParams(location.search).get("ref") || "";
 
-  const [step, setStep]       = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState("");
+  const [step, setStep]             = useState(1);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState("");
+  const [googlePrefilled, setGooglePrefilled] = useState(false);
 
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios]       = useState([]);
@@ -73,6 +85,22 @@ export default function RegistroEmpresa() {
   };
 
   const camposEmpresaLlenos = form.nombre && form.nit && form.email && form.telefono;
+
+  const handleGooglePrefill = (credentialResponse) => {
+    const payload = decodeGoogleJwt(credentialResponse.credential);
+    if (!payload) return;
+    const randomPass = Array.from(crypto.getRandomValues(new Uint8Array(12)))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+    setForm((prev) => ({
+      ...prev,
+      admin_nombre:    payload.given_name  || prev.admin_nombre,
+      admin_apellido:  payload.family_name || prev.admin_apellido,
+      admin_usuario:   payload.email       || prev.admin_usuario,
+      admin_contrasena: randomPass,
+    }));
+    setGooglePrefilled(true);
+    setError("");
+  };
 
   return (
     <div style={s.page}>
@@ -189,6 +217,46 @@ export default function RegistroEmpresa() {
 
           {/* PASO 2 */}
           {step === 2 && (
+            <div>
+              {/* Google prefill */}
+              {!googlePrefilled ? (
+                <div style={{ marginBottom: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+                    <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+                    <span style={{ fontSize: "12px", color: "#94a3b8", whiteSpace: "nowrap" }}>Prellenar con Google</span>
+                    <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "14px" }}>
+                    <GoogleLogin
+                      onSuccess={handleGooglePrefill}
+                      onError={() => setError("No se pudo acceder a Google.")}
+                      width="350"
+                      shape="rectangular"
+                      theme="outline"
+                      size="large"
+                      text="continue_with"
+                      locale="es"
+                    />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+                    <span style={{ fontSize: "12px", color: "#94a3b8", whiteSpace: "nowrap" }}>o completa manualmente</span>
+                    <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#166534" }}>
+                  <span>✓</span>
+                  <span>Datos prellenados desde Google — revisa y ajusta si es necesario.</span>
+                  <button type="button" onClick={() => setGooglePrefilled(false)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#166534", textDecoration: "underline" }}>
+                    Cambiar
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 2 && (
             <div style={s.fieldsGrid}>
               <Field label="Nombre">
                 <input style={s.input} name="admin_nombre" placeholder="Juan" value={form.admin_nombre} onChange={handleChange}/>
@@ -199,8 +267,10 @@ export default function RegistroEmpresa() {
               <Field label="Usuario (email)" full>
                 <input style={s.input} name="admin_usuario" type="email" placeholder="admin@empresa.com" value={form.admin_usuario} onChange={handleChange}/>
               </Field>
-              <Field label="Contraseña" full>
-                <input style={s.input} name="admin_contrasena" type="password" placeholder="••••••••" value={form.admin_contrasena} onChange={handleChange}/>
+              <Field label={googlePrefilled ? "Contraseña (generada automáticamente)" : "Contraseña"} full>
+                <input style={s.input} name="admin_contrasena" type="password"
+                  placeholder={googlePrefilled ? "Generada — cámbiala después" : "••••••••"}
+                  value={form.admin_contrasena} onChange={handleChange}/>
               </Field>
               <Field label="Teléfono">
                 <input style={s.input} name="admin_telefono" placeholder="+57 300 000 0000" value={form.admin_telefono} onChange={handleChange}/>

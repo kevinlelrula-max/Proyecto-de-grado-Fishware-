@@ -7,6 +7,7 @@ import {
   eliminarCliente,
   registrarClientePublico,
   loginCliente,
+  loginGoogleCliente,
   getPerfilCliente,
   actualizarPerfilCliente,
   cambiarContrasenaCliente,
@@ -28,7 +29,8 @@ router.post("/resetear-contrasena",   resetearContrasena);
 router.get("/buscar", verificarToken, buscarClientes);
 router.get("/",       verificarToken, getClientes);
 router.post("/",      verificarToken, crearCliente);
-router.post("/login", loginCliente); // ← pública, sin middleware // 👈 NUEVO
+router.post("/login",        loginCliente);
+router.post("/login/google", loginGoogleCliente);
 router.get("/:id/vista360", verificarToken, getVista360);
 router.put("/:id",          verificarToken, actualizarCliente);
 router.delete("/:id",       verificarToken, eliminarCliente);

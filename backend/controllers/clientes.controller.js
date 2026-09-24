@@ -1,5 +1,8 @@
 import pool from "../config/db.js";
 import { crearNotificacion } from "../utils/notificaciones.js";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function generarCodigo(nombre = "") {
   const prefix = nombre.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, "X").padEnd(3, "X");
@@ -532,6 +535,51 @@ export const loginCliente = async (req, res) => {
   }
 };
 
+
+export const loginGoogleCliente = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ error: "Credencial de Google requerida" });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { email, given_name, family_name, sub: google_id } = ticket.getPayload();
+
+    const existing = await pool.query(
+      "SELECT id, nombre, apellido, usuario, rol_id FROM persona WHERE usuario = $1 AND rol_id = 4",
+      [email]
+    );
+
+    let user;
+    if (existing.rows.length > 0) {
+      user = existing.rows[0];
+    } else {
+      const randomPass = await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 10);
+      const codigoPropio = generarCodigo(given_name || "CLI");
+      const inserted = await pool.query(
+        `INSERT INTO persona (nombre, apellido, usuario, contrasena, rol_id, codigo_referido)
+         VALUES ($1, $2, $3, $4, 4, $5)
+         RETURNING id, nombre, apellido, usuario, rol_id`,
+        [given_name || "Usuario", family_name || "Google", email, randomPass, codigoPropio]
+      );
+      user = inserted.rows[0];
+    }
+
+    const token = generarToken(user);
+    res.json({
+      token,
+      cliente_id: user.id,
+      usuario:    user.usuario,
+      nombre:     user.nombre,
+      rol_id:     user.rol_id,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al iniciar sesión con Google" });
+  }
+};
 
 // ✅ GET perfil del cliente logueado
 export const getPerfilCliente = async (req, res) => {
