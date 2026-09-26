@@ -9,14 +9,15 @@ export default function Perfil() {
   const { perfil, guardarPerfil } = usePerfil();
   const fileInputRef = useRef(null);
 
-  const [form, setForm]             = useState({});
-  const [photoUrl, setPhotoUrl]     = useState(null);
+  const [pestana, setPestana]         = useState("perfil");
+  const [form, setForm]               = useState({});
+  const [photoUrl, setPhotoUrl]       = useState(null);
   const [hoverAvatar, setHoverAvatar] = useState(false);
-  const [passwords, setPasswords]   = useState({ actual: "", nueva: "" });
-  const [showActual, setShowActual] = useState(false);
-  const [showNueva, setShowNueva]   = useState(false);
-  const [savedMsg, setSavedMsg]     = useState("");
-  const [passError, setPassError]   = useState("");
+  const [passwords, setPasswords]     = useState({ actual: "", nueva: "" });
+  const [showActual, setShowActual]   = useState(false);
+  const [showNueva, setShowNueva]     = useState(false);
+  const [savedMsg, setSavedMsg]       = useState("");
+  const [passError, setPassError]     = useState("");
 
   useEffect(() => { setForm(perfil); }, [perfil]);
 
@@ -51,16 +52,16 @@ export default function Perfil() {
 
   return (
     <div style={s.page}>
-      <div style={s.layout}>
+      <div style={s.wrap}>
 
-        {/* ── SIDEBAR ── */}
-        <aside style={s.sidebar}>
-          <button style={s.backBtn} onClick={() => navigate("/dashboard")}>
-            <ArrowLeft size={14} />
-            Volver al panel
-          </button>
+        {/* Volver */}
+        <button style={s.backBtn} onClick={() => navigate("/dashboard")}>
+          <ArrowLeft size={13} /> Volver al panel
+        </button>
 
-          {/* Avatar con upload */}
+        {/* ── TARJETA DE PERFIL ── */}
+        <div style={s.profileCard}>
+          {/* Avatar */}
           <div
             style={s.avatarWrap}
             onMouseEnter={() => setHoverAvatar(true)}
@@ -68,133 +69,123 @@ export default function Perfil() {
             onClick={() => fileInputRef.current?.click()}
           >
             {photoUrl
-              ? <img src={photoUrl} alt="Foto de perfil" style={s.avatarImg} />
+              ? <img src={photoUrl} alt="Foto" style={s.avatarImg} />
               : <div style={s.avatar}>{iniciales}</div>
             }
-            <div style={s.avatarRing} />
             {hoverAvatar && (
               <div style={s.avatarOverlay}>
-                <Camera size={18} color="white" />
+                <Camera size={16} color="white" />
               </div>
             )}
           </div>
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhoto} />
 
-          <div style={s.sidebarMeta}>
-            <h2 style={s.sidebarName}>{form.nombre} {form.apellido}</h2>
-            <p style={s.sidebarEmail}>{form.usuario}</p>
-          </div>
-
-          <div style={s.sidebarBadge}>
-            <User size={12} color="#2563eb" />
-            Usuario activo
-          </div>
-
-          <div style={s.sidebarDivider} />
-
-          {form.rol_nombre && (
-            <div style={s.sidebarSection}>
-              <p style={s.sidebarSectionLabel}>Rol</p>
-              <p style={s.sidebarSectionValue}>{form.rol_nombre}</p>
+          {/* Info */}
+          <div style={s.profileInfo}>
+            <div>
+              <h2 style={s.profileName}>{form.nombre} {form.apellido}</h2>
+              <p style={s.profileEmail}>{form.usuario}</p>
             </div>
-          )}
-
-          {form.empresa_nombre && (
-            <div style={{ ...s.sidebarSection, marginTop: "16px" }}>
-              <p style={s.sidebarSectionLabel}>Empresa</p>
-              <p style={s.sidebarSectionValue}>{form.empresa_nombre}</p>
-            </div>
-          )}
-
-          {form.fecha_registro && (
-            <div style={{ ...s.sidebarSection, marginTop: "16px" }}>
-              <p style={s.sidebarSectionLabel}>Miembro desde</p>
-              <p style={s.sidebarSectionValue}>
-                {new Date(form.fecha_registro).toLocaleDateString("es-CO", { year: "numeric", month: "long" })}
-              </p>
-            </div>
-          )}
-        </aside>
-
-        {/* ── CONTENT ── */}
-        <main style={s.content}>
-          <div style={s.contentHeader}>
-            <h1 style={s.contentTitle}>Mi perfil</h1>
-            <p style={s.contentSub}>Gestiona tu información personal y seguridad de la cuenta</p>
-          </div>
-
-          <div style={s.cardsGrid}>
-
-            {/* INFORMACIÓN PERSONAL */}
-            <div style={s.card}>
-              <div style={s.cardHeader}>
-                <div style={s.cardIconWrap}><User size={16} color="#2563eb" /></div>
-                <div>
-                  <h3 style={s.cardTitle}>Información personal</h3>
-                  <p style={s.cardSubtitle}>Actualiza tus datos de perfil</p>
-                </div>
-              </div>
-
-              {savedMsg === "perfil" && (
-                <div style={s.successBox}>
-                  <CheckCircle size={14} style={{ flexShrink: 0 }} />
-                  Perfil actualizado correctamente
-                </div>
+            <div style={s.profileMeta}>
+              {form.rol_nombre && (
+                <span style={s.rolBadge}>{form.rol_nombre}</span>
               )}
+              {form.empresa_nombre && (
+                <span style={s.metaChip}>{form.empresa_nombre}</span>
+              )}
+              {form.fecha_registro && (
+                <span style={s.metaChip}>
+                  Desde {new Date(form.fecha_registro).toLocaleDateString("es-CO", { year: "numeric", month: "long" })}
+                </span>
+              )}
+            </div>
+          </div>
 
-              <div style={s.fieldsGrid}>
-                <Field label="Nombre">
-                  <input style={s.input} value={form.nombre || ""} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Juan" />
-                </Field>
-                <Field label="Apellido">
-                  <input style={s.input} value={form.apellido || ""} onChange={(e) => setForm({ ...form, apellido: e.target.value })} placeholder="García" />
-                </Field>
-                <Field label="Correo electrónico" full>
-                  <input style={s.input} value={form.usuario || ""} onChange={(e) => setForm({ ...form, usuario: e.target.value })} placeholder="admin@empresa.com" type="email" />
-                </Field>
-                <Field label="Teléfono">
-                  <input style={s.input} value={form.telefono || ""} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="+57 300 000 0000" />
-                </Field>
-                <Field label="Número de documento">
-                  <input style={s.input} value={form.numero_documento || ""} onChange={(e) => setForm({ ...form, numero_documento: e.target.value })} placeholder="—" />
-                </Field>
-                <Field label="Dirección" full>
-                  <input style={s.input} value={form.direccion || ""} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle 123 #45-67" />
-                </Field>
+          {/* Estado */}
+          <div style={s.estadoChip}>
+            <span style={s.estadoDot} />
+            Cuenta activa
+          </div>
+        </div>
+
+        {/* ── PESTAÑAS ── */}
+        <div style={s.tabs}>
+          <button
+            style={{ ...s.tab, ...(pestana === "perfil" ? s.tabActive : {}) }}
+            onClick={() => setPestana("perfil")}
+          >
+            <User size={13} /> Información personal
+          </button>
+          <button
+            style={{ ...s.tab, ...(pestana === "seguridad" ? s.tabActive : {}) }}
+            onClick={() => setPestana("seguridad")}
+          >
+            <Lock size={13} /> Seguridad
+          </button>
+        </div>
+
+        {/* ── PESTAÑA PERFIL ── */}
+        {pestana === "perfil" && (
+          <div style={s.card}>
+            {savedMsg === "perfil" && (
+              <div style={s.successBox}>
+                <CheckCircle size={14} style={{ flexShrink: 0 }} />
+                Perfil actualizado correctamente
               </div>
-
+            )}
+            <div style={s.fieldsGrid}>
+              {/* Fila 1: Nombre | Apellido | Teléfono */}
+              <Field label="Nombre">
+                <input style={s.input} value={form.nombre || ""} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Juan" />
+              </Field>
+              <Field label="Apellido">
+                <input style={s.input} value={form.apellido || ""} onChange={(e) => setForm({ ...form, apellido: e.target.value })} placeholder="García" />
+              </Field>
+              <Field label="Teléfono">
+                <input style={s.input} value={form.telefono || ""} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="+57 300 000 0000" />
+              </Field>
+              {/* Fila 2: Correo (2 cols) | Número documento */}
+              <Field label="Correo electrónico" span={2}>
+                <input style={s.input} value={form.usuario || ""} onChange={(e) => setForm({ ...form, usuario: e.target.value })} placeholder="admin@empresa.com" type="email" />
+              </Field>
+              <Field label="Número de documento">
+                <input style={s.input} value={form.numero_documento || ""} onChange={(e) => setForm({ ...form, numero_documento: e.target.value })} placeholder="—" />
+              </Field>
+              {/* Fila 3: Dirección (ancho completo) */}
+              <Field label="Dirección" span={3}>
+                <input style={s.input} value={form.direccion || ""} onChange={(e) => setForm({ ...form, direccion: e.target.value })} placeholder="Calle 123 #45-67" />
+              </Field>
+            </div>
+            <div style={s.cardFooter}>
               <button style={s.btnPrimary} onClick={handleSubmit}>Guardar cambios</button>
             </div>
+          </div>
+        )}
 
-            {/* SEGURIDAD */}
-            <div style={s.card}>
-              <div style={s.cardHeader}>
-                <div style={s.cardIconWrap}><Lock size={16} color="#2563eb" /></div>
-                <div>
-                  <h3 style={s.cardTitle}>Seguridad</h3>
-                  <p style={s.cardSubtitle}>Cambia tu contraseña de acceso</p>
-                </div>
+        {/* ── PESTAÑA SEGURIDAD ── */}
+        {pestana === "seguridad" && (
+          <div style={s.card}>
+            {savedMsg === "password" && (
+              <div style={s.successBox}>
+                <CheckCircle size={14} style={{ flexShrink: 0 }} />
+                Contraseña actualizada correctamente
               </div>
+            )}
+            {passError && (
+              <div style={s.errorBox}>
+                <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                {passError}
+              </div>
+            )}
 
-              {savedMsg === "password" && (
-                <div style={s.successBox}>
-                  <CheckCircle size={14} style={{ flexShrink: 0 }} />
-                  Contraseña actualizada correctamente
-                </div>
-              )}
-              {passError && (
-                <div style={s.errorBox}>
-                  <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-                  {passError}
-                </div>
-              )}
-
-              <div style={{ ...s.secFields, flex: 1 }}>
+            <div style={s.secLayout}>
+              {/* Formulario contraseña */}
+              <div style={s.secLeft}>
                 <Field label="Contraseña actual">
                   <div style={s.passWrap}>
                     <input style={{ ...s.input, paddingRight: "40px" }} type={showActual ? "text" : "password"} placeholder="••••••••" value={passwords.actual} onChange={(e) => setPasswords({ ...passwords, actual: e.target.value })} />
                     <button style={s.eyeBtn} onClick={() => setShowActual(!showActual)} type="button">
-                      {showActual ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
+                      {showActual ? <EyeOff size={15} color="#334155" /> : <Eye size={15} color="#334155" />}
                     </button>
                   </div>
                 </Field>
@@ -202,11 +193,10 @@ export default function Perfil() {
                   <div style={s.passWrap}>
                     <input style={{ ...s.input, paddingRight: "40px" }} type={showNueva ? "text" : "password"} placeholder="••••••••" value={passwords.nueva} onChange={(e) => setPasswords({ ...passwords, nueva: e.target.value })} />
                     <button style={s.eyeBtn} onClick={() => setShowNueva(!showNueva)} type="button">
-                      {showNueva ? <EyeOff size={15} color="#94a3b8" /> : <Eye size={15} color="#94a3b8" />}
+                      {showNueva ? <EyeOff size={15} color="#334155" /> : <Eye size={15} color="#334155" />}
                     </button>
                   </div>
                 </Field>
-
                 {passwords.nueva.length > 0 && (
                   <div style={s.strengthWrap}>
                     <div style={s.strengthBar}>
@@ -214,30 +204,48 @@ export default function Perfil() {
                         <div key={n} style={{ ...s.strengthSegment, backgroundColor: getStrengthColor(passwords.nueva, n) }} />
                       ))}
                     </div>
-                    <span style={{ fontSize: "11px", color: "#64748b" }}>{getStrengthLabel(passwords.nueva)}</span>
+                    <span style={{ fontSize: "11px", color: "#334155" }}>{getStrengthLabel(passwords.nueva)}</span>
                   </div>
                 )}
+                <button style={{ ...s.btnPrimary, marginTop: "4px" }} onClick={handlePassword}>
+                  Actualizar contraseña
+                </button>
               </div>
 
-              <button style={s.btnPrimary} onClick={handlePassword}>Actualizar contraseña</button>
-
-              <div style={s.sessionInfo}>
-                <Shield size={14} color="#2563eb" style={{ flexShrink: 0 }} />
-                <span style={s.sessionText}>Tu sesión está protegida con token seguro</span>
+              {/* Requisitos + sesión */}
+              <div style={s.secRight}>
+                <p style={s.tipsTitle}>Una buena contraseña tiene:</p>
+                <div style={s.tipsList}>
+                  {[
+                    { check: passwords.nueva.length >= 8,          text: "Al menos 8 caracteres" },
+                    { check: /[A-Z]/.test(passwords.nueva),        text: "Una letra mayúscula" },
+                    { check: /[0-9]/.test(passwords.nueva),        text: "Un número" },
+                    { check: /[^A-Za-z0-9]/.test(passwords.nueva), text: "Un símbolo especial" },
+                  ].map(({ check, text }) => (
+                    <div key={text} style={s.tipRow}>
+                      <div style={{ ...s.tipDot, backgroundColor: check ? "#15803d" : "#e2e8f0" }} />
+                      <span style={{ fontSize: "13px", color: check ? "#15803d" : "#334155", transition: "color 0.2s" }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={s.sessionInfo}>
+                  <Shield size={13} color="#334155" style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: "12px", color: "#334155" }}>Sesión protegida con token seguro</span>
+                </div>
               </div>
             </div>
-
           </div>
-        </main>
+        )}
+
       </div>
     </div>
   );
 }
 
-function Field({ label, children, full }) {
+function Field({ label, children, full, span }) {
   return (
-    <div style={{ gridColumn: full ? "1 / -1" : "span 1" }}>
-      <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" }}>
+    <div style={{ gridColumn: full || span === 3 ? "1 / -1" : span ? `span ${span}` : "span 1" }}>
+      <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#0f172a", marginBottom: "8px" }}>
         {label}
       </label>
       {children}
@@ -264,171 +272,157 @@ function getStrengthColor(pwd, segment) {
 }
 
 function getStrengthLabel(pwd) {
-  const score = getStrength(pwd);
-  return ["", "Débil", "Regular", "Buena", "Fuerte"][score] || "";
+  return ["", "Débil", "Regular", "Buena", "Fuerte"][getStrength(pwd)] || "";
 }
 
 const s = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#f0f4f8",
+    backgroundColor: "#f8fafc",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
+    padding: "32px 24px",
   },
-  layout: {
-    display: "flex",
-    minHeight: "100vh",
+  wrap: {
+    maxWidth: "1100px",
+    margin: "0 auto",
+    display: "flex", flexDirection: "column", gap: "16px",
   },
 
-  // ── Sidebar ──
+  /* Volver */
   backBtn: {
-    display: "flex", alignItems: "center", gap: "6px",
-    width: "100%", padding: "8px 12px",
-    background: "none", border: "1px solid #e2e8f0",
-    borderRadius: "9px", cursor: "pointer",
-    fontSize: "13px", fontWeight: "600", color: "#475569",
-    marginBottom: "28px", flexShrink: 0,
+    display: "inline-flex", alignItems: "center", gap: "6px",
+    padding: "7px 14px", background: "white",
+    border: "1px solid #e2e8f0", borderRadius: "9px",
+    cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "#334155",
+    alignSelf: "flex-start", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
   },
-  sidebar: {
-    width: "260px",
-    flexShrink: 0,
-    backgroundColor: "white",
-    borderRight: "1px solid #e2e8f0",
-    padding: "40px 24px 32px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    overflowY: "auto",
+
+  /* Tarjeta de perfil horizontal */
+  profileCard: {
+    backgroundColor: "white", borderRadius: "16px",
+    border: "1.5px solid #cbd5e1", padding: "24px 28px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    display: "flex", alignItems: "center", gap: "20px",
   },
   avatarWrap: {
-    position: "relative", flexShrink: 0,
-    marginBottom: "16px", cursor: "pointer",
-    width: "80px", height: "80px",
+    position: "relative", cursor: "pointer", flexShrink: 0,
+    width: "72px", height: "72px",
   },
   avatar: {
-    width: "80px", height: "80px", borderRadius: "50%",
-    backgroundColor: "#2563eb", color: "white",
-    fontSize: "26px", fontWeight: "800",
+    width: "72px", height: "72px", borderRadius: "18px",
+    backgroundColor: "#1e293b", color: "white",
+    fontSize: "24px", fontWeight: "800",
     display: "flex", alignItems: "center", justifyContent: "center",
   },
-  avatarImg: {
-    width: "80px", height: "80px", borderRadius: "50%",
-    objectFit: "cover",
-  },
-  avatarRing: {
-    position: "absolute", inset: "-4px",
-    borderRadius: "50%", border: "2px solid #bfdbfe",
-    pointerEvents: "none",
-  },
+  avatarImg:  { width: "72px", height: "72px", borderRadius: "18px", objectFit: "cover" },
   avatarOverlay: {
-    position: "absolute", inset: 0, borderRadius: "50%",
-    backgroundColor: "rgba(37,99,235,0.6)",
+    position: "absolute", inset: 0, borderRadius: "18px",
+    backgroundColor: "rgba(15,23,42,0.5)",
     display: "flex", alignItems: "center", justifyContent: "center",
   },
-  sidebarMeta: { textAlign: "center", marginBottom: "12px" },
-  sidebarName: { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: "0 0 4px" },
-  sidebarEmail: { fontSize: "12px", color: "#94a3b8", margin: 0, wordBreak: "break-all" },
-  sidebarBadge: {
-    display: "flex", alignItems: "center", gap: "5px",
-    padding: "5px 14px", borderRadius: "999px",
-    backgroundColor: "#eff6ff", color: "#2563eb",
-    fontSize: "12px", fontWeight: "600",
-    marginBottom: "24px",
+  profileInfo: { flex: 1, display: "flex", flexDirection: "column", gap: "8px" },
+  profileName: { fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  profileEmail: { fontSize: "13px", color: "#334155", margin: "2px 0 0" },
+  profileMeta: { display: "flex", flexWrap: "wrap", gap: "6px" },
+  rolBadge: {
+    display: "inline-block", padding: "3px 12px", borderRadius: "999px",
+    backgroundColor: "#1e293b", color: "white",
+    fontSize: "11px", fontWeight: "600",
   },
-  sidebarDivider: {
-    width: "100%", height: "1px",
-    backgroundColor: "#f1f5f9",
-    margin: "0 0 20px",
+  metaChip: {
+    display: "inline-block", padding: "3px 12px", borderRadius: "999px",
+    backgroundColor: "#f1f5f9", color: "#334155",
+    fontSize: "11px", fontWeight: "500",
   },
-  sidebarSection: { width: "100%", textAlign: "left" },
-  sidebarSectionLabel: { fontSize: "11px", fontWeight: "600", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" },
-  sidebarSectionValue: { fontSize: "14px", color: "#0f172a", fontWeight: "500", margin: 0 },
-
-  // ── Content ──
-  content: {
-    flex: 1,
-    padding: "36px 40px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-    minWidth: 0,
-  },
-  contentHeader: {},
-  contentTitle: { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", margin: "0 0 4px" },
-  contentSub: { fontSize: "13px", color: "#64748b", margin: 0 },
-
-  cardsGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "24px",
-    alignItems: "start",
-  },
-
-  // ── Cards ──
-  card: {
-    backgroundColor: "white", borderRadius: "16px",
-    border: "1px solid #e2e8f0", padding: "24px",
-    display: "flex", flexDirection: "column", gap: "20px",
-  },
-  cardHeader: { display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 },
-  cardIconWrap: {
-    width: "38px", height: "38px", borderRadius: "10px",
-    backgroundColor: "#eff6ff",
-    display: "flex", alignItems: "center", justifyContent: "center",
+  estadoChip: {
+    display: "inline-flex", alignItems: "center", gap: "6px",
+    padding: "6px 14px", borderRadius: "999px",
+    backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
+    fontSize: "12px", fontWeight: "600", color: "#15803d",
     flexShrink: 0,
   },
-  cardTitle: { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
-  cardSubtitle: { fontSize: "12px", color: "#94a3b8", margin: 0 },
+  estadoDot: { width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#15803d" },
+
+  /* Pestañas */
+  tabs: { display: "flex", borderBottom: "2px solid #cbd5e1" },
+  tab: {
+    display: "flex", alignItems: "center", gap: "6px",
+    padding: "10px 20px", fontSize: "13px", fontWeight: "500",
+    color: "#334155", background: "none", border: "none",
+    borderBottom: "2px solid transparent", cursor: "pointer",
+    marginBottom: "-2px", transition: "all 0.15s",
+  },
+  tabActive: { color: "#2563eb", borderBottomColor: "#2563eb", fontWeight: "600" },
+
+  /* Card de contenido */
+  card: {
+    backgroundColor: "white", borderRadius: "16px",
+    border: "1.5px solid #cbd5e1", padding: "40px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    display: "flex", flexDirection: "column", gap: "28px",
+  },
+  cardFooter: { display: "flex", justifyContent: "flex-end", paddingTop: "20px", borderTop: "1.5px solid #e2e8f0" },
+
+  /* Campos */
+  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px" },
+  input: {
+    width: "100%", padding: "14px 16px",
+    borderRadius: "10px", border: "2px solid #cbd5e1",
+    fontSize: "15px", color: "#0f172a", backgroundColor: "#f8fafc",
+    outline: "none", boxSizing: "border-box",
+    transition: "border-color 0.15s",
+  },
+
+  /* Seguridad */
+  secLayout: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px" },
+  secLeft:   { display: "flex", flexDirection: "column", gap: "16px" },
+  secRight:  {
+    backgroundColor: "#f8fafc", border: "1px solid #f1f5f9",
+    borderRadius: "12px", padding: "20px",
+    display: "flex", flexDirection: "column", gap: "14px",
+  },
+  tipsTitle: { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0 },
+  tipsList:  { display: "flex", flexDirection: "column", gap: "9px" },
+  tipRow:    { display: "flex", alignItems: "center", gap: "10px" },
+  tipDot:    { width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0, transition: "background-color 0.2s" },
+  sessionInfo: {
+    display: "flex", alignItems: "center", gap: "8px",
+    padding: "10px 12px", borderRadius: "9px",
+    backgroundColor: "white", border: "1px solid #f1f5f9",
+    marginTop: "auto",
+  },
+
+  /* Password */
+  passWrap: { position: "relative" },
+  eyeBtn: {
+    position: "absolute", right: "10px", top: "50%",
+    transform: "translateY(-50%)",
+    background: "none", border: "none", cursor: "pointer",
+    padding: 0, display: "flex", alignItems: "center",
+  },
+  strengthWrap: { display: "flex", alignItems: "center", gap: "8px" },
+  strengthBar:  { display: "flex", gap: "4px", flex: 1 },
+  strengthSegment: { flex: 1, height: "4px", borderRadius: "999px", transition: "background-color 0.2s" },
+
+  /* Botón */
+  btnPrimary: {
+    padding: "11px 28px",
+    backgroundColor: "#2563eb", color: "white",
+    border: "none", borderRadius: "10px",
+    fontSize: "14px", fontWeight: "700", cursor: "pointer",
+    boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
+  },
 
   successBox: {
     display: "flex", alignItems: "center", gap: "8px",
     backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#15803d", fontWeight: "500",
-    flexShrink: 0,
   },
   errorBox: {
     display: "flex", alignItems: "center", gap: "8px",
     backgroundColor: "#fef2f2", border: "1px solid #fecaca",
     borderRadius: "10px", padding: "10px 14px",
     fontSize: "13px", color: "#b91c1c", fontWeight: "500",
-    flexShrink: 0,
   },
-
-  fieldsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" },
-  secFields: { display: "flex", flexDirection: "column", gap: "14px" },
-  input: {
-    width: "100%", padding: "10px 12px",
-    borderRadius: "9px", border: "1.5px solid #e2e8f0",
-    fontSize: "14px", color: "#0f172a", backgroundColor: "white",
-    outline: "none", boxSizing: "border-box",
-  },
-
-  passWrap: { position: "relative" },
-  eyeBtn: {
-    position: "absolute", right: "10px", top: "50%",
-    transform: "translateY(-50%)",
-    background: "none", border: "none",
-    cursor: "pointer", padding: 0,
-    display: "flex", alignItems: "center",
-  },
-
-  strengthWrap: { display: "flex", alignItems: "center", gap: "8px" },
-  strengthBar: { display: "flex", gap: "4px", flex: 1 },
-  strengthSegment: { flex: 1, height: "4px", borderRadius: "999px", transition: "background-color 0.2s" },
-
-  btnPrimary: {
-    width: "100%", padding: "12px",
-    backgroundColor: "#2563eb", color: "white",
-    border: "none", borderRadius: "10px",
-    fontSize: "14px", fontWeight: "700", cursor: "pointer",
-    flexShrink: 0,
-  },
-
-  sessionInfo: {
-    display: "flex", alignItems: "center", gap: "8px",
-    padding: "10px 14px", borderRadius: "10px",
-    backgroundColor: "#eff6ff", border: "1px solid #bfdbfe",
-    flexShrink: 0,
-  },
-  sessionText: { fontSize: "12px", color: "#2563eb" },
 };

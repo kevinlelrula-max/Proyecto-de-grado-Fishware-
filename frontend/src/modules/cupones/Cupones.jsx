@@ -62,7 +62,7 @@ export default function Cupones() {
         </div>
       )}
 
-      {/* Contenido */}
+      {}
       {loading ? (
         <SkeletonGrid count={3} height={180} />
       ) : cupones.length === 0 ? (
@@ -79,7 +79,7 @@ export default function Cupones() {
         </div>
       ) : (
         <>
-          {/* Info */}
+          {}
           <div style={s.infoBox}>
             <Lightbulb size={16} color="#92400e" style={{ flexShrink: 0, marginTop: 1 }} />
             <p style={s.infoText}>
@@ -88,7 +88,7 @@ export default function Cupones() {
             </p>
           </div>
 
-          {/* Cupones activos */}
+          {}
           {activos.length > 0 && (
             <div>
               <p style={s.sectionLabel}>Activos ({activos.length})</p>
@@ -107,7 +107,7 @@ export default function Cupones() {
             </div>
           )}
 
-          {/* Cupones inactivos */}
+          {}
           {inactivos.length > 0 && (
             <div>
               <p style={s.sectionLabel}>Inactivos ({inactivos.length})</p>
@@ -128,7 +128,7 @@ export default function Cupones() {
         </>
       )}
 
-      {/* Modal formulario */}
+      {}
       {mostrarForm && (
         <CuponForm
           form={form}
@@ -166,7 +166,7 @@ const s = {
     justifyContent: "space-between", gap: "16px", flexWrap: "wrap",
   },
   title:    { fontSize: "22px", fontWeight: "800", color: "#0f172a", letterSpacing: "-0.02em", marginBottom: "4px" },
-  subtitle: { fontSize: "14px", color: "#64748b", lineHeight: "1.5", maxWidth: "520px" },
+  subtitle: { fontSize: "14px", color: "#334155", lineHeight: "1.5", maxWidth: "520px" },
   btnNuevo: {
     padding: "10px 20px", backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "10px", fontSize: "14px",
@@ -189,7 +189,7 @@ const s = {
     gap: "10px", padding: "60px 24px", textAlign: "center",
   },
   emptyTitle: { fontSize: "16px", fontWeight: "700", color: "#0f172a" },
-  emptyDesc:  { fontSize: "14px", color: "#64748b", maxWidth: "420px", lineHeight: "1.6" },
+  emptyDesc:  { fontSize: "14px", color: "#334155", maxWidth: "420px", lineHeight: "1.6" },
   emptyBtn: {
     marginTop: "8px", padding: "11px 24px",
     backgroundColor: "#2563eb", color: "white",
@@ -203,12 +203,12 @@ const s = {
   },
   infoText: { fontSize: "13px", color: "#92400e", lineHeight: "1.6" },
   sectionLabel: {
-    fontSize: "11px", fontWeight: "700", color: "#94a3b8",
+    fontSize: "11px", fontWeight: "700", color: "#334155",
     textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
     gap: "16px",
   },
 };

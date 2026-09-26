@@ -36,7 +36,7 @@ export default function Configuracion() {
   const mostrarBtnGuardar = tabActiva !== "integraciones";
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-5xl mx-auto">
 
       {/* Header con tabs y botón guardar */}
       <div className="flex items-center justify-between mb-5">

@@ -230,6 +230,48 @@ export const crearRol = async (req, res) => {
 };
 
 // =========================
+// ELIMINAR ROL
+// =========================
+export const eliminarRol = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    if (req.user.rol_id !== 1 && req.user.rol_id !== 2) {
+      return res.status(403).json({ error: "No tienes permisos para eliminar roles" });
+    }
+
+    const { rol_id } = req.params;
+
+    if ([1, 2, 3, 4].includes(Number(rol_id))) {
+      return res.status(403).json({ error: "No se pueden eliminar los roles base del sistema" });
+    }
+
+    // Verificar que no haya usuarios con este rol
+    const usosResult = await client.query(
+      `SELECT COUNT(*) FROM persona WHERE rol_id = $1`,
+      [rol_id]
+    );
+    if (Number(usosResult.rows[0].count) > 0) {
+      return res.status(400).json({
+        error: "No se puede eliminar — hay usuarios con este rol asignado. Cambia su rol primero.",
+      });
+    }
+
+    await client.query("BEGIN");
+    await client.query(`DELETE FROM rol_permisos WHERE rol_id = $1`, [rol_id]);
+    await client.query(`DELETE FROM roles WHERE id = $1`, [rol_id]);
+    await client.query("COMMIT");
+
+    res.json({ message: "Rol eliminado" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error(error);
+    res.status(500).json({ error: "Error al eliminar rol" });
+  } finally {
+    client.release();
+  }
+};
+
+// =========================
 // GET PERMISOS DE UN ROL
 // =========================
 export const getPermisosRol = async (req, res) => {

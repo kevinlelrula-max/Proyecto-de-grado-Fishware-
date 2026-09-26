@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import {
-  KeyRound, Plus, Pencil, Check, Lock,
+  KeyRound, Plus, Pencil, Check, Lock, Trash2,
   Package, Users, DollarSign, BarChart2, UserCog, ShoppingCart, Settings,
 } from "lucide-react";
 import { crearRol } from "../services/usuarios.api";
@@ -52,9 +52,10 @@ export default function Gestionroles() {
   const [nuevoVisible, setNuevoVisible] = useState(false);
   const [nuevoRol, setNuevoRol]       = useState("");
   const [guardando, setGuardando]     = useState(false);
-  const [rolEditando, setRolEditando] = useState(null);
-  const [permisosEd, setPermisosEd]   = useState([]);
-  const [guardandoP, setGuardandoP]   = useState(false);
+  const [rolEditando, setRolEditando]       = useState(null);
+  const [permisosEd, setPermisosEd]         = useState([]);
+  const [guardandoP, setGuardandoP]         = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const cargar = async () => {
     setCargando(true);
@@ -119,6 +120,21 @@ export default function Gestionroles() {
     finally { setGuardandoP(false); }
   };
 
+  const handleEliminarRol = async (rolId) => {
+    try {
+      const res = await fetch(`${API}/api/usuarios/roles/${rolId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || "Error al eliminar"); return; }
+      setRoles(prev => prev.filter(r => r.id !== rolId));
+      setPermisosMap(prev => { const next = { ...prev }; delete next[rolId]; return next; });
+      setConfirmDeleteId(null);
+      toast.success("Rol eliminado");
+    } catch { toast.error("Error al eliminar rol"); }
+  };
+
   return (
     <div style={s.wrap}>
 
@@ -126,9 +142,9 @@ export default function Gestionroles() {
       <div style={s.banner}>
         <div style={s.bannerIcon}><KeyRound size={18} color="#2563eb" /></div>
         <div style={s.bannerBody}>
-          <p style={s.bannerTitle}>Roles y permisos del sistema</p>
+          <p style={s.bannerTitle}>Acceso por roles</p>
           <p style={s.bannerText}>
-            Define qué puede ver y hacer cada tipo de usuario. El rol <strong>SuperAdmin</strong> no puede modificarse para proteger el acceso al sistema.
+            Cada rol define qué puede ver y hacer un miembro del equipo. El rol <strong>SuperAdmin</strong> está protegido y no se puede modificar.
           </p>
         </div>
         {(rolUsuario === 1 || rolUsuario === 2) && (
@@ -142,7 +158,7 @@ export default function Gestionroles() {
       {/* Formulario nuevo rol */}
       {nuevoVisible && (
         <div style={s.nuevoCard}>
-          <p style={s.nuevoLabel}>Nombre del nuevo rol personalizado</p>
+          <p style={s.nuevoLabel}>¿Cómo se llama el nuevo rol?</p>
           <form style={s.nuevoRow} onSubmit={handleCrear}>
             <input
               autoFocus
@@ -176,7 +192,7 @@ export default function Gestionroles() {
             const seccionesActivas = SECCIONES.filter(s => permisos.includes(s.key));
 
             return (
-              <div key={rol.id} style={{ ...s.card, borderTop: `3px solid ${pal.color}` }}>
+              <div key={rol.id} style={{ ...s.card, borderLeft: `4px solid ${pal.color}` }}>
 
                 {/* Cabecera de la card */}
                 <div style={s.cardTop}>
@@ -188,7 +204,7 @@ export default function Gestionroles() {
                     <span style={{
                       ...s.tipoBadge,
                       backgroundColor: esBlind ? "#fef9c3" : esFijo ? "#f1f5f9" : "#f0fdf4",
-                      color: esBlind ? "#854d0e" : esFijo ? "#64748b" : "#16a34a",
+                      color: esBlind ? "#854d0e" : esFijo ? "#334155" : "#16a34a",
                     }}>
                       {esBlind ? "Protegido" : esFijo ? "Rol base" : "Personalizado"}
                     </span>
@@ -211,7 +227,7 @@ export default function Gestionroles() {
                       </div>
                     ) : (
                       <p style={s.noPermisos}>
-                        {editable ? "Sin permisos — haz clic en Editar para configurar" : "Sin permisos asignados"}
+                        {editable ? "Todavía no tiene acceso a ninguna sección. Usa Editar para configurarlo." : "Sin acceso a secciones."}
                       </p>
                     )}
                   </div>
@@ -220,7 +236,7 @@ export default function Gestionroles() {
                 {/* Editor de permisos */}
                 {editando && (
                   <div style={s.editor}>
-                    <p style={s.editorLabel}>Selecciona las secciones accesibles:</p>
+                    <p style={s.editorLabel}>¿A qué secciones puede acceder este rol?</p>
                     <div style={s.toggleGrid}>
                       {SECCIONES.map(sec => {
                         const on = permisosEd.includes(sec.key);
@@ -232,7 +248,7 @@ export default function Gestionroles() {
                             onClick={() => togglePermiso(sec.key)}
                           >
                             <sec.Icon size={14} color={on ? "#2563eb" : "#94a3b8"} />
-                            <span style={{ flex: 1, color: on ? "#1d4ed8" : "#64748b", fontSize: "13px" }}>{sec.label}</span>
+                            <span style={{ flex: 1, color: on ? "#1d4ed8" : "#334155", fontSize: "13px" }}>{sec.label}</span>
                             {on && <Check size={12} color="#2563eb" />}
                           </button>
                         );
@@ -253,14 +269,29 @@ export default function Gestionroles() {
                 {/* Footer de la card */}
                 <div style={s.cardFooter}>
                   {esBlind ? (
-                    <span style={s.lockMsg}><Lock size={11} color="#854d0e" /> No modificable</span>
+                    <span style={s.lockMsg}><Lock size={11} color="#854d0e" /> Este rol está protegido</span>
                   ) : editable && !editando ? (
-                    <button style={s.btnEditar} onClick={() => abrirEditor(rol)}>
-                      <Pencil size={12} />
-                      Editar permisos
-                    </button>
+                    confirmDeleteId === rol.id ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: "12px", color: "#dc2626", fontWeight: "600" }}>¿Eliminar este rol?</span>
+                        <button style={s.btnConfirmYes} onClick={() => handleEliminarRol(rol.id)}>Sí</button>
+                        <button style={s.btnConfirmNo} onClick={() => setConfirmDeleteId(null)}>No</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button style={s.btnEditar} onClick={() => abrirEditor(rol)}>
+                          <Pencil size={12} />
+                          Editar permisos
+                        </button>
+                        {!esFijo && (
+                          <button style={s.btnEliminar} onClick={() => setConfirmDeleteId(rol.id)} title="Eliminar rol">
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )
                   ) : editando ? null : (
-                    <span style={s.noEditMsg}>Solo lectura</span>
+                    <span style={s.noEditMsg}>No tienes permisos para editar este rol</span>
                   )}
                 </div>
               </div>
@@ -277,29 +308,32 @@ const s = {
 
   banner: {
     display: "flex", alignItems: "center", gap: "14px",
-    backgroundColor: "#eff6ff", border: "1px solid #bfdbfe",
-    borderRadius: "14px", padding: "16px 20px",
+    backgroundColor: "white", border: "1px solid #f1f5f9",
+    borderRadius: "16px", padding: "16px 20px",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
   },
   bannerIcon: {
     width: "44px", height: "44px", borderRadius: "12px",
-    backgroundColor: "white", border: "1px solid #bfdbfe",
+    backgroundColor: "#f8fafc", border: "1px solid #f1f5f9",
     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
   bannerBody: { flex: 1 },
-  bannerTitle:{ fontSize: "14px", fontWeight: "700", color: "#1d4ed8", margin: "0 0 3px" },
-  bannerText: { fontSize: "12px", color: "#3b82f6", margin: 0, lineHeight: 1.5 },
+  bannerTitle:{ fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: "0 0 3px" },
+  bannerText: { fontSize: "13px", color: "#334155", margin: 0, lineHeight: 1.5 },
   btnNuevo: {
     display: "flex", alignItems: "center", gap: "6px",
-    padding: "8px 16px", backgroundColor: "#2563eb", color: "white",
-    border: "none", borderRadius: "9px", cursor: "pointer",
+    padding: "9px 18px", backgroundColor: "#2563eb", color: "white",
+    border: "none", borderRadius: "10px", cursor: "pointer",
     fontSize: "13px", fontWeight: "600", flexShrink: 0,
+    boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
   },
 
   nuevoCard: {
-    backgroundColor: "white", border: "1px solid #e2e8f0",
+    backgroundColor: "white", border: "1px solid #f1f5f9",
     borderRadius: "14px", padding: "20px",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
   },
-  nuevoLabel: { fontSize: "12px", fontWeight: "600", color: "#374151", margin: "0 0 10px" },
+  nuevoLabel: { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: "0 0 10px" },
   nuevoRow:   { display: "flex", gap: "10px" },
   input: {
     flex: 1, padding: "9px 14px", border: "1px solid #e2e8f0",
@@ -310,19 +344,21 @@ const s = {
     padding: "9px 20px", backgroundColor: "#2563eb", color: "white",
     border: "none", borderRadius: "9px", fontSize: "13px",
     fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap",
+    boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
   },
   btnCancelNuevo: {
     padding: "9px 16px", backgroundColor: "transparent",
     border: "1px solid #e2e8f0", borderRadius: "9px",
-    color: "#64748b", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap",
+    color: "#334155", fontSize: "13px", cursor: "pointer", whiteSpace: "nowrap",
   },
 
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" },
 
   card: {
-    backgroundColor: "white", borderRadius: "14px",
-    border: "1px solid #e2e8f0",
+    backgroundColor: "white", borderRadius: "16px",
+    border: "1px solid #f1f5f9",
     display: "flex", flexDirection: "column", overflow: "hidden",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
   },
   cardTop: {
     display: "flex", alignItems: "center", gap: "12px",
@@ -336,26 +372,26 @@ const s = {
   cardMeta: { display: "flex", flexDirection: "column", gap: "5px" },
   rolNombre: { fontSize: "15px", fontWeight: "700", color: "#0f172a" },
   tipoBadge: {
-    display: "inline-block", fontSize: "10px", fontWeight: "600",
+    display: "inline-block", fontSize: "11px", fontWeight: "600",
     padding: "2px 8px", borderRadius: "99px", width: "fit-content",
   },
 
   cardBody: { padding: "0 20px 16px", flex: 1 },
-  descText: { fontSize: "12px", color: "#64748b", margin: 0, lineHeight: 1.6 },
+  descText: { fontSize: "13px", color: "#334155", margin: 0, lineHeight: 1.6 },
   chipsWrap: { display: "flex", flexWrap: "wrap", gap: "6px" },
   chip: {
     display: "inline-flex", alignItems: "center", gap: "4px",
     padding: "4px 10px", borderRadius: "999px", border: "1px solid",
     fontSize: "11px", fontWeight: "600",
   },
-  noPermisos: { fontSize: "12px", color: "#94a3b8", margin: 0, fontStyle: "italic" },
+  noPermisos: { fontSize: "13px", color: "#334155", margin: 0 },
 
   editor: {
     margin: "0 16px 16px",
     backgroundColor: "#f8fafc", border: "1px solid #e2e8f0",
     borderRadius: "10px", padding: "14px",
   },
-  editorLabel: { fontSize: "12px", fontWeight: "600", color: "#64748b", margin: "0 0 10px" },
+  editorLabel: { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: "0 0 10px" },
   toggleGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", marginBottom: "12px" },
   toggleBtn: {
     display: "flex", alignItems: "center", gap: "8px",
@@ -365,14 +401,14 @@ const s = {
   },
   toggleOn: { backgroundColor: "#eff6ff", borderColor: "#bfdbfe" },
   editorFooter: { display: "flex", justifyContent: "space-between", alignItems: "center" },
-  editorCount: { fontSize: "11px", color: "#94a3b8" },
+  editorCount: { fontSize: "12px", color: "#334155" },
   btnCancelEd: {
     padding: "6px 12px", background: "transparent",
     border: "1px solid #e2e8f0", borderRadius: "7px",
-    color: "#64748b", fontSize: "12px", cursor: "pointer",
+    color: "#334155", fontSize: "12px", cursor: "pointer",
   },
   btnGuardar: {
-    padding: "6px 14px", backgroundColor: "#2563eb",
+    padding: "6px 14px", backgroundColor: "#1e293b",
     border: "none", borderRadius: "7px",
     color: "white", fontSize: "12px", fontWeight: "600", cursor: "pointer",
   },
@@ -385,15 +421,32 @@ const s = {
   },
   btnEditar: {
     display: "flex", alignItems: "center", gap: "5px",
-    padding: "5px 12px", fontSize: "12px", fontWeight: "500",
+    padding: "5px 12px", fontSize: "12px", fontWeight: "600",
     border: "1px solid #e2e8f0", borderRadius: "7px",
-    backgroundColor: "white", color: "#475569", cursor: "pointer",
+    backgroundColor: "white", color: "#334155", cursor: "pointer",
   },
   lockMsg: {
     display: "flex", alignItems: "center", gap: "5px",
     fontSize: "11px", color: "#854d0e",
   },
-  noEditMsg: { fontSize: "11px", color: "#94a3b8" },
+  noEditMsg: { fontSize: "12px", color: "#334155" },
 
-  spinner: { padding: "48px", textAlign: "center", color: "#94a3b8", fontSize: "13px" },
+  spinner: { padding: "48px", textAlign: "center", color: "#334155", fontSize: "13px" },
+
+  btnEliminar: {
+    display: "flex", alignItems: "center", justifyContent: "center",
+    padding: "5px 10px", border: "1px solid #fecaca",
+    borderRadius: "7px", backgroundColor: "#fef2f2",
+    color: "#b91c1c", cursor: "pointer",
+  },
+  btnConfirmYes: {
+    padding: "4px 12px", fontSize: "12px", fontWeight: "700",
+    backgroundColor: "#dc2626", color: "white",
+    border: "none", borderRadius: "7px", cursor: "pointer",
+  },
+  btnConfirmNo: {
+    padding: "4px 10px", fontSize: "12px", fontWeight: "600",
+    backgroundColor: "#f1f5f9", color: "#334155",
+    border: "1px solid #e2e8f0", borderRadius: "7px", cursor: "pointer",
+  },
 };

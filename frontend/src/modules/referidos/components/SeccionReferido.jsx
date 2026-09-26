@@ -16,7 +16,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
 
   if (!token) return null;
   if (loading) return (
-    <div style={{ padding: "20px 0", color: "#94a3b8", fontSize: 13 }}>Cargando referidos...</div>
+    <div style={{ padding: "20px 0", color: "#334155", fontSize: 13 }}>Cargando referidos...</div>
   );
   if (!data) return null;
 
@@ -57,8 +57,8 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
               <span style={{ fontSize: 12, fontWeight: 700, color: colorMarca }}>
                 Tienes nivel heredado activo
               </span>
-              <span style={{ fontSize: 11, color: "#64748b", display: "block" }}>
-                Válido hasta {new Date(nivel_heredado.hasta).toLocaleDateString("es-CO", { day: "numeric", month: "long" })} — ¡compra para mantenerlo!
+              <span style={{ fontSize: 11, color: "#334155", display: "block" }}>
+                Válido hasta el {new Date(nivel_heredado.hasta).toLocaleDateString("es-CO", { day: "numeric", month: "long" })}. ¡Compra para mantenerlo!
               </span>
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
           </span>
           <div>
             <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", margin: 0 }}>Tu enlace de referido</h3>
-            <p style={{ fontSize: 12, color: "#64748b", margin: "2px 0 0" }}>
+            <p style={{ fontSize: 12, color: "#334155", margin: "2px 0 0" }}>
               Como eres cliente{nivel_actual ? ` ${nivel_actual.nombre}` : ""}, tu amigo recibirá{" "}
               <strong style={{ color: colorMarca }}>{config_amigo_actual?.descuento_pct ?? 5}% de descuento</strong>
               {config_amigo_actual?.envio_gratis && " + envío gratis"}
@@ -101,7 +101,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
         {/* Código corto + WhatsApp */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 9, padding: "7px 14px" }}>
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>Tu código:</span>
+            <span style={{ fontSize: 11, color: "#334155" }}>Tu código:</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", fontFamily: "monospace", letterSpacing: 2 }}>{codigo}</span>
           </div>
           <button onClick={compartirWhatsApp} style={{
@@ -127,7 +127,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
         ].map(k => (
           <div key={k.label} style={{ background: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0", padding: "14px 16px", textAlign: "center" }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: "0 0 3px" }}>{k.value}</div>
-            <div style={{ fontSize: 11, color: "#94a3b8" }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: "#334155" }}>{k.label}</div>
           </div>
         ))}
       </div>
@@ -159,7 +159,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
             <thead>
               <tr>
                 {["Tu nivel", "Tu amigo recibe", "Envío gratis", "Nivel inicial"].map(h => (
-                  <th key={h} style={{ padding: "6px 10px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", borderBottom: "1px solid #f1f5f9" }}>{h}</th>
+                  <th key={h} style={{ padding: "6px 10px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#334155", textTransform: "uppercase", borderBottom: "1px solid #f1f5f9" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -180,13 +180,13 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
                     <td style={{ padding: "8px 10px", fontSize: 13, fontWeight: 600, color: "#0f172a" }}>
                       {c.descuento_pct}% descuento
                     </td>
-                    <td style={{ padding: "8px 10px", fontSize: 13, color: c.envio_gratis ? "#15803d" : "#94a3b8" }}>
+                    <td style={{ padding: "8px 10px", fontSize: 13, color: c.envio_gratis ? "#15803d" : "#334155" }}>
                       {c.envio_gratis ? "Sí" : "—"}
                     </td>
                     <td style={{ padding: "8px 10px", fontSize: 13 }}>
                       {c.nivel_heredado_nombre
                         ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: colorMarca, fontWeight: 600 }}><Trophy size={11} /> {c.nivel_heredado_nombre}</span>
-                        : <span style={{ color: "#94a3b8" }}>—</span>
+                        : <span style={{ color: "#334155" }}>—</span>
                       }
                     </td>
                   </tr>
@@ -208,7 +208,7 @@ export default function SeccionReferido({ token, empresaId, empresaSlug, colorMa
                   <span style={{ fontSize: 13, fontWeight: 500, color: "#0f172a" }}>
                     {h.referido_nombre ? `${h.referido_nombre} ${h.referido_apellido || ""}` : "Amigo pendiente de registro"}
                   </span>
-                  <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                  <div style={{ fontSize: 11, color: "#334155" }}>
                     {new Date(h.creado_en).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
                 </div>

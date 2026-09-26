@@ -8,6 +8,7 @@ import {
   getRoles,
   getTodosRoles,
   crearRol,
+  eliminarRol,
   getPermisosRol,
   actualizarPermisosRol,
   getPerfil,
@@ -30,6 +31,7 @@ router.get("/roles/todos",        verificarToken, getTodosRoles);
 router.post("/roles",             verificarToken, crearRol);
 router.get("/roles/:rol_id/permisos",    verificarToken, getPermisosRol);
 router.put("/roles/:rol_id/permisos",    verificarToken, actualizarPermisosRol);
+router.delete("/roles/:rol_id",          verificarToken, eliminarRol);
 
 // Usuarios — rutas generales
 router.get("/",             verificarToken, getUsuarios);

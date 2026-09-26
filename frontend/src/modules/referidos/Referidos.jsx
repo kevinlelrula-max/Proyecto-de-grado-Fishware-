@@ -41,7 +41,7 @@ function TabEstadisticas() {
   }, []);
 
   if (loading) return <div style={{ padding: 24 }}><SkeletonTable rows={4} /></div>;
-  if (!data)   return <div style={{ padding: 32, color: "#94a3b8", fontSize: 13 }}>Sin datos.</div>;
+  if (!data)   return <div style={{ padding: 32, color: "#334155", fontSize: 13 }}>Sin datos.</div>;
 
   const { general, top_referidores, recientes } = data;
 
@@ -58,7 +58,7 @@ function TabEstadisticas() {
         ].map(k => (
           <div key={k.label} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", padding: "16px 18px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{k.label}</span>
+              <span style={{ fontSize: 11, color: "#334155", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{k.label}</span>
               <span style={{ background: "#eff6ff", borderRadius: 7, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", color: "#2563eb", flexShrink: 0 }}><k.Icon size={15} /></span>
             </div>
             <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a" }}>{k.value}</div>
@@ -73,21 +73,21 @@ function TabEstadisticas() {
           <h3 style={sTitle}>Top referidores</h3>
           <p style={sSub}>Clientes que más amigos han traído</p>
           {top_referidores.length === 0 ? (
-            <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 12 }}>Sin referidos aún.</p>
+            <p style={{ color: "#334155", fontSize: 13, marginTop: 12 }}>Sin referidos aún.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
               {top_referidores.map((r, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ width: 26, height: 26, borderRadius: 6, background: i === 0 ? "#fef9c3" : "#f8fafc", color: i === 0 ? "#854d0e" : "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{i + 1}</span>
+                    <span style={{ width: 26, height: 26, borderRadius: 6, background: i === 0 ? "#fef9c3" : "#f8fafc", color: i === 0 ? "#854d0e" : "#334155", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{i + 1}</span>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 500, color: "#0f172a" }}>{r.nombre} {r.apellido}</div>
-                      <div style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace" }}>{r.codigo_referido}</div>
+                      <div style={{ fontSize: 11, color: "#334155", fontFamily: "monospace" }}>{r.codigo_referido}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: C.verde, display: "flex", alignItems: "center", gap: 4 }}>{r.completados} <CheckCircle size={13} /></div>
-                    <div style={{ fontSize: 11, color: "#94a3b8" }}>{r.total} total</div>
+                    <div style={{ fontSize: 11, color: "#334155" }}>{r.total} total</div>
                   </div>
                 </div>
               ))}
@@ -101,13 +101,13 @@ function TabEstadisticas() {
           <p style={sSub}>Últimos 20 movimientos</p>
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {recientes.length === 0 ? (
-              <p style={{ color: "#94a3b8", fontSize: 13 }}>Sin actividad.</p>
+              <p style={{ color: "#334155", fontSize: 13 }}>Sin actividad.</p>
             ) : recientes.map((r, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #f8fafc" }}>
                 <div>
                   <span style={{ fontSize: 12, fontWeight: 500, color: "#0f172a" }}>{r.referidor}</span>
-                  {r.referido && <span style={{ fontSize: 12, color: "#94a3b8" }}> → {r.referido}</span>}
-                  <div style={{ fontSize: 11, color: "#94a3b8" }}>{fmtFecha(r.creado_en)}</div>
+                  {r.referido && <span style={{ fontSize: 12, color: "#334155" }}> → {r.referido}</span>}
+                  <div style={{ fontSize: 11, color: "#334155" }}>{fmtFecha(r.creado_en)}</div>
                 </div>
                 {estadoBadge(r.estado)}
               </div>
@@ -152,7 +152,7 @@ function EditorPremio({ entry, onChange }) {
               fontSize: 11, fontWeight: 600, cursor: "pointer",
               borderColor: activo ? C.azul : "#e2e8f0",
               background:  activo ? `${C.azul}12` : "#fff",
-              color:       activo ? C.azul : "#94a3b8",
+              color:       activo ? C.azul : "#334155",
               transition:  "all 0.12s",
             }}>
               {p.label}
@@ -171,7 +171,7 @@ function EditorPremio({ entry, onChange }) {
             onChange={ev => onChange("valor", parseFloat(ev.target.value) || 0)}
             style={{ ...sInput, width: 90 }}
           />
-          <span style={{ fontSize: 12, color: "#64748b" }}>
+          <span style={{ fontSize: 12, color: "#334155" }}>
             {entry.tipo_premio === "descuento_pct" ? "%" :
              entry.tipo_premio === "puntos"        ? "pts" :
              entry.tipo_premio === "credito"       ? "COP" : ""}
@@ -202,8 +202,8 @@ function EditorPremio({ entry, onChange }) {
             <Zap size={9} /> Automático
           </span>
         ) : (
-          <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, background: "#f1f5f9", padding: "2px 7px", borderRadius: 4 }}>
-            Manual — tú lo gestionas
+          <span style={{ fontSize: 10, color: "#334155", fontWeight: 600, background: "#f1f5f9", padding: "2px 7px", borderRadius: 4 }}>
+            Tú lo gestionas y entregas
           </span>
         )}
       </div>
@@ -243,7 +243,7 @@ function TabConfiguracion() {
             { rango_desde: 1,  rango_hasta: 4,   tipo_premio: "puntos",        valor: 50,   descripcion: "50 puntos de lealtad" },
             { rango_desde: 5,  rango_hasta: 14,  tipo_premio: "descuento_pct", valor: 5,    descripcion: "5% de descuento en tu próxima compra" },
             { rango_desde: 15, rango_hasta: 29,  tipo_premio: "descuento_pct", valor: 10,   descripcion: "10% de descuento en tu próxima compra" },
-            { rango_desde: 30, rango_hasta: null, tipo_premio: "personalizado", valor: null, descripcion: "Premio especial — contáctanos" },
+            { rango_desde: 30, rango_hasta: null, tipo_premio: "personalizado", valor: null, descripcion: "Premio especial, nos pondremos en contacto contigo" },
           ]);
         }
         setLoad(false);
@@ -291,7 +291,7 @@ function TabConfiguracion() {
       {/* TABLA 1: Premio para el amigo */}
       <div style={sCard}>
         <h3 style={sTitle}>Premio para el amigo referido</h3>
-        <p style={sSub}>El amigo recibe esto en su primera compra — varía según el nivel de lealtad de quien lo refirió</p>
+        <p style={sSub}>Esto es lo que recibirá tu amigo en su primera compra. El beneficio varía según el nivel de fidelidad de quien lo invitó.</p>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
           <thead>
             <tr>
@@ -307,21 +307,21 @@ function TabConfiguracion() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>
                     {e.nivel_id === null ? "Sin nivel" : e.nivel_nombre_real || e.nivel_nombre}
                   </span>
-                  {e.nivel_id === null && <span style={{ fontSize: 10, color: "#94a3b8", display: "block" }}>cliente sin nivel</span>}
+                  {e.nivel_id === null && <span style={{ fontSize: 10, color: "#334155", display: "block" }}>cliente sin nivel</span>}
                 </td>
                 <td style={sTd}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <input type="number" min="0" max="100" value={e.descuento_pct}
                       onChange={ev => updateAmigo(i, "descuento_pct", parseFloat(ev.target.value))}
                       style={sInput} />
-                    <span style={{ fontSize: 13, color: "#64748b" }}>%</span>
+                    <span style={{ fontSize: 13, color: "#334155" }}>%</span>
                   </div>
                 </td>
                 <td style={sTd}>
                   <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
                     <input type="checkbox" checked={e.envio_gratis}
                       onChange={ev => updateAmigo(i, "envio_gratis", ev.target.checked)} />
-                    <span style={{ fontSize: 12, color: "#64748b" }}>Incluir</span>
+                    <span style={{ fontSize: 12, color: "#334155" }}>Incluir</span>
                   </label>
                 </td>
                 <td style={sTd}>
@@ -330,13 +330,13 @@ function TabConfiguracion() {
                     onChange={ev => updateAmigo(i, "nivel_heredado_id", ev.target.value ? parseInt(ev.target.value) : null)}
                     style={{ ...sInput, width: 140, cursor: "pointer" }}
                   >
-                    <option value="">— Ninguno —</option>
+                    <option value="">Sin nivel</option>
                     {niveles.map(n => (
                       <option key={n.id} value={n.id}>{n.nombre}</option>
                     ))}
                   </select>
-                  <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 3 }}>
-                    El amigo llega con este nivel por 1 mes
+                  <div style={{ fontSize: 10, color: "#334155", marginTop: 3 }}>
+                    Tu amigo tendrá este nivel durante su primer mes
                   </div>
                 </td>
                 <td style={sTd}>
@@ -356,15 +356,15 @@ function TabConfiguracion() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <div>
             <h3 style={sTitle}>Premio para el referidor</h3>
-            <p style={sSub}>Según referidos acumulados — define libremente qué recibe el referidor por cada referido exitoso</p>
+            <p style={sSub}>Define qué recibes tú por cada amigo que traigas. Puedes personalizarlo según cuántos referidos lleves acumulados.</p>
           </div>
-          <button onClick={addFila} style={{ ...sBtnSec, fontSize: 12 }}>+ Agregar rango</button>
+          <button onClick={addFila} style={{ ...sBtnSec, fontSize: 12 }}>+ Añadir nivel</button>
         </div>
 
         {/* Leyenda automático vs manual */}
         <div style={{ display: "flex", gap: 12, margin: "12px 0", fontSize: 11 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: C.verde, fontWeight: 600 }}><Zap size={11} /> Automático — el sistema lo aplica solo (descuento, puntos, crédito)</span>
-          <span style={{ color: "#94a3b8", fontWeight: 600 }}>Manual — tú lo gestionas y entregas (producto, envío, personalizado)</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: C.verde, fontWeight: 600 }}><Zap size={11} /> Automático: el sistema lo aplica sin que hagas nada (descuento, puntos o crédito)</span>
+          <span style={{ color: "#334155", fontWeight: 600 }}>Manual: tú lo gestionas y lo entregas directamente (producto, envío o algo personalizado)</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 8 }}>
@@ -381,24 +381,22 @@ function TabConfiguracion() {
               }}>✕</button>
 
               {/* Rango */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b" }}>Referidos</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#374151", background: "#f1f5f9", padding: "4px 10px", borderRadius: 6 }}>De</span>
                 <input type="number" min="1" value={e.rango_desde}
                   onChange={ev => updateRef(i, "rango_desde", parseInt(ev.target.value))}
                   style={{ ...sInput, width: 70 }} />
-                <span style={{ fontSize: 12, color: "#94a3b8" }}>hasta</span>
+                <span style={{ fontSize: 12, color: "#334155" }}>a</span>
                 <input type="number" min="1" value={e.rango_hasta ?? ""}
-                  placeholder="∞"
+                  placeholder="sin límite"
                   onChange={ev => updateRef(i, "rango_hasta", ev.target.value ? parseInt(ev.target.value) : null)}
-                  style={{ ...sInput, width: 70 }} />
-                <span style={{ fontSize: 11, color: "#94a3b8" }}>
-                  {e.rango_hasta === null ? "(sin límite)" : `acumulados`}
-                </span>
+                  style={{ ...sInput, width: 100 }} />
+                <span style={{ fontSize: 12, color: "#334155" }}>referidos acumulados</span>
               </div>
 
               {/* Editor de premio libre */}
               <div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#334155", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: 8 }}>
                   Premio
                 </span>
                 <EditorPremio
@@ -441,8 +439,8 @@ export default function Referidos() {
 
       <div>
         <h2 style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", margin: 0 }}>Sistema de referidos</h2>
-        <p style={{ fontSize: 13, color: "#94a3b8", margin: "3px 0 0" }}>
-          Clientes que traen clientes — el premio del amigo depende del nivel de quien lo refiere
+        <p style={{ fontSize: 13, color: "#334155", margin: "3px 0 0" }}>
+          Cada cliente que refieras recibe una recompensa. El beneficio varía según tu nivel de fidelidad.
         </p>
       </div>
 
@@ -452,7 +450,7 @@ export default function Referidos() {
             display: "flex", alignItems: "center", gap: 7,
             padding: "10px 20px", border: "none", background: "none",
             fontSize: 13, fontWeight: 600, cursor: "pointer",
-            color: tab === t.key ? "#0f172a" : "#94a3b8",
+            color: tab === t.key ? "#0f172a" : "#334155",
             borderBottom: `2px solid ${tab === t.key ? "#3B82F6" : "transparent"}`,
             marginBottom: -2, transition: "all 0.15s",
           }}>
@@ -468,10 +466,10 @@ export default function Referidos() {
 }
 
 // ── Estilos ────────────────────────────────────────────────────────────────────
-const sCard  = { background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", padding: "20px 24px" };
-const sTitle = { fontSize: 15, fontWeight: 700, color: "#0f172a", margin: 0 };
-const sSub   = { fontSize: 12, color: "#94a3b8", margin: "3px 0 0" };
-const sTh    = { padding: "8px 12px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "1px solid #e2e8f0" };
-const sTd    = { padding: "10px 12px", fontSize: 13, color: "#334155" };
-const sInput = { padding: "6px 10px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 13, color: "#0f172a", outline: "none", width: 80 };
-const sBtnSec = { padding: "7px 14px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#fff", color: "#374151", fontWeight: 600, cursor: "pointer" };
+const sCard  = { background: "#fff", borderRadius: 16, border: "1px solid #f1f5f9", padding: "22px 26px", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" };
+const sTitle = { fontSize: 16, fontWeight: 700, color: "#0f172a", margin: 0 };
+const sSub   = { fontSize: 13, color: "#334155", margin: "4px 0 0", lineHeight: 1.5 };
+const sTh    = { padding: "10px 14px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#334155", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" };
+const sTd    = { padding: "12px 14px", fontSize: 13, color: "#334155", verticalAlign: "middle" };
+const sInput = { padding: "7px 11px", borderRadius: 8, border: "1.5px solid #e8edf2", fontSize: 13, color: "#0f172a", outline: "none", width: 80, backgroundColor: "white" };
+const sBtnSec = { padding: "8px 16px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#fff", color: "#374151", fontWeight: 600, cursor: "pointer", fontSize: 13 };

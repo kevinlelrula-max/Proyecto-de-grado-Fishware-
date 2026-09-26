@@ -66,16 +66,16 @@ export default function Usuarios() {
         <>
           {/* STAT CARDS */}
           <div style={s.statsRow}>
-            <StatCard label="Total usuarios"  value={usuarios.length} valueColor="#2563eb" />
-            <StatCard label="Administradores" value={admins}           valueColor="#7c3aed" />
-            <StatCard label="Empleados"       value={empleados}        valueColor="#0891b2" />
-            <StatCard label="Otros roles"     value={otros}            valueColor="#b45309" />
+            <StatCard icon={<Users size={16} />}    label="Usuarios en total"  value={usuarios.length} />
+            <StatCard icon={<Shield size={16} />}   label="Administradores"    value={admins} />
+            <StatCard icon={<Briefcase size={16} />} label="Empleados"         value={empleados} />
+            <StatCard icon={<Tag size={16} />}      label="Con otro rol"       value={otros} />
           </div>
 
           {/* BUSCADOR */}
           <div style={s.controls}>
             <div style={s.searchWrap}>
-              <Search size={15} color="#94a3b8" style={{ position: "absolute", left: "12px" }} />
+              <Search size={15} color="#334155" style={{ position: "absolute", left: "12px" }} />
               <input
                 style={s.searchInput}
                 placeholder="Buscar usuario por nombre, apellido o usuario..."
@@ -126,11 +126,12 @@ export default function Usuarios() {
   );
 }
 
-function StatCard({ label, value, valueColor }) {
+function StatCard({ icon, label, value }) {
   return (
     <div style={s.statCard}>
+      <div style={s.statIcon}>{icon}</div>
+      <div style={s.statValue}>{value}</div>
       <div style={s.statLabel}>{label}</div>
-      <div style={{ ...s.statValue, color: valueColor }}>{value}</div>
     </div>
   );
 }
@@ -139,45 +140,46 @@ const s = {
   page: { padding: "24px" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" },
   headerTitle: { fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "0 0 2px" },
-  headerSub: { fontSize: "13px", color: "#94a3b8", margin: 0 },
+  headerSub: { fontSize: "13px", color: "#334155", margin: 0 },
   btnNew: {
-    padding: "9px 20px", backgroundColor: "#2563eb",
+    padding: "10px 22px", backgroundColor: "#2563eb",
     color: "white", border: "none", borderRadius: "10px",
     cursor: "pointer", fontSize: "14px", fontWeight: "600", flexShrink: 0,
+    boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
   },
 
-  tabs: { display: "flex", borderBottom: "2px solid #f0f0f0", marginBottom: "20px" },
+  tabs: { display: "flex", borderBottom: "2px solid #cbd5e1", marginBottom: "20px" },
   tab: {
     padding: "9px 20px", fontSize: "13px", fontWeight: "500",
-    color: "#94a3b8", background: "none", border: "none",
+    color: "#334155", background: "none", border: "none",
     borderBottom: "2px solid transparent", cursor: "pointer",
     transition: "all 0.15s", marginBottom: "-2px",
     display: "flex", alignItems: "center", gap: "6px",
   },
-  tabActive: { color: "#2563eb", borderBottomColor: "#2563eb" },
+  tabActive: { color: "#2563eb", borderBottomColor: "#2563eb", fontWeight: "600" },
 
   statsRow: { display: "flex", gap: "12px", marginBottom: "20px" },
   statCard: {
-    flex: 1, backgroundColor: "white", borderRadius: "14px",
-    padding: "16px", display: "flex", alignItems: "center", gap: "14px",
-    border: "1px solid #e2e8f0",
+    flex: 1, backgroundColor: "white", borderRadius: "16px",
+    padding: "18px 20px", display: "flex", flexDirection: "column", gap: "6px",
+    border: "1.5px solid #cbd5e1", boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
-  statIconWrap: {
-    width: "40px", height: "40px", borderRadius: "10px",
-    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+  statIcon: {
+    color: "#334155", marginBottom: "2px",
+    display: "flex", alignItems: "center",
   },
-  statLabel: { fontSize: "11px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" },
-  statValue: { fontSize: "22px", fontWeight: "700" },
+  statLabel: { fontSize: "12px", color: "#334155", fontWeight: "500" },
+  statValue: { fontSize: "28px", fontWeight: "800", color: "#0f172a", lineHeight: 1 },
 
   controls: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" },
   searchWrap: { flex: 1, position: "relative", display: "flex", alignItems: "center" },
   searchInput: {
-    width: "100%", padding: "9px 12px 9px 36px",
-    borderRadius: "10px", border: "1px solid #e2e8f0",
-    fontSize: "14px", color: "#0f172a", outline: "none", backgroundColor: "#fff",
+    width: "100%", padding: "11px 12px 11px 36px",
+    borderRadius: "10px", border: "2px solid #cbd5e1",
+    fontSize: "14px", color: "#0f172a", outline: "none", backgroundColor: "#f8fafc",
     boxSizing: "border-box",
   },
-  resultCount: { fontSize: "13px", color: "#94a3b8", whiteSpace: "nowrap" },
+  resultCount: { fontSize: "13px", color: "#334155", whiteSpace: "nowrap" },
 
   overlay: {
     position: "fixed", inset: 0, backgroundColor: "rgba(15,23,42,0.5)",
@@ -191,5 +193,5 @@ const s = {
   },
   modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
   modalTitle: { fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  modalClose: { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#94a3b8" },
+  modalClose: { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#334155" },
 };

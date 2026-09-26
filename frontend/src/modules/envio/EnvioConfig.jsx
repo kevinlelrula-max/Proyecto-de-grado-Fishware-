@@ -57,7 +57,7 @@ export default function EnvioConfig() {
         <div>
           <h2 style={s.title}>Configuración de envío</h2>
           <p style={s.subtitle}>
-            Define el costo por departamento. Deja vacío para usar el costo por defecto. Pon 0 para envío gratis.
+            Configura cuánto cobras por envío en cada departamento. Si dejas un campo vacío, se aplica el costo por defecto.
           </p>
         </div>
         <button
@@ -75,7 +75,7 @@ export default function EnvioConfig() {
       <div style={s.card}>
         <h3 style={s.cardTitle}>Costo por defecto</h3>
         <p style={s.cardDesc}>
-          Se aplica a los departamentos que no tengan un costo específico.
+          Este valor se usa en todos los departamentos donde no definas un precio diferente.
         </p>
         <div style={s.inputWrap}>
           <span style={s.inputPrefix}>$</span>
@@ -90,7 +90,7 @@ export default function EnvioConfig() {
           <span style={s.inputSuffix}>COP</span>
         </div>
         {costoDefecto === 0 && (
-          <p style={s.hint}>💡 Con costo 0 el envío es gratis para todos los departamentos sin costo específico.</p>
+          <p style={s.hint}>El envío será gratis para todos los departamentos que no tengan un costo específico.</p>
         )}
       </div>
 
@@ -98,7 +98,7 @@ export default function EnvioConfig() {
       <div style={s.card}>
         <h3 style={s.cardTitle}>Costo por departamento</h3>
         <p style={s.cardDesc}>
-          Configura un costo individual. Si lo dejas vacío usa el costo por defecto (${Number(costoDefecto).toLocaleString("es-CO")}).
+          Escribe un valor específico para cada departamento. Si lo dejas en blanco, se aplica el costo por defecto (${Number(costoDefecto).toLocaleString("es-CO")}).
         </p>
 
         <div style={s.deptGrid}>
@@ -175,31 +175,31 @@ export default function EnvioConfig() {
 }
 
 const s = {
-  wrap:          { padding: "8px 0", display: "flex", flexDirection: "column", gap: "20px" },
-  loading:       { padding: "40px", textAlign: "center", color: "#64748b", fontSize: "14px" },
+  wrap:          { padding: "8px 0", display: "flex", flexDirection: "column", gap: "22px" },
+  loading:       { padding: "40px", textAlign: "center", color: "#334155", fontSize: "14px" },
   header:        { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" },
-  title:         { fontSize: "18px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" },
-  subtitle:      { fontSize: "13px", color: "#64748b" },
-  btnGuardar:    { padding: "9px 20px", backgroundColor: "#2563eb", color: "white", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: "700", cursor: "pointer", flexShrink: 0 },
+  title:         { fontSize: "20px", fontWeight: "700", color: "#0f172a", marginBottom: "4px" },
+  subtitle:      { fontSize: "13px", color: "#334155", lineHeight: "1.5" },
+  btnGuardar:    { padding: "10px 22px", backgroundColor: "#1e293b", color: "white", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: "700", cursor: "pointer", flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.12)" },
   errorBox:      { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "12px 16px", fontSize: "13px", color: "#b91c1c" },
-  card:          { backgroundColor: "white", border: "1.5px solid #e2e8f0", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" },
-  cardTitle:     { fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  cardDesc:      { fontSize: "13px", color: "#64748b", margin: 0 },
-  inputWrap:     { display: "flex", alignItems: "center", gap: "8px", maxWidth: "240px" },
-  inputPrefix:   { fontSize: "18px", fontWeight: "700", color: "#0F6E56" },
-  input:         { flex: 1, padding: "10px 12px", border: "1.5px solid #e2e8f0", borderRadius: "10px", fontSize: "16px", fontWeight: "700", color: "#0f172a", outline: "none", textAlign: "right" },
-  inputSuffix:   { fontSize: "13px", color: "#94a3b8", fontWeight: "600" },
-  hint:          { fontSize: "12px", color: "#0F6E56", margin: 0 },
-  deptGrid:      { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "10px" },
-  deptCard:      { display: "flex", flexDirection: "column", gap: "6px", padding: "12px", border: "1.5px solid", borderRadius: "10px", transition: "all 0.15s" },
-  deptNombre:    { fontSize: "12px", fontWeight: "600", color: "#0f172a" },
-  deptInputRow:  { display: "flex", alignItems: "center", gap: "4px" },
-  deptPrefix:    { fontSize: "13px", fontWeight: "700", color: "#0F6E56" },
-  deptInput:     { flex: 1, padding: "5px 8px", border: "1.5px solid #e2e8f0", borderRadius: "7px", fontSize: "13px", fontWeight: "600", color: "#0f172a", outline: "none", textAlign: "right", width: "100%" },
-  gratisBadge:   { backgroundColor: "#E1F5EE", color: "#0F6E56", fontSize: "10px", fontWeight: "700", padding: "2px 8px", borderRadius: "999px", alignSelf: "flex-start" },
-  defectoBadge:  { backgroundColor: "#f1f5f9", color: "#94a3b8", fontSize: "10px", fontWeight: "600", padding: "2px 8px", borderRadius: "999px", alignSelf: "flex-start" },
-  resumen:       { backgroundColor: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" },
-  resumenRow:    { display: "flex", justifyContent: "space-between", fontSize: "13px" },
-  resumenLabel:  { color: "#64748b" },
+  card:          { backgroundColor: "white", border: "1px solid #f1f5f9", borderRadius: "16px", padding: "22px 24px", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" },
+  cardTitle:     { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  cardDesc:      { fontSize: "13px", color: "#334155", margin: 0, lineHeight: "1.5" },
+  inputWrap:     { display: "flex", alignItems: "center", gap: "10px", maxWidth: "260px" },
+  inputPrefix:   { fontSize: "20px", fontWeight: "700", color: "#0F6E56" },
+  input:         { flex: 1, padding: "11px 14px", border: "1.5px solid #e8edf2", borderRadius: "10px", fontSize: "18px", fontWeight: "700", color: "#0f172a", outline: "none", textAlign: "right" },
+  inputSuffix:   { fontSize: "13px", color: "#334155", fontWeight: "600" },
+  hint:          { fontSize: "12px", color: "#0F6E56", margin: 0, padding: "8px 12px", backgroundColor: "#f0fdf8", borderRadius: "8px" },
+  deptGrid:      { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px" },
+  deptCard:      { display: "flex", flexDirection: "column", gap: "8px", padding: "14px 16px", border: "1.5px solid", borderRadius: "12px", transition: "all 0.15s" },
+  deptNombre:    { fontSize: "13px", fontWeight: "600", color: "#0f172a" },
+  deptInputRow:  { display: "flex", alignItems: "center", gap: "6px" },
+  deptPrefix:    { fontSize: "14px", fontWeight: "700", color: "#475569" },
+  deptInput:     { flex: 1, padding: "6px 10px", border: "1.5px solid #e8edf2", borderRadius: "8px", fontSize: "14px", fontWeight: "600", color: "#0f172a", outline: "none", textAlign: "right", width: "100%", backgroundColor: "white" },
+  gratisBadge:   { backgroundColor: "#dcfce7", color: "#15803d", fontSize: "10px", fontWeight: "700", padding: "3px 9px", borderRadius: "999px", alignSelf: "flex-start" },
+  defectoBadge:  { backgroundColor: "#f1f5f9", color: "#334155", fontSize: "10px", fontWeight: "600", padding: "3px 9px", borderRadius: "999px", alignSelf: "flex-start" },
+  resumen:       { backgroundColor: "white", border: "1px solid #f1f5f9", borderRadius: "16px", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "12px", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" },
+  resumenRow:    { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #f8fafc", fontSize: "13px" },
+  resumenLabel:  { color: "#334155" },
   resumenVal:    { fontWeight: "700", color: "#0f172a" },
 };

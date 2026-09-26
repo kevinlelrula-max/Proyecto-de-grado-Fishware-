@@ -76,20 +76,19 @@ export default function TablaClientes({ clientes, onEditar, onEliminar, onVerPer
 const s = {
   wrapper: {
     backgroundColor: "white",
-    borderRadius: "14px",
-    border: "1px solid #e2e8f0",
+    borderRadius: "16px",
+    border: "1.5px solid #cbd5e1",
     overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {
     padding: "13px 16px", textAlign: "left",
-    fontSize: "11px", fontWeight: "700", color: "#94a3b8",
-    textTransform: "uppercase", letterSpacing: "0.05em",
-    backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0",
+    fontSize: "12px", fontWeight: "600", color: "#334155",
+    backgroundColor: "#f8fafc", borderBottom: "1.5px solid #e2e8f0",
   },
   row: { borderBottom: "1px solid #f1f5f9", transition: "background 0.15s" },
-  td: { padding: "14px 16px", fontSize: "14px", color: "#334155" },
+  td: { padding: "15px 16px", fontSize: "14px", color: "#0f172a" },
 
   clienteInfo: { display: "flex", alignItems: "center", gap: "12px" },
   avatar: {

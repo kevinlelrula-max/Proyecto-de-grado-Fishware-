@@ -39,15 +39,15 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
     <div className="space-y-6">
 
       {/* Logo */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h3 className="text-base font-semibold text-gray-700 mb-1">Logo de la empresa</h3>
-        <p className="text-sm text-gray-400 mb-4">
+      <div className="bg-white rounded-2xl border-[1.5px] border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
+        <h3 className="text-base font-semibold text-slate-800 mb-1">Logo de la empresa</h3>
+        <p className="text-sm text-slate-500 mb-4">
           Aparece en el dashboard y en los PDFs de ventas
         </p>
 
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 cursor-pointer transition"
+          className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 cursor-pointer transition"
         >
           {logoPreview ? (
             <img src={logoPreview} alt="Logo empresa" className="h-20 object-contain rounded-lg" />
@@ -75,16 +75,16 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
       </div>
 
       {/* Datos */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h3 className="text-base font-semibold text-gray-700 mb-1">Datos de la empresa</h3>
-        <p className="text-sm text-gray-400 mb-5">
+      <div className="bg-white rounded-2xl border-[1.5px] border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
+        <h3 className="text-base font-semibold text-slate-800 mb-1">Datos de la empresa</h3>
+        <p className="text-sm text-slate-500 mb-5">
           Información que aparece en los documentos generados
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-5">
           {campos.map((campo) => (
             <div key={campo.key} className={campo.full ? "col-span-2" : "col-span-1"}>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-[13px] font-semibold text-slate-800 mb-2">
                 {campo.label}
               </label>
               <input
@@ -92,33 +92,33 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
                 value={empresa[campo.key] || ""}
                 placeholder={campo.placeholder}
                 onChange={(e) => onChange(campo.key, e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-[15px] text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
           ))}
 
           {/* Unidad predeterminada */}
           <div className="col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="block text-[13px] font-semibold text-slate-800 mb-2">
               Unidad predeterminada para productos nuevos
             </label>
             <select
               value={empresa.unidad_predeterminada || "unidad"}
               onChange={(e) => onChange("unidad_predeterminada", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+              className="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-[15px] text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             >
               {UNIDADES.map((u) => (
                 <option key={u.value} value={u.value}>{u.label}</option>
               ))}
             </select>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Se usará como valor por defecto al crear un nuevo producto. Cada producto puede cambiarse individualmente.
             </p>
           </div>
 
           {/* IVA */}
           <div className="col-span-1">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
+            <label className="block text-[13px] font-semibold text-slate-800 mb-2">
               IVA / Impuesto (%)
             </label>
             <input
@@ -128,9 +128,9 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
               step="0.5"
               value={empresa.iva_porcentaje ?? 0}
               onChange={(e) => onChange("iva_porcentaje", Number(e.target.value))}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-[15px] text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Ej: 19 para Colombia. Se aplica al subtotal en ventas y tienda. Usa 0 para desactivar.
             </p>
           </div>
@@ -138,9 +138,9 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
       </div>
 
       {/* Redes sociales */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h3 className="text-base font-semibold text-gray-700 mb-1">Redes sociales</h3>
-        <p className="text-sm text-gray-400 mb-5">Aparecen en la sección de contacto de tu tienda</p>
+      <div className="bg-white rounded-2xl border-[1.5px] border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
+        <h3 className="text-base font-semibold text-slate-800 mb-1">Redes sociales</h3>
+        <p className="text-sm text-slate-500 mb-5">Aparecen en la sección de contacto de tu tienda</p>
 
         <div className="space-y-4">
           {REDES.map(({ key, label, Icon, placeholder }) => (
@@ -149,13 +149,13 @@ export default function EmpresaForm({ empresa, logoPreview, onChange, onLogoChan
                 <Icon size={16} />
               </span>
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+                <label className="block text-[13px] font-semibold text-slate-800 mb-2">{label}</label>
                 <input
                   type="text"
                   value={empresa[key] || ""}
                   onChange={(e) => onChange(key, e.target.value)}
                   placeholder={placeholder}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border-2 border-slate-300 rounded-xl px-4 py-3 text-[15px] text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>

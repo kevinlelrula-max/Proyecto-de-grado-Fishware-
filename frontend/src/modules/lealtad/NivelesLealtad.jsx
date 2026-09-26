@@ -207,7 +207,7 @@ const s = {
   infoText: { fontSize: "13px", color: "#92400e", lineHeight: "1.6" },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
     gap: "16px",
   },
 };

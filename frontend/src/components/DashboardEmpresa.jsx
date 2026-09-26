@@ -300,7 +300,7 @@ function NotificacionesBell({ token, irA }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpenBell(v => !v)}
-        className="relative w-9 h-9 rounded-[9px] bg-white border border-black/[0.08] flex items-center justify-center cursor-pointer text-[#5A7090] transition-colors hover:bg-slate-50 hover:text-[#0B1628] p-0"
+        className="relative w-9 h-9 rounded-[9px] bg-white border border-slate-400/60 flex items-center justify-center cursor-pointer text-[#5A7090] transition-colors hover:bg-slate-50 hover:border-slate-400 shadow-sm p-0"
         title="Notificaciones"
       >
         <BellIcon />
@@ -350,7 +350,7 @@ function NotificacionesBell({ token, irA }) {
                 Sin notificaciones
               </div>
             ) : notifs.map(n => {
-              const meta = TIPO_META[n.tipo] || { emoji: "📌", color: "#64748b" };
+              const meta = TIPO_META[n.tipo] || { emoji: "📌", color: "#334155" };
               return (
                 <div
                   key={n.id}
@@ -395,17 +395,20 @@ function NavItem({ item, active, onClick, badge }) {
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] text-[13px] border border-transparent w-full text-left transition-all duration-150",
+        "relative flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] text-[13px] w-full text-left transition-all duration-150 border border-transparent",
         active
-          ? "bg-gradient-to-br from-[#00C9A7]/20 to-[#0099FF]/12 border-[#00C9A7]/25 text-white font-medium"
-          : "font-normal text-[#5A7090] hover:bg-white/5 hover:text-[#C8D6E5]"
+          ? "bg-white/[0.07] text-white font-medium border-white/[0.08]"
+          : "font-normal text-[#7A94B0] hover:bg-white/[0.04] hover:text-[#C8D6E5]"
       )}
     >
+      {active && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[18px] rounded-r-full bg-[#4F8EF7]" />
+      )}
       <div className={cn(
-        "w-[30px] h-[30px] rounded-[7px] flex items-center justify-center flex-shrink-0 transition-all duration-150",
+        "w-[28px] h-[28px] rounded-[7px] flex items-center justify-center flex-shrink-0 transition-all duration-150",
         active
-          ? "bg-gradient-to-br from-[#00C9A7] to-[#0099FF]"
-          : "bg-white/[0.04] border border-white/[0.06]"
+          ? "bg-[#4F8EF7]/20 text-[#4F8EF7]"
+          : "text-[#5A7090]"
       )}>
         <Icon active={active} />
       </div>
@@ -565,7 +568,9 @@ export default function DashboardEmpresa() {
   if (cargandoPermisos) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3" style={{ fontFamily: "'Sora', sans-serif" }}>
-        <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-xl">🐟</div>
+        <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l4-4 4 4 4-4 4 4"/><path d="M3 15l4 4 4-4 4 4 4-4"/></svg>
+        </div>
         <div className="text-sm text-slate-500">Cargando permisos...</div>
       </div>
     );
@@ -616,13 +621,13 @@ export default function DashboardEmpresa() {
                 className="w-9 h-9 rounded-[10px] object-contain bg-white p-0.5 flex-shrink-0"
               />
             ) : (
-              <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-lg flex-shrink-0">
-                🐟
+              <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l4-4 4 4 4-4 4 4"/><path d="M3 15l4 4 4-4 4 4 4-4"/></svg>
               </div>
             )}
             <div>
               <div className="text-[15px] font-semibold text-[#E8F4FF] tracking-tight leading-snug">{nombreEmpresa}</div>
-              <div className="text-[10px] text-[#4A6080] uppercase tracking-[0.08em] mt-0.5">Panel de gestión</div>
+              <div className="text-[10px] text-[#5A7A9A] uppercase tracking-[0.08em] mt-0.5">Panel de gestión</div>
             </div>
           </div>
         </div>
@@ -649,7 +654,7 @@ export default function DashboardEmpresa() {
                   onClick={() => toggleGrupo(grupo.id)}
                 >
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold text-[#2D4060] uppercase tracking-[0.1em]">
+                    <span className="text-[10px] font-semibold text-[#4A6680] uppercase tracking-[0.1em]">
                       {grupo.label}
                     </span>
                     {itemActivo && (
@@ -659,7 +664,7 @@ export default function DashboardEmpresa() {
                     )}
                   </div>
                   <svg
-                    className={cn("text-[#2D4060] transition-transform duration-200 flex-shrink-0", abierto && "rotate-180")}
+                    className={cn("text-[#4A6680] transition-transform duration-200 flex-shrink-0", abierto && "rotate-180")}
                     width="10" height="10" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" strokeWidth="2.5"
                     strokeLinecap="round" strokeLinejoin="round"
@@ -719,28 +724,16 @@ export default function DashboardEmpresa() {
           })}
         </nav>
 
-        {/* User bottom */}
-        <div className="px-3 py-4 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2.5 p-2.5 bg-white/[0.04] border border-white/[0.07] rounded-[10px]">
-            <div className="w-8 h-8 rounded-[8px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-[13px] font-semibold text-white flex-shrink-0">
-              {inicial}
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#C8D6E5]">{nombreUsuario}</div>
-              <div className="text-[10px] text-[#00C9A7] mt-0.5">{rolLabel}</div>
-            </div>
-          </div>
-        </div>
       </aside>
 
       {/* ── MAIN ── */}
       <main className="flex-1 md:ml-60 ml-0 flex flex-col min-h-screen">
 
         {/* TOPBAR */}
-        <div className="sticky top-0 z-30 bg-[#F0F4F8]/85 backdrop-blur-xl border-b border-black/[0.06] px-4 md:px-7 h-[60px] flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 px-6 md:px-10 h-[68px] flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-3">
             <button
-              className="md:hidden w-9 h-9 rounded-[9px] bg-white border border-black/[0.08] flex items-center justify-center cursor-pointer text-[#5A7090] hover:bg-slate-50 hover:text-[#0B1628] transition-colors p-0 mr-1 flex-shrink-0"
+              className="md:hidden w-9 h-9 rounded-[9px] bg-slate-100 border border-slate-200 flex items-center justify-center cursor-pointer text-slate-500 hover:bg-slate-200 transition-colors p-0 mr-1 flex-shrink-0"
               onClick={() => setSidebarAbierto(v => !v)}
               aria-label="Menú"
             >
@@ -750,9 +743,12 @@ export default function DashboardEmpresa() {
                 <line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
             </button>
-            <span className="text-[15px] font-semibold text-[#0B1628] tracking-tight">
-              {menu.find(m => m.key === seccion)?.label || seccion}
-            </span>
+            <div>
+              <div className="text-[15px] font-semibold text-[#0B1628] tracking-tight leading-tight">
+                {menu.find(m => m.key === seccion)?.label || seccion}
+              </div>
+              <div className="text-[11px] text-slate-400 leading-tight hidden sm:block">{nombreEmpresa}</div>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -762,27 +758,32 @@ export default function DashboardEmpresa() {
             <button
               onClick={() => setBuscadorAbierto(true)}
               title="Buscar (Ctrl+K)"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-[9px] cursor-pointer text-[13px] text-slate-500 font-medium hover:bg-slate-200/70 transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-400/60 rounded-[9px] cursor-pointer text-[12px] text-slate-600 font-medium hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-sm"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
-              <span className="text-xs">Buscar</span>
-              <kbd className="text-[10px] bg-slate-200 rounded px-1 py-[1px] text-slate-400 font-sans">Ctrl K</kbd>
+              <span>Buscar</span>
+              <kbd className="text-[10px] bg-slate-100 border border-slate-200 rounded px-1.5 py-[2px] text-slate-400 font-sans">Ctrl K</kbd>
             </button>
 
             <NotificacionesBell token={token} irA={irA} />
 
+            <div className="w-px h-8 bg-slate-300 mx-2" />
+
             {/* User menu */}
             <div
-              className="relative flex items-center gap-2 py-1.5 pl-1.5 pr-3 bg-white border border-black/[0.08] rounded-[10px] cursor-pointer hover:bg-slate-50 hover:border-black/[0.12] transition-all select-none"
+              className="relative flex items-center gap-2.5 py-1.5 pl-1.5 pr-3 bg-white border border-slate-400/60 rounded-[12px] cursor-pointer hover:bg-slate-50 hover:border-slate-400 transition-all select-none shadow-sm"
               onClick={e => { e.stopPropagation(); setOpen(!open); }}
             >
-              <div className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-xs font-semibold text-white">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00C9A7] to-[#0099FF] flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0">
                 {inicial}
               </div>
-              <span className="text-[13px] font-medium text-[#0B1628]">{nombreUsuario}</span>
-              <span className="text-[#8A9BB0] ml-0.5"><ChevronIcon /></span>
+              <div className="hidden sm:block">
+                <div className="text-[13px] font-semibold text-[#0B1628] leading-tight">{nombreUsuario}</div>
+                <div className="text-[10px] text-[#00A884] leading-tight font-medium">{rolLabel}</div>
+              </div>
+              <span className="text-slate-400 ml-0.5"><ChevronIcon /></span>
 
               {open && (
                 <div

@@ -9,11 +9,11 @@ const ICONOS = {
 
 export default function MetodosPago({ metodos, onToggle }) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6">
-      <h3 className="text-base font-semibold text-gray-700 mb-1">
+    <div className="bg-white rounded-2xl border-[1.5px] border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
+      <h3 className="text-base font-semibold text-slate-800 mb-1">
         Métodos de pago disponibles
       </h3>
-      <p className="text-sm text-gray-400 mb-5">
+      <p className="text-sm text-slate-500 mb-5">
         Activa o desactiva los métodos que acepta esta empresa en el punto de venta
       </p>
 
@@ -25,7 +25,7 @@ export default function MetodosPago({ metodos, onToggle }) {
           return (
             <div
               key={metodo.key}
-              className="flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3 hover:border-gray-200 transition"
+              className="flex items-center justify-between border-2 border-slate-200 rounded-xl px-4 py-4 hover:border-slate-300 transition"
             >
               {/* Izquierda: icono + info */}
               <div className="flex items-center gap-3">

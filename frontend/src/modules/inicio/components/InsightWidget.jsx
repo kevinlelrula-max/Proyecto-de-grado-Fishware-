@@ -102,11 +102,11 @@ const s = {
     display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: 13, color: "#2563eb", flexShrink: 0,
   },
-  title: { fontSize: 13, fontWeight: 600, color: "#0f172a" },
-  sub:   { fontSize: 11, color: "#94a3b8", marginTop: 1 },
+  title: { fontSize: 14, fontWeight: 600, color: "#0f172a" },
+  sub:   { fontSize: 12, color: "#334155", marginTop: 1 },
   body:  { minHeight: 40 },
   text: {
-    fontSize: 13, color: "#475569",
+    fontSize: 15, color: "#0f172a",
     lineHeight: 1.75, margin: 0,
   },
   loading: {
@@ -118,12 +118,12 @@ const s = {
     borderRadius: "50%", background: "#2563eb",
     animation: "blink 1.2s ease-in-out infinite",
   },
-  loadingText: { fontSize: 13, color: "#94a3b8" },
+  loadingText: { fontSize: 13, color: "#334155" },
   refreshBtn: {
     width: 28, height: 28, borderRadius: 7,
     background: "transparent", border: "1px solid #e2e8f0",
     display: "flex", alignItems: "center", justifyContent: "center",
-    cursor: "pointer", color: "#94a3b8", flexShrink: 0,
+    cursor: "pointer", color: "#334155", flexShrink: 0,
     transition: "all 0.15s",
   },
   error: {

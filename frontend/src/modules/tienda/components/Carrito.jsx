@@ -204,18 +204,21 @@ export default function Carrito({
               <div style={s.items}>
                 {carrito.map((item) => (
                   <div key={item.id} style={s.item}>
+                    <div style={s.itemAvatar}>
+                      {item.nombre.charAt(0).toUpperCase()}
+                    </div>
                     <div style={s.itemInfo}>
                       <p style={s.itemNombre}>{item.nombre}</p>
                       <p style={s.itemPrecio}>${Number(item.precio).toLocaleString("es-CO")} / {item.unidad || "uds."}</p>
                     </div>
-                    <div style={s.itemKilos}>
-                      <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad - 0.5)}>−</button>
-                      <span style={s.kilosVal}>{Number(item.cantidad).toFixed(1)}</span>
-                      <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad + 0.5)}>+</button>
-                    </div>
                     <div style={s.itemRight}>
                       <p style={s.itemSubtotal}>${(item.cantidad * item.precio).toLocaleString("es-CO")}</p>
-                      <button style={s.quitarBtn} onClick={() => quitarDelCarrito(item.id)}>✕</button>
+                      <div style={s.itemKilos}>
+                        <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad - 0.5)}>−</button>
+                        <span style={s.kilosVal}>{Number(item.cantidad).toFixed(1)}</span>
+                        <button style={s.kilosBtn} onClick={() => cambiarCantidad(item.id, item.cantidad + 0.5)}>+</button>
+                        <button style={s.quitarBtn} onClick={() => quitarDelCarrito(item.id)}>✕</button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -327,7 +330,7 @@ export default function Carrito({
                             ...s.metodoBtn,
                             backgroundColor: metodoPagoId === m.id ? "#eff6ff" : "white",
                             borderColor:     metodoPagoId === m.id ? "#3674B5" : "#e2e8f0",
-                            color:           metodoPagoId === m.id ? "#3674B5" : "#64748b",
+                            color:           metodoPagoId === m.id ? "#3674B5" : "#334155",
                             fontWeight:      metodoPagoId === m.id ? "700" : "500",
                           }}
                           onClick={() => setMetodoPagoId(m.id)}
@@ -417,86 +420,89 @@ function capitalize(str) {
 }
 
 const s = {
-  overlay:      { position: "fixed", inset: 0, backgroundColor: "rgba(15,23,42,0.5)", zIndex: 200, backdropFilter: "blur(2px)" },
-  panel:        { position: "fixed", top: 0, right: 0, bottom: 0, width: "420px", backgroundColor: "white", zIndex: 201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.15)", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
-  header:       { padding: "20px 24px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc" },
+  overlay:      { position: "fixed", inset: 0, backgroundColor: "rgba(15,23,42,0.45)", zIndex: 200, backdropFilter: "blur(3px)" },
+  panel:        { position: "fixed", top: 0, right: 0, bottom: 0, width: "420px", backgroundColor: "#fafafa", zIndex: 201, display: "flex", flexDirection: "column", boxShadow: "-4px 0 32px rgba(0,0,0,0.12)", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
+
+  // Header
+  header:       { padding: "22px 24px 18px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "white" },
   headerLeft:   { display: "flex", alignItems: "center", gap: "12px" },
-  headerIconWrap: { width: "36px", height: "36px", backgroundColor: "#eff6ff", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  headerTitle:  { fontSize: "16px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  headerSub:    { fontSize: "12px", color: "#64748b", margin: 0 },
-  closeBtn:     { background: "none", border: "none", fontSize: "16px", cursor: "pointer", color: "#64748b", padding: "4px 8px", borderRadius: "6px" },
-  body:         { flex: 1, overflowY: "auto", padding: "16px 24px", display: "flex", flexDirection: "column", gap: "16px" },
+  headerIconWrap: { width: "40px", height: "40px", backgroundColor: "#f1f5f9", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  headerTitle:  { fontSize: "17px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  headerSub:    { fontSize: "12px", color: "#334155", margin: "2px 0 0" },
+  closeBtn:     { width: "32px", height: "32px", background: "#f1f5f9", border: "none", borderRadius: "8px", fontSize: "14px", cursor: "pointer", color: "#334155", display: "flex", alignItems: "center", justifyContent: "center" },
+  body:         { flex: 1, overflowY: "auto", padding: "20px 20px 24px", display: "flex", flexDirection: "column", gap: "20px" },
 
   // Estado vacío
   empty:        { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", padding: "60px 0" },
-  emptyTitle:   { fontSize: "15px", fontWeight: "600", color: "#64748b", margin: 0 },
-  emptyDesc:    { fontSize: "13px", color: "#94a3b8", margin: 0 },
+  emptyTitle:   { fontSize: "15px", fontWeight: "600", color: "#334155", margin: 0 },
+  emptyDesc:    { fontSize: "13px", color: "#334155", margin: 0 },
 
   // Éxito post-pedido
   exitoPanel:        { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px", padding: "40px 20px", textAlign: "center" },
   exitoIconWrap:     { marginBottom: "4px" },
   exitoTitle:        { fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: 0 },
-  exitoInstrucciones:{ fontSize: "13px", color: "#64748b", lineHeight: "1.6", maxWidth: "300px", margin: 0 },
+  exitoInstrucciones:{ fontSize: "13px", color: "#334155", lineHeight: "1.6", maxWidth: "300px", margin: 0 },
   btnCerrarExito:    { marginTop: "8px", padding: "12px 28px", backgroundColor: "#3674B5", color: "white", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "600", cursor: "pointer" },
 
   // Items
   items:        { display: "flex", flexDirection: "column", gap: "10px" },
-  item:         { display: "flex", alignItems: "center", gap: "10px", padding: "12px", backgroundColor: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" },
+  item:         { display: "flex", alignItems: "center", gap: "12px", padding: "14px", backgroundColor: "white", borderRadius: "14px", border: "1px solid #f1f5f9", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" },
+  itemAvatar:   { width: "38px", height: "38px", borderRadius: "10px", backgroundColor: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "700", color: "#334155", flexShrink: 0 },
   itemInfo:     { flex: 1, minWidth: 0 },
   itemNombre:   { fontSize: "13px", fontWeight: "600", color: "#0f172a", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  itemPrecio:   { fontSize: "11px", color: "#94a3b8", margin: 0 },
-  itemKilos:    { display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 },
-  kilosBtn:     { width: "22px", height: "22px", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white", fontSize: "13px", cursor: "pointer", color: "#3674B5", display: "flex", alignItems: "center", justifyContent: "center" },
-  kilosVal:     { fontSize: "12px", fontWeight: "600", color: "#0f172a", minWidth: "32px", textAlign: "center" },
-  itemRight:    { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 },
-  itemSubtotal: { fontSize: "13px", fontWeight: "700", color: "#3674B5", margin: 0 },
-  quitarBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "#cbd5e1", padding: 0, transition: "color 0.12s" },
+  itemPrecio:   { fontSize: "11px", color: "#334155", margin: "2px 0 0" },
+  itemKilos:    { display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" },
+  kilosBtn:     { width: "26px", height: "26px", borderRadius: "8px", border: "1.5px solid #e2e8f0", backgroundColor: "white", fontSize: "14px", cursor: "pointer", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600" },
+  kilosVal:     { fontSize: "13px", fontWeight: "700", color: "#0f172a", minWidth: "28px", textAlign: "center" },
+  itemRight:    { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0", flexShrink: 0 },
+  itemSubtotal: { fontSize: "14px", fontWeight: "700", color: "#0f172a", margin: 0 },
+  quitarBtn:    { background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#cbd5e1", padding: "2px 0 0", transition: "color 0.12s", marginLeft: "6px" },
 
   // Totales
-  totalWrap:    { display: "flex", flexDirection: "column", gap: "6px" },
-  subtotalRow:  { display: "flex", justifyContent: "space-between", padding: "4px 8px" },
-  subtotalLabel:{ fontSize: "12px", color: "#94a3b8" },
-  subtotalValor:{ fontSize: "12px", color: "#94a3b8" },
-  totalRow:     { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", backgroundColor: "#eff6ff", borderRadius: "12px", border: "1px solid #bfdbfe" },
-  totalLabel:   { fontSize: "14px", fontWeight: "700", color: "#0f172a" },
-  totalValor:   { fontSize: "20px", fontWeight: "800", color: "#3674B5" },
+  totalWrap:    { display: "flex", flexDirection: "column", gap: "6px", backgroundColor: "white", borderRadius: "14px", padding: "14px 16px", border: "1px solid #f1f5f9" },
+  subtotalRow:  { display: "flex", justifyContent: "space-between", padding: "2px 0" },
+  subtotalLabel:{ fontSize: "12px", color: "#334155" },
+  subtotalValor:{ fontSize: "12px", color: "#334155" },
+  totalRow:     { display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px", marginTop: "6px", borderTop: "1px solid #f1f5f9" },
+  totalLabel:   { fontSize: "15px", fontWeight: "700", color: "#0f172a" },
+  totalValor:   { fontSize: "22px", fontWeight: "800", color: "#0f172a" },
 
   // Formulario
   form:         { display: "flex", flexDirection: "column", gap: "14px" },
   fieldWrap:    {},
   label:        { display: "block", fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
-  input:        { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box" },
-  textarea:     { width: "100%", padding: "10px 12px", borderRadius: "9px", border: "1.5px solid #e2e8f0", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box", resize: "none", fontFamily: "inherit" },
+  input:        { width: "100%", padding: "11px 13px", borderRadius: "10px", border: "1.5px solid #e8edf2", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box" },
+  textarea:     { width: "100%", padding: "11px 13px", borderRadius: "10px", border: "1.5px solid #e8edf2", fontSize: "13px", color: "#0f172a", backgroundColor: "white", outline: "none", boxSizing: "border-box", resize: "none", fontFamily: "inherit" },
   metodosGrid:  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" },
-  metodoBtn:    { padding: "8px 10px", borderRadius: "8px", border: "1.5px solid", fontSize: "12px", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center" },
-  errorBox:     { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", padding: "10px 12px", fontSize: "12px", color: "#b91c1c" },
-  btnConfirmar: { width: "100%", padding: "13px", backgroundColor: "#3674B5", color: "white", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: "700", transition: "opacity 0.2s", cursor: "pointer" },
-  seguridadNote:{ textAlign: "center", fontSize: "11px", color: "#94a3b8", margin: 0 },
-  btnVaciar:    { width: "100%", padding: "10px", background: "transparent", color: "#94a3b8", border: "none", fontSize: "12px", cursor: "pointer", textDecoration: "underline" },
+  metodoBtn:    { padding: "10px", borderRadius: "10px", border: "1.5px solid", fontSize: "13px", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "500" },
+  errorBox:     { backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "10px 13px", fontSize: "12px", color: "#b91c1c" },
+  btnConfirmar: { width: "100%", padding: "14px", backgroundColor: "#1e293b", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "700", transition: "opacity 0.2s", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" },
+  seguridadNote:{ textAlign: "center", fontSize: "11px", color: "#334155", margin: 0 },
+  btnVaciar:    { width: "100%", padding: "10px", background: "transparent", color: "#334155", border: "none", fontSize: "12px", cursor: "pointer", textDecoration: "underline" },
 
   // Cupón
   cuponInputWrap: { display: "flex", gap: "8px", marginTop: "6px" },
   cuponInput: {
-    flex: 1, padding: "9px 12px", borderRadius: "9px",
-    border: "1.5px solid #e2e8f0", fontSize: "13px",
-    color: "#0f172a", outline: "none",
+    flex: 1, padding: "10px 13px", borderRadius: "10px",
+    border: "1.5px solid #e8edf2", fontSize: "13px",
+    color: "#0f172a", outline: "none", backgroundColor: "white",
     fontFamily: "'DM Mono', monospace", letterSpacing: "0.05em",
   },
   cuponBtn: {
-    padding: "9px 14px", borderRadius: "9px",
-    backgroundColor: "#0f172a", color: "white",
-    border: "none", fontSize: "12px", fontWeight: "700",
+    padding: "10px 16px", borderRadius: "10px",
+    backgroundColor: "#1e293b", color: "white",
+    border: "none", fontSize: "13px", fontWeight: "700",
     cursor: "pointer", flexShrink: 0,
   },
   cuponAplicado: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "9px 12px", marginTop: "6px",
-    backgroundColor: "#eff6ff", border: "1.5px solid #bfdbfe",
-    borderRadius: "9px",
+    padding: "10px 13px", marginTop: "6px",
+    backgroundColor: "#f0fdf4", border: "1.5px solid #bbf7d0",
+    borderRadius: "10px",
   },
   cuponCodigo:   { fontSize: "13px", fontWeight: "700", color: "#0f172a", fontFamily: "'DM Mono', monospace" },
-  cuponDesc:     { fontSize: "12px", color: "#64748b" },
-  cuponDescuento:{ fontSize: "13px", fontWeight: "700", color: "#3674B5" },
-  cuponQuitarBtn:{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "13px" },
+  cuponDesc:     { fontSize: "12px", color: "#334155" },
+  cuponDescuento:{ fontSize: "13px", fontWeight: "700", color: "#15803d" },
+  cuponQuitarBtn:{ background: "none", border: "none", color: "#334155", cursor: "pointer", fontSize: "13px" },
   cuponError:    { fontSize: "11px", color: "#b91c1c", marginTop: "4px" },
 };
